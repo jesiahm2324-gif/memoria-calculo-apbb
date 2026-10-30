@@ -1,0 +1,13 @@
+MEMORIA DE CÁLCULO · SERVICIOS PORTUARIOS APBB — versión instalable (funciona sin internet)
+
+Archivos (súbalos todos juntos a la raíz del repositorio):
+  index.html            la app
+  sw.js                 permite usarla sin internet y recibir actualizaciones
+  manifest.webmanifest  nombre e ícono al instalarla
+  icon-180.png, icon-192.png, icon-512.png   íconos
+  revocados.json        lista de accesos retirados (la edita usted desde la app)
+
+Para publicar una actualización: reemplace index.html y sw.js (sw.js trae un número de VERSION nuevo).
+Los teléfonos la reciben solos la próxima vez que abran la app con señal.
+
+No suba ni comparta la clave maestra: no está en estos archivos y debe quedar solo con usted.

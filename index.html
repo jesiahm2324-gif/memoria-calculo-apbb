@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Memoria de Cálculo APBB</title>
+<meta name="theme-color" content="#0b4f8a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cálculo APBB">
+<style>
+:root{--bg:#eef3f8;--card:#fff;--ink:#13233d;--mut:#5b6b82;--pri:#0b4f8a;--pri2:#0e6bb8;--acc:#f2a900;--line:#dbe3ee;--ok:#1d7a46;--bad:#b42318;--soft:#e7eff8}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+header{background:linear-gradient(135deg,#08365f,#0e6bb8);color:#fff;padding:12px 16px;display:flex;gap:12px;align-items:center}
+.logo{width:58px;height:58px;border-radius:10px;background:rgba(255,255,255,.12);border:1.5px dashed rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:9.5px;line-height:1.2;text-align:center;cursor:pointer;overflow:hidden;flex:none;padding:4px}
+.logo img{width:100%;height:100%;object-fit:contain;background:#fff;border-radius:6px}
+.logo.has{border-style:solid;padding:2px;background:#fff;width:116px;height:54px;border-radius:8px}
+header h1{font-size:17px;margin:0;line-height:1.2}
+header p{margin:2px 0 0;font-size:12.5px;opacity:.85}
+nav{display:flex;gap:4px;background:#08365f;padding:0 12px;overflow-x:auto;position:sticky;top:0;z-index:5}
+nav button{background:none;color:#cfe0f3;border:0;border-bottom:3px solid transparent;padding:11px 12px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+nav button.on{color:#fff;border-color:var(--acc);font-weight:600}
+main{max-width:980px;margin:0 auto;padding:14px 16px 90px}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--pri);display:flex;align-items:center;gap:8px}
+.card h2 .n{background:var(--pri);color:#fff;border-radius:50%;width:22px;height:22px;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;color:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid #9cc4ea;border-color:var(--pri2)}
+textarea{min-height:60px;resize:vertical}
+button{font:inherit;border:0;border-radius:8px;padding:9px 14px;cursor:pointer}
+.btn{background:var(--pri);color:#fff}.btn:hover{background:var(--pri2)}
+.btn2{background:var(--soft);color:var(--pri)}
+.btnd{background:#fdecea;color:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sm{font-size:12px;color:var(--mut)}
+.src{color:#7a5a00;background:#fff6dc;border-radius:4px;padding:0 4px;white-space:nowrap}
+.warn{color:#8a3b00;background:#fff1e0;border-radius:4px;padding:0 4px}
+.res{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:10px}
+.ri{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
+.ri:last-child{border-bottom:0}
+.ri button{background:var(--pri);color:#fff;width:34px;height:34px;padding:0;font-size:20px;flex:none}
+.tpl{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tpl button{background:#fff6dc;color:#6b4e00;font-size:13px;padding:7px 10px}
+.ln{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fbfdff}
+.lnh{display:flex;justify-content:space-between;gap:8px}
+.lnh .x{background:#fdecea;color:var(--bad);width:30px;height:30px;padding:0;flex:none}
+.lnq{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;margin-top:8px;align-items:end}
+.amt b{font-size:16px;color:var(--pri)}
+.tot{width:100%;border-collapse:collapse}
+.tot td{padding:6px 4px;border-bottom:1px solid var(--line)}
+.tot td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.tot tr.big td{font-size:17px;font-weight:700;color:var(--pri);border-bottom:0}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink)}
+.chk input{width:auto}
+.actions{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;justify-content:center;z-index:6}
+.actions button{flex:1;max-width:220px}
+table.tt{width:100%;border-collapse:collapse;font-size:13.5px}
+table.tt th{background:var(--soft);color:var(--pri);text-align:left;padding:7px 8px;font-size:12.5px}
+table.tt td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tt td.r{text-align:right;white-space:nowrap}
+.mut{color:var(--mut)}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:#13233d;color:#fff;padding:9px 16px;border-radius:20px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:90%}
+.toast.on{opacity:1}
+.hi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+/* Acceso */
+body.locked nav,body.locked main,body.locked .actions{display:none}
+body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .actions{display:none}
+#gate{max-width:520px;margin:0 auto;padding:22px 16px 40px}
+#gate h2{font-size:20px;margin:6px 0 8px;color:var(--pri)}
+.codebox{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--soft);border-radius:8px;padding:8px;word-break:break-all;margin:8px 0;user-select:all}
+.chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}.chip.ok{background:#dcf2e4;color:#1d7a46}.chip.bad{background:#fdecea;color:#b42318}.chip.warnc{background:#fff1e0;color:#8a3b00}
+.logo img{background:#fff}
+.devid{font-family:ui-monospace,Menlo,monospace;font-size:26px;letter-spacing:.06em}
+.msg-bad{color:var(--bad);font-size:13px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:14px}
+.facts div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:3px 0}
+.notice{background:#fff6dc;border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+/* Documento */
+.doc{background:#fff;max-width:820px;margin:0 auto;padding:28px;border:1px solid var(--line);font-size:12.5px;color:#111}
+.dh{display:flex;gap:14px;align-items:center;border-bottom:3px solid var(--pri);padding-bottom:10px}
+.dh img{width:78px;height:78px;object-fit:contain}
+.dh .t{flex:1}.dh .t b{font-size:15px;color:var(--pri)}
+.dh .t div{font-size:12px}
+.dh .num{text-align:right;font-size:12px}
+.dh .num b{display:block;font-size:14px;color:var(--bad)}
+.dtitle{text-align:center;font-weight:700;letter-spacing:.5px;margin:12px 0;font-size:14px;color:var(--pri)}
+.dd{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 14px;margin-bottom:12px}
+.dd div span{color:#555}
+.doc table{width:100%;border-collapse:collapse;margin-top:6px}
+.doc th{background:var(--pri);color:#fff;padding:6px;font-size:11.5px;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.doc td{padding:5px 6px;border-bottom:1px solid #ddd;vertical-align:top}
+.doc td.r,.doc th.r{text-align:right;white-space:nowrap}
+.doc .g td{background:#eef3f8;font-weight:600;color:var(--pri);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.dtot{margin-left:auto;width:min(360px,100%);margin-top:10px}
+.dtot td{border:0;padding:3px 6px}
+.dtot .big td{font-size:14px;font-weight:700;border-top:2px solid var(--pri)}
+.cond{font-size:11px;color:#333;margin-top:14px}
+.cond ol{padding-left:18px;margin:4px 0}
+.firmas{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;text-align:center;font-size:11.5px}
+.firmas div{border-top:1px solid #333;padding-top:4px}
+@media (max-width:600px){.dd{grid-template-columns:1fr 1fr}.doc{padding:14px}.lnq{grid-template-columns:1fr 1fr}.lnq .amt{grid-column:1/-1}}
+@media print{
+ @page{size:letter;margin:12mm}
+ body{background:#fff}
+ body *{visibility:hidden}
+ #printArea,#printArea *{visibility:visible}
+ #printArea{position:absolute;left:0;top:0;width:100%}
+ .doc{border:0;padding:0;max-width:none}
+ .actions,.toast{display:none}
+}
+</style>
+</head>
+<body class="locked">
+<header>
+ <div class="logo" id="logoBox"></div>
+ <div>
+  <h1>Memoria de Cálculo · Servicios Portuarios</h1>
+  <p>Empresa Portuaria Nacional · Administración Portuaria Bluff–Bluefields</p>
+ </div>
+</header>
+<nav>
+ <button data-v="pf" class="on">Cálculo</button>
+ <button data-v="prev">Vista previa</button>
+ <button data-v="tar">Tarifas</button>
+ <button data-v="his">Historial</button>
+ <button data-v="acc" id="navAcc">Mi acceso</button>
+</nav>
+<section id="gate"><p class="mut">Verificando acceso…</p></section>
+
+<main>
+<!-- PROFORMA -->
+<div id="aviso"></div>
+<section class="view on" id="v-pf">
+ <div class="card">
+  <h2><span class="n">1</span>Datos generales</h2>
+  <div class="grid">
+   <div><label>Referencia / asunto (opcional)</label><input data-k="ref" placeholder="Ej.: Consulta agencia, escala MV…"></div>
+   <div><label>Fecha</label><input type="date" data-k="fecha"></div>
+      <div><label>Cliente / consignatario</label><input data-k="cliente"></div>
+   <div><label>RUC / identificación</label><input data-k="ruc"></div>
+   <div><label>Agencia naviera</label><input data-k="agencia"></div>
+   <div><label>Buque / embarcación</label><input data-k="buque"></div>
+   <div><label>Bandera</label><select data-k="bandera"><option>Extranjera</option><option>Nacional</option></select></div>
+   <div><label>Actividad</label><select data-k="act"><option>Internacional</option><option>Cabotaje nacional</option><option>Pesca nacional</option></select></div>
+   <div><label>TAB (arqueo bruto)</label><input type="number" step="any" min="0" data-k="tab"></div>
+   <div><label>Eslora (m)</label><input type="number" step="any" min="0" data-k="eslora"></div>
+   <div><label>ETA</label><input type="datetime-local" data-k="eta"></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2><span class="n">2</span>Agregar servicios</h2>
+  <div class="grid">
+   <div><label>Buscar tarifa</label><input id="q" placeholder="Ej.: practicaje, contenedor, cemento…"></div>
+   <div><label>Categoría</label><select id="cat"></select></div>
+  </div>
+  <div class="tpl"><span class="sm" style="width:100%">Plantillas rápidas:</span>
+   <button data-tpl="intl">Buque internacional (atraque)</button>
+   <button data-tpl="ivm">Buque tanque IV Marías</button>
+   <button data-tpl="cab">Cabotaje en muelle marginal</button>
+  </div>
+  <div class="res" id="res"></div>
+ </div>
+
+ <div class="card">
+  <h2><span class="n">3</span>Servicios de la proforma</h2>
+  <div id="lines"></div>
+ </div>
+
+ <div class="card">
+  <h2><span class="n">4</span>Totales</h2>
+  <div class="grid">
+   <div><label>Tipo de cambio oficial (C$ por US$)</label><input type="number" step="any" min="0" data-k="tc"></div>
+   <div><label>Moneda de presentación del total</label><select data-k="mon"><option value="USD">Dólares (US$)</option><option value="NIO">Córdobas (C$)</option></select></div>
+   <div style="display:flex;align-items:end"><label class="chk"><input type="checkbox" data-k="iva"> Aplicar IVA 15 %</label></div>
+  </div>
+  <p class="sm">Las tarifas no incluyen IVA (Art. 8). Desmarque si el cliente presenta exoneración vigente.</p>
+  <table class="tot" id="tot"></table>
+  <div style="margin-top:10px"><label>Observaciones</label><textarea data-k="obs"></textarea></div>
+  <div style="margin-top:10px"><label>Elaborado por</label><input data-k="elab"></div>
+ </div>
+</section>
+
+<!-- VISTA PREVIA -->
+<section class="view" id="v-prev">
+ <div class="row" style="margin-bottom:10px;justify-content:center"><button class="btn" id="btnPrint">Imprimir / Guardar PDF</button></div>
+ <div id="printArea"></div>
+</section>
+
+<!-- TARIFAS -->
+<section class="view" id="v-tar">
+ <div class="card">
+  <h2>Pliego tarifario incorporado</h2>
+  <input id="tq" placeholder="Filtrar tarifas…">
+  <p class="sm" style="margin-top:8px">Fuentes: Res. DGTA 027-2022 (pliego APBB), Res. DGTA 022-2023 (IV Marías, vigente 01/01/2024), Res. DGTA 003-2024 (ruta Bluefields–Corn Island, vigente 11/03/2024) y la propuesta EPN de tarifas chárter del 24/06/2019 (<span class="warn">pendiente de verificar aprobación DGTA</span>).</p>
+ </div>
+ <div id="tlist"></div>
+</section>
+
+<!-- ACCESO -->
+<section class="view" id="v-acc"><div class="card"><div id="accBox"></div><p class="sm" id="verTxt" style="margin-bottom:0"></p></div></section>
+
+<!-- HISTORIAL -->
+<section class="view" id="v-his">
+ <div class="card"><h2>Cálculos guardados en este teléfono</h2><div id="hlist"></div></div>
+ <div class="card"><h2>Respaldo</h2><p class="sm" style="margin-top:0">Sus cálculos viven solo en este teléfono. Descargue un respaldo de vez en cuando; con ese archivo los recupera en otro teléfono.</p><p class="sm" id="ultBk"></p>
+  <div class="row"><button class="btn" data-bk>Descargar respaldo</button><label class="btn2" style="display:inline-block;margin:0;font-size:14px;color:var(--pri);cursor:pointer">Restaurar desde archivo<input type="file" id="rFile" accept=".json,application/json" hidden></label></div></div>
+</section>
+</main>
+
+<div class="actions">
+ <button class="btn2" id="btnNew">Nueva</button>
+ <button class="btn2" id="btnPrev">Vista previa</button>
+ <button class="btn" id="btnSave">Guardar</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const INF=1e9;
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}};
+const fmt=(v,d=2)=>Number(v||0).toLocaleString('es-NI',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fq=v=>Number(v||0).toLocaleString('es-NI',{maximumFractionDigits:2});
+const sym=c=>c==='USD'?'US$':'C$';
+const money=(v,c)=>sym(c)+' '+fmt(v);
+const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1800)}
+
+/* ===== Tipos de cálculo ===== */
+const CALC={
+ tab:{q1:'TAB',q2:'Veces / maniobras',d2:1},
+ tab_dia:{q1:'TAB',q2:'Días',d2:1},
+ esl_h:{q1:'Eslora (m)',q2:'Horas',d2:1},
+ hora:{q1:'Horas'},dia:{q1:'Días'},mes:{q1:'Meses'},
+ u:{q1:'Cantidad'},
+ tm:{q1:'TM / m³'},
+ tm_dia:{q1:'TM / m³',q2:'Días',d2:1},
+ tm_gr:{q1:'TM / m³',q2:'Días en recinto',d2:1},
+ tier:{q1:'Contenedores',q2:'Días en recinto',d2:1},
+ h1:{q1:'Horas'}
+};
+
+/* ===== Tarifas ===== */
+const R27='Res. DGTA 027-2022',R22='Res. DGTA 022-2023',R03='Res. DGTA 003-2024',P19='Propuesta EPN 2019*';
+const CATS=[
+ ['buq','Servicios al buque (actividad internacional)'],
+ ['car','Derecho de puerto a la carga – entrega directa'],
+ ['con','Contenedores: manipulación y almacenaje'],
+ ['alm','Carga general: almacenaje, protección y recargos'],
+ ['veh','Vehículos, muellaje y tuberías'],
+ ['cab','Cabotaje y pesca nacional: estadía y limpieza'],
+ ['cmu','Cabotaje nacional: muellaje, peaje y almacenaje'],
+ ['comp','Servicios complementarios y alquiler de equipos'],
+ ['ivm','Buque tanque “IV Marías” (cabotaje)'],
+ ['rci','Ruta Bluefields–Corn Island: pasaje y carga'],
+ ['chr','Alquiler chárter remolcador / motonave (propuesta 2019)']
+];
+const T=[];
+function add(cat,src,cur,rows){rows.forEach(r=>{const[id,n,rate,unit,c,x]=r;T.push(Object.assign({id,cat,src,cur,n,r:rate,unit,c},x||{}))})}
+
+add('buq',R27,'USD',[
+ ['faros','Faros y boyas',0.21,'Por TAB','tab'],
+ ['ayunav','Ayuda a la navegación sobre Río Escondido',0.20,'Por TAB','tab'],
+ ['prbar','Practicaje de barra',0.06,'Por TAB','tab'],
+ ['prrio','Practicaje de río',0.25,'Por TAB','tab'],
+ ['r25f','Recargo practicaje en horario extraordinario (Art. 25 inc. f)',20,'Por hora o fracción','hora'],
+ ['perm','Permanencia de práctico a bordo (Art. 25 inc. o)',60,'Día o fracción','dia'],
+ ['r25q','Recargo Art. 25 inciso q (maniobras solicitadas)',30,'Por hora o fracción','hora'],
+ ['amarre','Amarre y desamarre',0.04,'Por TAB','tab'],
+ ['r23','Recargo amarre y desamarre (Art. 23)',30,'Por hora o fracción','hora'],
+ ['remol','Remolcaje',200,'Por hora o fracción','hora'],
+ ['trlan','Traslado de autoridades, visita técnica (en lancha)',160,'Por hora o fracción','hora'],
+ ['r26a','Recargo Art. 26 – traslado en lancha',230,'Por hora o fracción','hora'],
+ ['trrem','Traslado de autoridades, visita técnica (en remolcador)',200,'Por hora o fracción','hora'],
+ ['r26b','Recargo Art. 26 – traslado en remolcador',250,'Por hora o fracción','hora'],
+ ['limp','Limpieza de muelle',80,'Por buque','u'],
+ ['fondeo','Derecho de fondeo en rada',0.05,'Por TAB, por día o fracción','tab_dia'],
+ ['estconv','Estadía en puesto de atraque – buque convencional',0.28,'Por metro de eslora, por hora o fracción','esl_h'],
+ ['estroro','Estadía en puesto de atraque – buque RORO',0.40,'Por metro de eslora, por hora o fracción','esl_h'],
+ ['estloro','Estadía en puesto de atraque – buque LORO',0.40,'Por metro de eslora, por hora o fracción','esl_h'],
+ ['abconv','Estadía – buque abarloado convencional (50 %)',0.14,'Por metro de eslora, por hora o fracción','esl_h'],
+ ['abroro','Estadía – buque abarloado RORO (50 %)',0.20,'Por metro de eslora, por hora o fracción','esl_h'],
+ ['abloro','Estadía – buque abarloado LORO (50 %)',0.20,'Por metro de eslora, por hora o fracción','esl_h'],
+ ['protb','Protección portuaria al buque',200,'Por buque','u'],
+ ['cocat','Cargo COCATRAM (excepto petróleo y banano)',0.05,'Por TM o m³','tm']
+]);
+add('car',R27,'USD',[
+ ['dpgi','Carga general – importación',5.80,'Por TM o m³','tm'],
+ ['dppi','Carga peligrosa – importación',11,'Por TM o m³','tm'],
+ ['dpge','Carga general – exportación',5.80,'Por TM o m³','tm'],
+ ['dppe','Carga peligrosa – exportación',9.80,'Por TM o m³','tm']
+]);
+add('con',R27,'USD',[
+ ['cll','Carga/descarga de contenedor lleno (cualquier tamaño)',95,'Por contenedor','u'],
+ ['cva','Carga/descarga de contenedor vacío (cualquier tamaño)',85,'Por contenedor','u'],
+ ['rell','Reestiba/movimiento a bordo con grúa del puerto – lleno',50,'Por contenedor','u'],
+ ['reva','Reestiba/movimiento a bordo con grúa del puerto – vacío',40,'Por contenedor','u'],
+ ['aimpll','Almacenaje – contenedores llenos de importación',null,'Por contenedor/día según tramo','tier',{tiers:[[6,10,10],[11,20,12],[21,30,32],[31,INF,50]]}],
+ ['aimpva','Almacenaje – contenedores vacíos de importación',null,'Por contenedor/día según tramo','tier',{tiers:[[6,15,12],[16,25,32],[26,INF,50]]}],
+ ['aexpem','Almacenaje – contenedores de exportación embarcados',null,'Por contenedor/día según tramo','tier',{tiers:[[6,18,12],[19,28,32],[29,INF,50]]}],
+ ['aexpre','Almacenaje – contenedores de exportación reprogramados',null,'Por contenedor/día según tramo','tier',{tiers:[[6,16,12],[17,26,32],[27,INF,50]]}],
+ ['atrans','Almacenaje – contenedores en tránsito y transbordo',null,'Por contenedor/día según tramo','tier',{tiers:[[6,14,12],[15,26,32],[27,INF,50]]}],
+ ['avac','Almacenaje – contenedores vaciados dentro del recinto',null,'Por contenedor/día según tramo','tier',{tiers:[[1,5,13],[6,10,35],[11,INF,50]]}],
+ ['aexret','Almacenaje – contenedores llenos de exportación retirados del recinto',null,'Por contenedor/día según tramo','tier',{tiers:[[1,5,13],[6,10,35],[11,INF,50]]}],
+ ['segt','Cargo por seguridad de la terminal',2,'Por contenedor lleno','u']
+]);
+add('alm',R27,'USD',[
+ ['protc','Protección portuaria a la carga',0.25,'Por TM o m³, por día o fracción','tm_dia'],
+ ['agexp','Almacenaje mercancía general de exportación',0.60,'Por TM o m³ por día (tras 10 días de gracia)','tm_gr',{g:10}],
+ ['agimp','Almacenaje mercancía general de importación',0.80,'Por TM o m³ por día (tras 5 días de gracia)','tm_gr',{g:5}],
+ ['r30e','Recargo Art. 30 inciso e',50,'Por contenedor','u'],
+ ['r30f','Recargo Art. 30 inciso f',50,'Por contenedor','u'],
+ ['r48n','Recargo Art. 48 d – mercancía peligrosa no manifestada',100,'Por contenedor','u'],
+ ['r48r','Recargo Art. 48 d – peligrosa no rotulada o mal rotulada',75,'Por contenedor','u'],
+ ['r49a','Recargo Art. 49 a – cambios en lista de exportación',100,'Por contenedor','u'],
+ ['a35','Atención a la carga en horario extraordinario (Art. 35)',20,'Por hora','hora']
+]);
+add('veh',R27,'USD',[
+ ['vlc','Vehículo liviano (convencional)',45,'Por vehículo','u'],
+ ['vpc','Vehículo pesado (convencional)',85,'Por vehículo','u'],
+ ['vlr','Vehículo liviano (Ro-Ro)',30,'Por vehículo','u'],
+ ['vpr','Vehículo pesado (Ro-Ro)',40,'Por vehículo','u'],
+ ['muimp','Derecho de muellaje – carga de importación',0.80,'Por TM o m³','tm'],
+ ['muexp','Derecho de muellaje – carga de exportación',0.50,'Por TM o m³','tm'],
+ ['tub1','Derecho de instalación de tuberías – diámetro ≤ 6 pulg.',200,'Por mes','mes'],
+ ['tub2','Derecho de instalación de tuberías – diámetro > 6 pulg.',250,'Por mes','mes']
+]);
+add('cab',R27,'NIO',[
+ ['ce20','Estadía muelle marginal – barco ≤ 20 m de eslora',150,'1.ª hora o fracción + C$ 60 c/hora adicional','h1',{r2:60}],
+ ['ce20m','Estadía muelle marginal – barco > 20 m de eslora',200,'1.ª hora o fracción + C$ 70 c/hora adicional','h1',{r2:70}],
+ ['panga','Estadía muelle marginal – panga',100,'Hora o fracción','hora'],
+ ['cl45','Limpieza de muelle – embarcación ≤ 45 m',200,'Por embarcación','u'],
+ ['cl45m','Limpieza de muelle – embarcación > 45 m',400,'Por embarcación','u'],
+ ['cl15','Limpieza de muelle, cabotaje y pesca (Art. 15)',500,'Por hora o fracción','hora'],
+ ['tl20','Estadía muelle terminal líquida – barco ≤ 20 m',150,'Por hora o fracción','hora'],
+ ['tl20m','Estadía muelle terminal líquida – barco > 20 m',180,'Por hora o fracción','hora']
+]);
+add('cmu',R27,'NIO',[
+ ['mcg','Muellaje – carga general',10,'Quintal o canasto','u'],
+ ['mpb','Muellaje – productos básicos (arroz, frijoles, aceite, azúcar, sal…)',18,'Por TM o m³','tm'],
+ ['mpa','Muellaje – piedrín, arena y bolón',35,'Por TM o m³','tm'],
+ ['mpc','Muellaje – piedra cantera, cemento',5,'Unidad','u'],
+ ['mbl','Muellaje – bloque',2,'Unidad','u'],
+ ['mhi','Muellaje – hierro',10,'Quintal','u'],
+ ['mma','Muellaje – madera aserrada',5,'Unidad','u'],
+ ['mti','Muellaje – madera en timber',2,'Pie tablar','u'],
+ ['mch','Muellaje – chatarra',120,'Por TM o m³','tm'],
+ ['mmo','Muellaje – motocicleta y mototaxi',150,'Por vehículo','u'],
+ ['mvp','Muellaje – vehículos pesados',500,'Por vehículo','u'],
+ ['mvl','Muellaje – vehículos livianos',250,'Por vehículo','u'],
+ ['mmq','Muellaje – maquinaria y equipos',800,'Por vehículo','u'],
+ ['mmar','Muellaje – mariscos',10,'Caja o bulto','u'],
+ ['mot','Muellaje – otros productos',25,'Por TM o m³','tm'],
+ ['pmt','Peaje – mototaxi',20,'Por vehículo','u'],
+ ['pvl','Peaje – vehículo liviano',25,'Por vehículo','u'],
+ ['pca','Peaje – carretón',20,'Por vehículo','u'],
+ ['ppa','Peaje – pasajero',10,'Por pasajero','u'],
+ ['acab','Almacenaje carga de cabotaje (desde el 6.º día)',30,'Por TM o m³, por día (tras 5 días de gracia)','tm_gr',{g:5}]
+]);
+add('comp',R27,'USD',[
+ ['ener','Suministro de energía eléctrica',0.65,'Por kWh','u'],
+ ['apan','Alquiler de panga',60,'Por hora o fracción','hora'],
+ ['grua','Alquiler de grúa',80,'Por hora o fracción','hora'],
+ ['mc35','Alquiler de montacargas 3.5 TM',30,'Por hora o fracción','hora'],
+ ['mc7','Alquiler de montacargas 7 TM',45,'Por hora o fracción','hora'],
+ ['trac','Alquiler de tractor',25,'Por hora o fracción','hora'],
+ ['trai','Alquiler de tráiler',20,'Por hora o fracción','hora'],
+ ['arem','Alquiler de remolcador (a opción del cliente)',200,'Por hora o fracción','hora',{src:R22}],
+ ['agua','Suministro de agua',0.50,'Por galón','u',{cur:'NIO'}]
+]);
+add('ivm',R22,'NIO',[
+ ['ivnav','Ayuda a la navegación',5.78,'Por TAB','tab'],
+ ['ivam','Amarre y desamarre (incluye medio acuático)',4.00,'Por TAB','tab'],
+ ['ivr23','Recargo amarre y desamarre (Art. 23)',549,'Por hora o fracción','hora'],
+ ['ivpb','Practicaje de barra (incluye medio acuático)',5.34,'Por TAB','tab'],
+ ['ivrp','Recargo practicaje (Art. 25 inc. f)',366,'Por hora o fracción','hora'],
+ ['ivrem','Remolcaje (atraque/desatraque en terminal líquida)',8.00,'Por TAB','tab'],
+ ['ivest','Estadía en muelle terminal líquida',180,'Por hora o fracción','hora'],
+ ['ivpr','Practicaje de río (incluye traslado del práctico)',9.15,'Por TAB','tab']
+]);
+/* Res. 003-2024 – lista de carga */
+const RCI=[['Pasaje',310,'Por persona'],['Almohadas (bulto de dos unidades)',75,'Bulto'],['Antena para casa Claro',80,'Unidad'],['Antena parabólica satelital (grande)',2000,'Unidad'],['Antena parabólica satelital (mediana)',1500,'Unidad'],['Ataúd especial',810,'Unidad'],['Ataúd estándar',500,'Unidad'],['Barril de 55 galones (lleno) – no combustible',180,'Unidad'],['Barril vacío',75,'Unidad'],['Batería para equipo industrial',230,'Unidad'],['Batería para vehículo (grande)',120,'Unidad'],['Batería para vehículo (mediana)',70,'Unidad'],['Batería para vehículo (pequeña)',45,'Unidad'],['Bicicleta grande',90,'Unidad'],['Bicicleta pequeña',75,'Unidad'],['Bidón (balde) de 5 galones (lleno)',45,'Unidad'],['Bidón (balde) de 5 galones vacío (hasta 5 unds)',30,'Paquete'],['Bolsa de cemento',60,'Unidad'],['Bolsón grande de golosina',60,'Unidad'],['Bolsón mediano de golosina',60,'Unidad'],['Cabeza de plátano/banano (grande)',40,'Unidad'],['Cabeza de plátano/banano (pequeña)',20,'Unidad'],['Caja con cajillas de huevo',50,'Caja'],['Caja de cerámica',60,'Caja'],['Caja de manzana',80,'Caja'],['Caja de uva',80,'Caja'],['Caja grande con carga',150,'Caja'],['Caja mediana con carga',75,'Caja'],['Caja pequeña con carga',45,'Caja'],['Cajilla con queso (grande)',70,'Cajilla'],['Cajilla con queso (mediana)',60,'Cajilla'],['Cajilla de gaseosa, cerveza o refresco (lleno)',50,'Cajilla'],['Cajilla de gaseosa, cerveza o refresco (vacío)',16,'Cajilla'],['Cama de madera (grande)',300,'Unidad'],['Cama de madera (pequeña)',225,'Unidad'],['Cama matrimonial',600,'Unidad'],['Cama tamaño queen o king',690,'Unidad'],['Cama unipersonal',375,'Unidad'],['Canasto grande lleno',80,'Unidad'],['Canasto grande vacío (hasta 5 unds)',50,'Paquete'],['Canasto pequeño lleno',50,'Unidad'],['Canasto pequeño vacío (hasta 5 unds)',40,'Paquete'],['Catre unipersonal o litera',150,'Unidad'],['Chineros',360,'Unidad'],['Cilindro grande lleno de oxígeno medicinal (tipo Dewall)',960,'Unidad'],['Cilindro grande vacío de oxígeno medicinal (tipo Dewall)',400,'Unidad'],['Cilindro pequeño lleno de oxígeno medicinal',130,'Unidad'],['Cilindro pequeño vacío de oxígeno medicinal',70,'Unidad'],['Cocina con horno mediana o grande',450,'Unidad'],['Cocina de mesa',75,'Unidad'],['Colchones',300,'Unidad'],['Colchonetas',75,'Unidad'],['Comedor grande (hasta 7 piezas)',900,'Juego'],['Comedor pequeño (hasta 5 piezas)',450,'Juego'],['Cómoda (cualquier tipo)',225,'Unidad'],['Computadora de escritorio',750,'Unidad'],['Cuna',350,'Unidad'],['Disco móvil',5980,'Unidad'],['Equipaje (grande)',80,'Unidad'],['Equipaje (mediano)',50,'Unidad'],['Escalera',90,'Unidad'],['Escritorio',375,'Unidad'],['Espejos de lujo (tipo pata de león)',750,'Unidad'],['Espejos sencillos (hasta 6 und)',240,'Paquete'],['Freezer (grande)',1380,'Unidad'],['Freezer (mediano)',830,'Unidad'],['Hierro',70,'Quintal'],['Inodoro',600,'Unidad'],['Juego de sofá (grande)',900,'Unidad'],['Juego de sofá (pequeño)',600,'Unidad'],['Jugueteras',150,'Unidad'],['Lámina de zinc corrugado de 6 y 12 pies',70,'Unidad'],['Lámina de zinc liso',50,'Unidad'],['Lavadora grande o mediana',830,'Unidad'],['Lavadora industrial',960,'Unidad'],['Lavadora pequeña',560,'Unidad'],['Lavamanos',560,'Unidad'],['Lingada de mecate',90,'Unidad'],['Llanta para automóvil',90,'Unidad'],['Llanta para bicicleta/motocicleta',30,'Unidad'],['Llanta para bicicleta/motocicleta (hasta 6 unds)',150,'Paquete'],['Llanta para camioneta',105,'Unidad'],['Madera aserrada',6,'Pie cúbico'],['Máquina de coser',375,'Unidad'],['Mesas de espejos',90,'Unidad'],['Motocicleta (tipo montañera)',1050,'Unidad'],['Motocicleta (tipo scooter o mensajera)',950,'Unidad'],['Motor (block)',1495,'Unidad'],['Motor fuera de borda de 101 a 200 hp',960,'Unidad'],['Motor fuera de borda de 200 hp a más',1380,'Unidad'],['Motor fuera de borda hasta 100 hp',830,'Unidad'],['Paca de peluche',75,'Unidad'],['Paca de ropa',120,'Unidad'],['Paquete de persiana',90,'Paquete'],['Puerta de madera o metálica',140,'Unidad'],['Puerta de vidrio',250,'Unidad'],['Refrigeradora grande',900,'Unidad'],['Refrigeradora mediana',600,'Unidad'],['Reglas para nasa en rollo',40,'Cada uno'],['Rollo de alfombra',150,'Cada uno'],['Ropero de dos cuerpos',600,'Unidad'],['Ropero de tres cuerpos',900,'Unidad'],['Rótulo publicitario (grande)',1700,'Unidad'],['Rótulo publicitario (mediano)',800,'Unidad'],['Rótulo publicitario (pequeño)',500,'Unidad'],['Saco pequeño (hasta 25 libras)',40,'Unidad'],['Saco quintalero',60,'Unidad'],['Sacos rojo grande',80,'Unidad'],['Silla plástica',15,'Unidad'],['Silla tipo abuelita',110,'Unidad'],['Silla tipo abuelita (hasta 5 piezas)',600,'Juego'],['Silla tipo mimbre (hasta 5 piezas)',900,'Juego'],['Televisor, equipo de sonido',375,'Unidad'],['Termo marisquero (vacío)',350,'Unidad'],['Termo marisquero de 1000 libras (lleno)',1380,'Unidad'],['Termo mediano (lleno)',350,'Unidad'],['Termo mediano (vacío)',70,'Unidad'],['Termo pequeño (lleno)',150,'Unidad'],['Termo pequeño (vacío)',50,'Unidad'],['Tocador',375,'Unidad'],['Tubo galvanizado de 1 1/4 a 4 pulgadas',50,'Unidad'],['Tubo galvanizado de 1/4 a 1 pulgada',40,'Unidad'],['Tubo PVC de 1 1/4 a 4 pulgadas',40,'Unidad'],['Tubo PVC de 1/4 a 1 pulgada',20,'Unidad'],['Ventana tipo francesa armada (grande)',690,'Unidad'],['Ventana tipo francesa armada (mediana)',460,'Unidad'],['Ventana tipo francesa armada (pequeña)',230,'Unidad']];
+add('rci',R03,'NIO',RCI.map((x,i)=>['rci'+i,x[0],x[1],x[2],'u']));
+add('chr',P19,'USD',[
+ ['ch1','Remolcador (Pedro Araúz Palacios / Jimmy Boppel) – horario ordinario, servicio ≥ 5 h',1250,'Día o fracción','dia'],
+ ['ch2','Remolcador – horario extraordinario, primera hora',290,'Hora o fracción','hora'],
+ ['ch3','Remolcador – extraordinario desde 2.ª hora, o servicio ≤ 4 h en horario ordinario',180,'Hora o fracción','hora'],
+ ['ch4','Tiempo muerto de remolcador (carga y descarga)',100,'Hora o fracción','hora'],
+ ['ch5','Motonave (Hilario Sánchez / Río Escondido) – horario ordinario, servicio ≥ 5 h',1650,'Día o fracción','dia'],
+ ['ch6','Motonave – horario extraordinario, primera hora',330,'Hora o fracción','hora'],
+ ['ch7','Motonave – extraordinario desde 2.ª hora, o servicio ≤ 4 h en horario ordinario',220,'Hora o fracción','hora'],
+ ['ch8','Tiempo muerto de motonave (carga y descarga)',120,'Hora o fracción','hora'],
+ ['ch9','Remolcador para atención de embarcación en Puerto Cabezas (3 días calendario)',6000,'Global','u'],
+ ['ch10','Remolcador para atención de embarcación en Corn Island (2 días calendario)',3500,'Global','u'],
+ ['ch11','Alquiler de plana',400,'Día o fracción','dia']
+]);
+const TT=Object.fromEntries(T.map(t=>[t.id,t]));
+
+function rateTxt(t){const S=sym(t.cur);
+ if(t.c==='tier')return 'Escalonada: '+t.tiers.map(([a,b,r])=>`días ${a}${b>=INF?'+':'–'+b} ${S}${fmt(r)}`).join(' · ');
+ if(t.c==='h1')return `${S} ${fmt(t.r)} 1.ª h + ${S} ${fmt(t.r2)} c/h adic.`;
+ return `${S} ${fmt(t.r)}`}
+
+function calc(l){const t=TT[l.tid];const ce=Math.ceil;const q1=Math.max(0,+l.q1||0);let q2=(l.q2===undefined||l.q2==='')?1:Math.max(0,+l.q2||0);const S=sym(t.cur),R=`${S}${fmt(t.r)}`;let a=0,d='';
+ const minT=v=>v>0?Math.max(1,v):0;
+ switch(t.c){
+  case'tab':a=t.r*q1*q2;d=`${fq(q1)} TAB × ${fq(q2)} × ${R}`;break;
+  case'tab_dia':q2=ce(q2);a=t.r*q1*q2;d=`${fq(q1)} TAB × ${q2} día(s) × ${R}`;break;
+  case'esl_h':q2=ce(q2);a=t.r*q1*q2;d=`${fq(q1)} m × ${q2} h × ${R}`;break;
+  case'hora':case'dia':case'mes':{const n=ce(q1);a=t.r*n;d=`${n} ${t.c==='hora'?'h':t.c==='dia'?'día(s)':'mes(es)'} × ${R}`;break}
+  case'u':a=t.r*q1;d=`${fq(q1)} × ${R}`;break;
+  case'tm':{const m=minT(q1);a=t.r*m;d=`${fq(m)} TM/m³ × ${R}${q1>0&&q1<1?' (mín. 1)':''}`;break}
+  case'tm_dia':{const m=minT(q1);q2=ce(q2);a=t.r*m*q2;d=`${fq(m)} TM/m³ × ${q2} día(s) × ${R}`;break}
+  case'tm_gr':{const m=minT(q1);const dd=Math.max(0,ce(q2)-t.g);a=t.r*m*dd;d=`${fq(m)} TM/m³ × ${dd} día(s) cobrable(s) (gracia ${t.g}) × ${R}`;break}
+  case'tier':{const dd=Math.min(3650,ce(q2));let per=0;for(let x=1;x<=dd;x++){const z=t.tiers.find(z=>x>=z[0]&&x<=z[1]);if(z)per+=z[2]}a=per*q1;d=`${fq(q1)} cont. × ${dd} días → ${S}${fmt(per)} c/u`;break}
+  case'h1':{const n=ce(q1);a=n>0?t.r+(n-1)*t.r2:0;d=`${n} h: ${S}${fmt(t.r)} + ${Math.max(0,n-1)} × ${S}${fmt(t.r2)}`;break}
+ }
+ return{a:Math.round(a*100)/100,d}}
+
+/* ===== Estado ===== */
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function newPF(){return{id:newId(),ref:'',fecha:today(),cliente:'',ruc:'',agencia:'',buque:'',bandera:'Extranjera',act:'Internacional',tab:'',eslora:'',eta:'',obs:'',elab:ls.get('epn_elab',''),tc:ls.get('epn_tc',36.6243),iva:true,mon:'USD',lines:[]}}
+let P=newPF();
+
+function bindMeta(){$$('[data-k]').forEach(el=>{const k=el.dataset.k;if(el.type==='checkbox')el.checked=!!P[k];else el.value=P[k]??''})}
+document.addEventListener('input',e=>{const el=e.target;if(!el.dataset||!el.dataset.k)return;const k=el.dataset.k;P[k]=el.type==='checkbox'?el.checked:el.value;
+ if(k==='tc')ls.set('epn_tc',P.tc);if(k==='elab')ls.set('epn_elab',P.elab);
+ if(k==='tab'||k==='eslora'){let ch=false;P.lines.forEach(l=>{const c=TT[l.tid].c;if(l.auto&&((k==='tab'&&(c==='tab'||c==='tab_dia'))||(k==='eslora'&&c==='esl_h'))){l.q1=+P[k]||0;ch=true}});if(ch)renderLines()}
+ updTot()});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.k){P[el.dataset.k]=el.type==='checkbox'?el.checked:el.value;updTot()}});
+
+/* ===== Catálogo ===== */
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+$('#cat').innerHTML='<option value="">Todas las categorías</option>'+CATS.map(([k,n])=>`<option value="${k}">${n}</option>`).join('');
+$('#cat').value='buq';
+function renderRes(){const q=norm($('#q').value.trim()),c=$('#cat').value;
+ let r=T.filter(t=>(!c||t.cat===c)&&(!q||norm(t.n+' '+t.unit).includes(q)));
+ $('#res').innerHTML=r.length?r.slice(0,60).map(t=>`<div class="ri"><div><b>${esc(t.n)}</b><div class="sm">${rateTxt(t)} · ${esc(t.unit)} · <span class="src">${t.src}</span></div></div><button data-add="${t.id}" aria-label="Agregar">+</button></div>`).join(''):'<div class="ri mut">Sin resultados</div>'}
+$('#q').oninput=renderRes;$('#cat').onchange=renderRes;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b){addLine(b.dataset.add)}});
+
+function addLine(id,o,quiet){const t=TT[id],c=CALC[t.c];const l={tid:id,q1:1,q2:c.q2?c.d2:'',auto:false};
+ if(t.c==='tab'||t.c==='tab_dia'){l.q1=+P.tab||0;l.auto=true}
+ if(t.c==='esl_h'){l.q1=+P.eslora||0;l.auto=true}
+ Object.assign(l,o||{});P.lines.push(l);renderLines();if(!quiet)toast('Agregado: '+t.n)}
+
+const TPL={
+ intl:[['faros'],['prbar',{q2:2}],['amarre'],['remol',{q1:2}],['estconv',{q2:24}],['limp'],['protb']],
+ ivm:[['ivnav'],['ivam'],['ivpb'],['ivrem'],['ivest',{q1:24}],['ivpr']],
+ cab:[['ce20m',{q1:4}],['cl45']]
+};
+$$('[data-tpl]').forEach(b=>b.onclick=()=>{TPL[b.dataset.tpl].forEach(([id,o])=>addLine(id,o,true));toast('Plantilla agregada; ajuste cantidades')});
+
+/* ===== Líneas ===== */
+function renderLines(){const box=$('#lines');
+ if(!P.lines.length){box.innerHTML='<p class="mut">Aún no hay servicios. Agréguelos desde el paso 2 o use una plantilla.</p>';updTot();return}
+ box.innerHTML=P.lines.map((l,i)=>{const t=TT[l.tid],c=CALC[t.c],r=calc(l);return `<div class="ln" data-i="${i}">
+  <div class="lnh"><div><b>${esc(t.n)}</b><div class="sm">${rateTxt(t)} · ${esc(t.unit)} · <span class="src">${t.src}</span></div></div><button class="x" data-del="${i}" aria-label="Quitar">✕</button></div>
+  <div class="lnq"><div><label>${c.q1}</label><input type="number" step="any" min="0" data-q="q1" value="${l.q1}"></div>
+  ${c.q2?`<div><label>${c.q2}</label><input type="number" step="any" min="0" data-q="q2" value="${l.q2}"></div>`:'<div></div>'}
+  <div class="amt"><label>Importe</label><b data-amt>${money(r.a,t.cur)}</b><div class="sm" data-det>${esc(r.d)}</div></div></div></div>`}).join('');
+ updTot()}
+$('#lines').addEventListener('input',e=>{const inp=e.target.closest('[data-q]');if(!inp)return;e.stopPropagation();const box=inp.closest('.ln'),l=P.lines[+box.dataset.i];l[inp.dataset.q]=inp.value;if(inp.dataset.q==='q1')l.auto=false;const r=calc(l);box.querySelector('[data-amt]').textContent=money(r.a,TT[l.tid].cur);box.querySelector('[data-det]').textContent=r.d;updTot()});
+$('#lines').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){P.lines.splice(+b.dataset.del,1);renderLines()}});
+
+/* ===== Totales ===== */
+function totals(){let u=0,n=0;P.lines.forEach(l=>{const a=calc(l).a;TT[l.tid].cur==='USD'?u+=a:n+=a});
+ const tc=+P.tc||0,iv=P.iva?0.15:0,mon=P.mon;
+ const sub=mon==='USD'?u+(tc?n/tc:0):n+u*tc;
+ return{u,n,tc,iv,mon,sub,iva:sub*iv,total:sub*(1+iv)}}
+function updTot(){const t=totals();const other=t.mon==='USD'?t.total*t.tc:(t.tc?t.total/t.tc:0);
+ $('#tot').innerHTML=`<tr><td>Servicios en dólares</td><td>${money(t.u,'USD')}</td></tr>
+ <tr><td>Servicios en córdobas</td><td>${money(t.n,'NIO')}</td></tr>
+ <tr><td>Subtotal consolidado (${t.mon==='USD'?'US$':'C$'}, TC ${fq(t.tc)})</td><td>${money(t.sub,t.mon)}</td></tr>
+ <tr><td>IVA ${t.iv?'15 %':'(exonerado / no aplicado)'}</td><td>${money(t.iva,t.mon)}</td></tr>
+ <tr class="big"><td>TOTAL ESTIMADO</td><td>${money(t.total,t.mon)}</td></tr>
+ <tr><td class="sm">Equivalente</td><td class="sm">${money(other,t.mon==='USD'?'NIO':'USD')}</td></tr>`}
+
+/* ===== Documento ===== */
+function addDays(s,n){const d=new Date(s+'T12:00');d.setDate(d.getDate()+(+n||0));return d.toLocaleDateString('es-NI')}
+function buildDoc(){const t=totals(),logo=LOGO;let i=0,rows='';
+ CATS.forEach(([k,name])=>{const ls_=P.lines.filter(l=>TT[l.tid].cat===k);if(!ls_.length)return;rows+=`<tr class="g"><td colspan="5">${name}</td></tr>`;
+  ls_.forEach(l=>{const tr=TT[l.tid],r=calc(l);rows+=`<tr><td>${++i}</td><td>${esc(tr.n)}<div style="color:#666;font-size:10.5px">${esc(tr.unit)} · ${tr.src}</div></td><td>${esc(r.d)}</td><td class="r">${tr.c==='tier'||tr.c==='h1'?'Ver cálculo':sym(tr.cur)+' '+fmt(tr.r)}</td><td class="r">${money(r.a,tr.cur)}</td></tr>`})});
+ const hasP19=P.lines.some(l=>TT[l.tid].src===P19);
+ $('#printArea').innerHTML=`<div class="doc">
+ <div class="dh">${logo?`<img src="${logo}" alt="">`:''}<div class="t"><b>EMPRESA PORTUARIA NACIONAL</b><div>Administración Portuaria Bluff–Bluefields</div><div>Puerto El Bluff, Bluefields, RACCS, Nicaragua</div></div>
+  <div class="num">Fecha: ${P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):''}<br>Elaborado: ${new Date().toLocaleTimeString('es-NI',{hour:'2-digit',minute:'2-digit'})}${P.ref?`<br>Ref.: ${esc(P.ref)}`:''}</div></div>
+ <div class="dtitle">MEMORIA DE CÁLCULO – ESTIMACIÓN DE SERVICIOS PORTUARIOS</div>
+ <div class="dd"><div><span>Cliente:</span> ${esc(P.cliente)}</div><div><span>RUC/ID:</span> ${esc(P.ruc)}</div><div><span>Agencia naviera:</span> ${esc(P.agencia)}</div>
+  <div><span>Buque:</span> ${esc(P.buque)}</div><div><span>Bandera:</span> ${esc(P.bandera)}</div><div><span>Actividad:</span> ${esc(P.act)}</div>
+  <div><span>TAB:</span> ${P.tab?fq(P.tab):''}</div><div><span>Eslora:</span> ${P.eslora?fq(P.eslora)+' m':''}</div><div><span>ETA:</span> ${P.eta?new Date(P.eta).toLocaleString('es-NI'):''}</div></div>
+ <table><thead><tr><th>#</th><th>Servicio</th><th>Cálculo</th><th class="r">Tarifa</th><th class="r">Importe</th></tr></thead><tbody>${rows||'<tr><td colspan="5">Sin servicios</td></tr>'}</tbody></table>
+ <table class="dtot"><tr><td>Servicios en US$</td><td class="r">${money(t.u,'USD')}</td></tr><tr><td>Servicios en C$</td><td class="r">${money(t.n,'NIO')}</td></tr>
+  <tr><td>Subtotal (TC ${fq(t.tc)})</td><td class="r">${money(t.sub,t.mon)}</td></tr><tr><td>IVA ${t.iv?'15 %':'(exonerado)'}</td><td class="r">${money(t.iva,t.mon)}</td></tr>
+  <tr class="big"><td>TOTAL ESTIMADO</td><td class="r">${money(t.total,t.mon)}</td></tr></table>
+ ${P.obs?`<p><b>Observaciones:</b> ${esc(P.obs)}</p>`:''}
+ <div class="cond"><b>Condiciones</b><ol>
+  <li>Tarifas máximas autorizadas por la DGTA. No incluyen IVA salvo indicación (Art. 8, Res. DGTA 027-2022).</li>
+  <li>Documento de estimación preliminar, sin valor de factura ni de proforma oficial. Una vez pre aprobado, el cobro se emite en el sistema institucional de la EPN y se liquida según la operación real (Art. 4).</li>
+  <li>El depósito previo debe efectuarse con un mínimo de 24 h y máximo de 48 h antes del ETA, en días y horario hábil (Art. 4).</li>
+  <li>Se aceptan pagos en efectivo, cheque certificado o transferencia bancaria. Navieras nacionales y usuarios nacionales pueden pagar en córdobas al tipo de cambio oficial del día del pago (Arts. 4 y 5).</li>
+  <li>Los servicios cobrados por hora o día se cobran por fracción. Mínimo de cobro: 1 TM o 1 m³ (Art. 6).</li>
+  <li>Reclamos por facturación: dentro de 4 días hábiles desde la notificación de la factura (Art. 10).</li>
+  ${hasP19?'<li>* Tarifas de alquiler chárter según propuesta EPN de junio 2019; sujetas a confirmación de su autorización vigente.</li>':''}
+ </ol></div>
+ <div class="firmas"><div>Elaborado por<br>${esc(P.elab)}</div><div>Revisado / Autorizado</div><div>Recibido – Cliente</div></div></div>`}
+$('#btnPrint').onclick=()=>{buildDoc();window.print()};
+
+/* ===== Navegación ===== */
+function show(v){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his')renderHis();if(v==='acc')renderAcc();window.scrollTo(0,0)}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+$('#btnPrev').onclick=()=>show('prev');
+
+/* ===== Tarifas ===== */
+function renderTar(){const q=norm($('#tq').value.trim()),st=soloTar();$('#tlist').innerHTML=CATS.map(([k,n])=>{if(st&&k!=='rci')return'';const r=T.filter(t=>t.cat===k&&(!q||norm(t.n).includes(q)));if(!r.length)return'';
+ return `<div class="card"><h2>${n}</h2><div style="overflow-x:auto"><table class="tt"><tr><th>Servicio</th><th>Unidad</th><th>Tarifa</th><th></th></tr>${r.map(t=>`<tr><td>${esc(t.n)}<div class="sm"><span class="src">${t.src}</span></div></td><td>${esc(t.unit)}</td><td class="r">${rateTxt(t).replace(/ · /g,'<br>')}</td><td>${st?'':`<button class="btn2" data-add="${t.id}">+</button>`}</td></tr>`).join('')}</table></div></div>`}).join('')}
+$('#tq').oninput=renderTar;
+
+/* ===== Guardar / historial ===== */
+$('#btnSave').onclick=()=>{const arr=ls.get('epn_pf',[]);if(!P.id)P.id=newId();const i=arr.findIndex(x=>x.id===P.id);const t=totals();P.saved=new Date().toISOString();P._tot=money(t.total,t.mon);
+ const copy=JSON.parse(JSON.stringify(P));if(i>=0)arr[i]=copy;else arr.unshift(copy);if(arr.length>300)arr.length=300;
+ toast(ls.set('epn_pf',arr)?'Cálculo guardado en este teléfono':'No se pudo guardar en este navegador')};
+$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar una proforma nueva? Lo no guardado se perderá.'))return;P=newPF();bindMeta();renderLines();show('pf')};
+function renderHis(){const ub=$('#ultBk');if(ub){const u=ls.get('epn_ultbk',null);ub.textContent=u?'Último respaldo: '+new Date(u+'T12:00').toLocaleDateString('es-NI'):'Todavía no ha descargado un respaldo.'}
+const arr=ls.get('epn_pf',[]);arr.forEach(x=>{if(!x.id)x.id=newId()});$('#hlist').innerHTML=arr.length?arr.map((p,i)=>`<div class="hi"><div><b>${esc(p.cliente||p.buque||'Sin nombre')}</b>${p.ref?' · '+esc(p.ref):''}<div class="sm">${esc(p.buque||'')} · ${p.fecha} · ${esc(p._tot||'')}</div></div><div class="row"><button class="btn2" data-open="${i}">Abrir</button><button class="btn2" data-dup="${i}">Duplicar</button><button class="btnd" data-rm="${i}">Eliminar</button></div></div>`).join(''):'<p class="mut">No hay proformas guardadas.</p>'}
+$('#hlist').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const arr=ls.get('epn_pf',[]);
+ if(b.dataset.open){P=JSON.parse(JSON.stringify(arr[+b.dataset.open]));bindMeta();renderLines();show('pf')}
+ if(b.dataset.dup){P=JSON.parse(JSON.stringify(arr[+b.dataset.dup]));P.id=newId();P.fecha=today();bindMeta();renderLines();show('pf');toast('Copia creada')}
+ if(b.dataset.rm&&confirm('¿Eliminar esta proforma?')){arr.splice(+b.dataset.rm,1);ls.set('epn_pf',arr);renderHis()}});
+
+const LOGO='data:image/jpeg;base64,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';
+/* ===== Logo (oficial, incorporado) ===== */
+function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Portuaria Nacional">`;$('#logoBox').classList.add('has')}
+
+/* ===== Acceso propio de la app =====
+   El propietario (o quien tenga la clave maestra) crea códigos por teléfono.
+   Cada código va ligado al ID del teléfono del colega; puede tener fecha o ser indefinido.
+   Los datos de cada colega se guardan solo en su propio teléfono. */
+const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
+const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
+const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
+const APP_VER='2026.10.30-1';
+const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
+const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
+const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
+/* Retiros fijos (además de los que el propietario marca desde la app): ID del código */
+const REVOCADOS=[];
+let pubKey=null,LIC=null,OWNER=false,ISOWN=false,MK=null,GATE='cargando',DB=null,UID=null,DL=null,REV=new Set(ls.get(REV_KEY,[])),COL=ls.get(COL_KEY,{});
+const b64uToBytes=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s);return Uint8Array.from(b,c=>c.charCodeAt(0))};
+const b64u=b=>{let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+function devId(){let d=null;try{d=localStorage.getItem('epn_dev')}catch(e){}if(!d||!/^[A-Z0-9]{8}$/.test(d)){const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789",r=crypto.getRandomValues(new Uint8Array(8));d=[...r].map(x=>A[x%A.length]).join("");try{localStorage.setItem('epn_dev',d)}catch(e){}}return d}
+const devFmt=d=>d.slice(0,4)+'-'+d.slice(4);
+const normDev=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+async function verificar(code){try{
+  code=String(code||'').replace(/\s+/g,'');const k=code.lastIndexOf('#');if(k>=0)code=code.slice(k+1);
+  try{code=decodeURIComponent(code)}catch(e){}
+  const [p,sg]=code.split('.');if(!p||!sg)return null;
+  pubKey=pubKey||await crypto.subtle.importKey('jwk',{...PUB,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+  if(!await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},pubKey,b64uToBytes(sg),new TextEncoder().encode(p)))return null;
+  const j=JSON.parse(new TextDecoder().decode(b64uToBytes(p)));
+  if(!j||j.a!==APP_ID)return null;
+  if(REVOCADOS.includes(j.i)||REV.has(j.i))return{rev:true,n:j.n||''};
+  if(j.d!==devId())return{dev:true,n:j.n||''};
+  return{n:j.n||'',e:j.e||'',i:j.i||'',p:j.p||'',code}}catch(e){return null}}
+async function firmar(payload){
+  const key=await crypto.subtle.importKey('jwk',{...PUB,d:MK,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
+  const p=b64u(new TextEncoder().encode(JSON.stringify(payload)));
+  const sg=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},key,new TextEncoder().encode(p));
+  return p+'.'+b64u(new Uint8Array(sg))}
+async function mkValida(d){try{if(!/^[A-Za-z0-9_-]{40,50}$/.test(d))return false;const old=MK;MK=d;const c=await firmar({t:1});MK=old;
+  const [p,sg]=c.split('.');pubKey=pubKey||await crypto.subtle.importKey('jwk',{...PUB,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+  return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},pubKey,b64uToBytes(sg),new TextEncoder().encode(p))}catch(e){return false}}
+const leerLic=()=>ls.get(LIC_KEY,null);
+function fechaRef(){const l=leerLic(),h=today();const v=l&&l.visto&&l.visto>h?l.visto:h;if(l&&l.visto!==v){l.visto=v;ls.set(LIC_KEY,l)}return v}
+const vigente=l=>!!(l&&(!l.e||l.e>=fechaRef()));
+function activar(p){const prev=leerLic()||{};ls.set(LIC_KEY,{n:p.n,e:p.e,i:p.i,p:p.p,code:p.code,visto:prev.visto&&prev.visto>today()?prev.visto:today()});LIC=p}
+const fLarga=s=>s?new Date(s+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'long',year:'numeric'}):'—';
+const diasA=s=>Math.round((new Date(s+'T12:00')-new Date(fechaRef()+'T12:00'))/864e5);
+const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+function copiar(t,ok){try{navigator.clipboard.writeText(t).then(()=>toast(ok),()=>toast('Seleccione el texto y cópielo'))}catch(e){toast('Seleccione el texto y cópielo')}}
+
+function applyGate(){
+  const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
+  $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';
+  const st=!!(ok&&soloTar());document.body.classList.toggle('solo-tar',st);
+  if(st&&!document.querySelector('#v-tar.on,#v-acc.on'))show('tar');
+  if(ok){$('#aviso').innerHTML=(!OWNER&&LIC&&LIC.e&&diasA(LIC.e)<=7)?`<div class="notice"><b>Su acceso vence ${diasA(LIC.e)===0?'hoy':'en '+diasA(LIC.e)+' día(s)'}</b> (${fLarga(LIC.e)}). Pida la renovación y cargue el código en “Mi acceso”.</div>`:'';return}
+  const venc=GATE==='vencido',ret=GATE==='retirado';
+  $('#gate').innerHTML=GATE==='cargando'?'<p class="mut">Verificando acceso…</p>':`<div class="card">
+   <div style="text-align:center"><img src="${LOGO}" alt="Empresa Portuaria Nacional" style="width:220px;max-width:80%"></div>
+   <h2>${ret?'Acceso retirado':venc?'Acceso vencido':'Active su acceso'}</h2>
+   <p>${ret?'El administrador retiró el acceso de este teléfono. Sus cálculos guardados siguen aquí.':venc?`Su acceso venció el <b>${fLarga(LIC.e)}</b>. Sus cálculos guardados siguen en este teléfono. Pida un código nuevo.`:'Para usar la app necesita un código de acceso. Envíe el ID de este teléfono a quien administra la app y pegue aquí el código que le devuelva.'}</p>
+   <div class="card" style="background:var(--soft)"><div class="sm">ID de este teléfono</div><div class="devid">${devFmt(devId())}</div><button type="button" class="btn2" data-copyid style="margin-top:6px">Copiar ID</button></div>
+   <form id="fCode"><label for="codeIn">Código de acceso</label><textarea id="codeIn" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+   <div class="msg-bad" style="margin-top:6px"></div>
+   <div class="row" style="justify-content:flex-end;margin-top:10px"><a class="btn2" style="text-decoration:none;padding:9px 14px;border-radius:8px" href="https://wa.me/?text=${encodeURIComponent('Hola, solicito acceso a la app Memoria de Cálculo · Servicios Portuarios APBB. El ID de mi teléfono es: '+devFmt(devId()))}" target="_blank" rel="noopener">Pedir acceso por WhatsApp</a><button class="btn" type="submit">Activar</button></div></form>
+   ${hayHist()?`<div class="row" style="margin-top:12px;justify-content:space-between"><span class="sm">Puede descargar un respaldo de sus cálculos.</span><button class="btn2" data-bk>Descargar respaldo</button></div>`:''}
+   <details style="margin-top:14px"><summary class="sm">Soy el administrador</summary><form id="fMK" style="margin-top:8px"><label>Clave maestra</label><input id="mkIn" autocomplete="off" spellcheck="false"><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Entrar</button></div></form></details></div>`}
+async function probarCodigo(txt,box){const p=await verificar(txt);
+  if(!p){box.textContent='Código no válido para esta app. Revise que lo pegó completo.';return}
+  if(p.rev){box.textContent='Este código fue retirado por el administrador.';return}
+  if(p.dev){box.textContent='Este código fue generado para otro teléfono. Envíe el ID que aparece en pantalla.';return}
+  if(p.e&&p.e<fechaRef()){box.textContent='Este código ya venció ('+fLarga(p.e)+'). Pida uno nuevo.';return}
+  activar(p);GATE='ok';applyGate();renderAcc();toast(p.e?'Acceso activo hasta el '+fLarga(p.e):'Acceso activado sin vencimiento')}
+async function guardarMK(d,box){d=String(d||'').trim();if(!await mkValida(d)){box.textContent='Clave maestra incorrecta.';return}
+  MK=d;ls.set(MK_KEY,d);if(DB&&UID){try{await DB.doc('data/users/'+UID+'/privado/clave').set({mk:d})}catch(e){}}
+  OWNER=true;applyGate();show('acc');toast('Modo administrador activo en este teléfono')}
+document.addEventListener('submit',async e=>{const f=e.target;if(!['fCode','fRenov','fMK','fGen'].includes(f.id))return;e.preventDefault();
+  const box=f.querySelector('.msg-bad');if(box)box.textContent='';
+  if(f.id==='fMK')return guardarMK(f.querySelector('input').value,box);
+  if(f.id==='fGen')return generar(f);
+  await probarCodigo(f.querySelector('textarea').value,box)});
+document.addEventListener('click',e=>{const t=e.target.closest('button,a');if(!t)return;
+  if(t.hasAttribute('data-copyid'))copiar(devFmt(devId()),'ID copiado');
+  if(t.hasAttribute('data-bk'))respaldo();
+  if(t.hasAttribute('data-copyrev'))copiar(JSON.stringify({ids:[...REV]}),'Texto copiado');
+  if(t.id==='bUpd')location.reload();
+  if(t.dataset.cc)copiar(COL[t.dataset.cc].code,'Código copiado');
+  if(t.dataset.cm)copiar(mensaje(COL[t.dataset.cm]),'Mensaje copiado. Péguelo en WhatsApp.');
+  if(t.dataset.ren)prefill(COL[t.dataset.ren]);
+  if(t.dataset.rv)toggleRev(t.dataset.rv);
+  if(t.dataset.delc){if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Toque de nuevo';return}delete COL[t.dataset.delc];guardarCol();renderAcc()}
+  if(t.id==='mkOut'){MK=null;ls.set(MK_KEY,null);try{localStorage.removeItem(MK_KEY)}catch(x){}OWNER=ISOWN;applyGate();renderAcc();toast('Clave maestra quitada de este teléfono')}
+});
+
+/* --- Panel del administrador --- */
+function estadoCol(c){if(REV.has(c.i))return['Retirado','bad'];if(!c.e)return['Indefinido','ok'];const r=diasA(c.e);return r<0?['Vencido','bad']:r<=7?['Vence en '+r+' d','warnc']:['Activo','ok']}
+function mensaje(c){return `Hola ${c.n}, este es tu acceso a la app *Memoria de Cálculo · Servicios Portuarios APBB*.
+
+1. Abrí la app: ${APP_URL}
+2. Pegá este código en la pantalla de activación:
+${c.code}
+
+Permiso: ${PERFILES[c.p||'']}. Acceso: ${c.e?'vence el '+fLarga(c.e):'sin vencimiento'}. El código solo funciona en tu teléfono (ID ${devFmt(c.d)}).
+Tus cálculos se guardan solo en tu teléfono; descargá un respaldo de vez en cuando desde Historial.`}
+function guardarCol(){ls.set(COL_KEY,COL);if(DB&&UID){try{DB.doc('data/users/'+UID+'/privado/colegas').set({lista:JSON.stringify(COL)})}catch(e){}}}
+async function generar(f){const box=f.querySelector('.msg-bad');
+  const n=$('#gN').value.trim(),d=normDev($('#gD').value),pl=$('#gP').value,pr=$('#gR').value;let e='';
+  if(!n){box.textContent='Escriba el nombre del colega.';return}
+  if(!/^[A-Z0-9]{8}$/.test(d)){box.textContent='El ID del teléfono tiene 8 letras o números (ej.: AV2D-VGC2).';return}
+  if(pl==='f'){e=$('#gF').value;if(!e||e<today()){box.textContent='Elija una fecha futura.';return}}else if(pl!=='i')e=addD(today(),+pl);
+  const prev=Object.values(COL).find(c=>c.d===d);const i=newId();
+  let code;try{code=await firmar({v:1,a:APP_ID,n,d,i,...(e?{e}:{}),...(pr?{p:pr}:{})})}catch(x){box.textContent='No se pudo firmar el código en este navegador.';return}
+  if(prev&&prev.i!==i)delete COL[prev.i];
+  COL[i]={i,n,d,e,p:pr,code,creado:today()};guardarCol();f.reset();$('#gFwrap').hidden=true;renderAcc();
+  const c=COL[i];$('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Código para ${esc(n)}</b> · ${e?'vence '+fLarga(e):'indefinido'} · ${PERFILES[pr]}<div class="codebox">${esc(code)}</div><div class="row"><button class="btn" data-cm="${i}">Copiar mensaje para WhatsApp</button><button class="btn2" data-cc="${i}">Copiar solo el código</button></div></div>`;
+  $('#genOut').scrollIntoView({behavior:'smooth',block:'center'})}
+function prefill(c){$('#gN').value=c.n;$('#gD').value=devFmt(c.d);$('#gR').value=c.p||'';$('#gN').scrollIntoView({behavior:'smooth',block:'center'});toast('Elija el plazo y genere el código renovado')}
+async function toggleRev(i){if(REV.has(i))REV.delete(i);else REV.add(i);ls.set(REV_KEY,[...REV]);
+  if(DB){try{await DB.doc('config/revocados').set({ids:[...REV]});toast(REV.has(i)?'Acceso retirado':'Acceso restituido')}catch(e){toast('Guardado en este teléfono; no se pudo publicar el retiro')}}
+  else{renderAcc();mostrarListaRev();return}renderAcc()}
+function mostrarListaRev(){const txt=JSON.stringify({ids:[...REV]});
+  $('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Falta un paso para que el cambio llegue a los teléfonos</b>
+  <p class="sm">En su GitHub abra el archivo <b>revocados.json</b>, toque el lápiz (Editar), reemplace todo su contenido por este texto y guarde (Commit changes). Cada teléfono lo recibe la próxima vez que tenga señal.</p>
+  <div class="codebox">${esc(txt)}</div><button class="btn" data-copyrev>Copiar texto</button></div>`;
+  $('#genOut').scrollIntoView({behavior:'smooth',block:'center'})}
+function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'')},0);
+  if(!OWNER){$('#accBox').innerHTML=LIC?`<div class="facts"><div><span>A nombre de</span><b>${esc(LIC.n||'—')}</b></div><div><span>Vence</span><b>${LIC.e?fLarga(LIC.e):'Sin vencimiento'}</b></div><div><span>Permiso</span><b>${PERFILES[LIC.p||'']}</b></div><div><span>ID del teléfono</span><b>${devFmt(devId())}</b></div></div>
+   <form id="fRenov" style="margin-top:12px"><label>Cargar código nuevo (renovación)</label><textarea rows="2" autocomplete="off" spellcheck="false"></textarea><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Activar código</button></div></form>`:'<p class="mut">Sin acceso activo.</p>';return}
+  const arr=Object.values(COL).sort((a,b)=>a.n.localeCompare(b.n));
+  $('#accBox').innerHTML=`<p class="sm" style="margin-top:0">Usted administra quién usa esta app. Cada colega le envía el ID de su teléfono, usted genera el código aquí y se lo manda. Lo que cada colega calcula queda solo en su teléfono.</p>
+  ${MK?'':`<div class="notice">Para generar códigos, cargue la <b>clave maestra</b> una vez en este teléfono.<form id="fMK" style="margin-top:8px"><input autocomplete="off" spellcheck="false" placeholder="Pegue la clave maestra"><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Guardar clave</button></div></form></div>`}
+  ${MK?`<h2 style="font-size:14px;margin:14px 0 8px">Dar acceso a un colega</h2>
+  <form id="fGen"><div class="grid">
+   <div><label>Nombre del colega</label><input id="gN" maxlength="60" placeholder="Ej.: Lic. Martha López"></div>
+   <div><label>ID de su teléfono</label><input id="gD" maxlength="9" placeholder="XXXX-XXXX" autocapitalize="characters" spellcheck="false"></div>
+   <div><label>Plazo</label><select id="gP"><option value="i" selected>Indefinido</option><option value="30">30 días</option><option value="90">90 días</option><option value="180">180 días</option><option value="365">1 año</option><option value="f">Hasta una fecha</option></select></div>
+   <div id="gFwrap" hidden><label>Fecha</label><input id="gF" type="date"></div>
+   <div style="grid-column:1/-1"><label>Permiso</label><select id="gR"><option value="">Acceso completo (cálculo, tarifas, historial)</option><option value="rci">Solo consulta de la tarifa Res. DGTA 003-2024 (Bluefields–Corn Island)</option></select></div>
+  </div><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" type="submit">Generar código</button></div></form>
+  <div id="genOut"></div>`:''}
+  <h2 style="font-size:14px;margin:16px 0 8px">Colegas con acceso (${arr.length})</h2>
+  ${arr.length?arr.map(c=>{const [t,k]=estadoCol(c);return `<div class="hi"><div><b>${esc(c.n)}</b> <span class="chip ${k}">${t}</span><div class="sm">ID ${devFmt(c.d)} · ${c.e?'vence '+fLarga(c.e):'sin vencimiento'} · ${PERFILES[c.p||'']}</div></div><div class="row"><button class="btn2" data-cm="${c.i}">Mensaje</button><button class="btn2" data-ren="${c.i}">Renovar</button><button class="${REV.has(c.i)?'btn2':'btnd'}" data-rv="${c.i}">${REV.has(c.i)?'Restituir':'Retirar'}</button>${REV.has(c.i)?`<button class="btnd" data-delc="${c.i}">Quitar</button>`:''}</div></div>`}).join(''):'<p class="mut">Todavía no ha dado acceso a nadie.</p>'}
+  <p class="sm">“Retirar” bloquea la app en el teléfono del colega la próxima vez que la abra con conexión. Sus cálculos guardados no se borran.${DB?'':' En la versión instalada, el retiro se completa actualizando el archivo revocados.json en GitHub (la app le muestra el texto).'}</p>
+  ${!DB&&REV.size?'<button class="btn2" data-copyrev style="margin-bottom:8px">Copiar contenido de revocados.json</button>':''}
+  ${MK&&!ISOWN?'<button class="btn2" id="mkOut">Quitar clave maestra de este teléfono</button>':''}`;
+  const gp=$('#gP');if(gp)gp.onchange=()=>{$('#gFwrap').hidden=gp.value!=='f'}}
+
+/* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
+const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),...(OWNER?{colegas:COL,retirados:[...REV]}:{})},null,1);
+  const fn='respaldo-calculos-apbb-'+today()+'.json';
+  try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
+async function restaurar(file){try{const o=JSON.parse(await file.text());const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
+  const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
+  ls.set('epn_pf',cur);if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
+
+async function initAcceso(){
+  let h='';try{h=(location.hash||'').slice(1)}catch(e){}
+  if(h&&h.includes('.')){const p=await verificar(h);if(p&&!p.dev&&!p.rev&&(!p.e||p.e>=fechaRef()))activar(p);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
+  if(PROPIA){try{const r=await fetch('revocados.json',{cache:'no-store'});if(r.ok){const o=await r.json();const ids=Array.isArray(o.ids)?o.ids:[];REV=new Set(ids);ls.set(REV_KEY,ids)}}catch(e){}}
+  const st=ls.get(MK_KEY,null);if(st&&await mkValida(st)){MK=st;OWNER=true}
+  const l=leerLic();let local='sin';
+  if(l&&l.code){const p=await verificar(l.code);if(p&&p.rev)local='retirado';else if(p&&!p.dev){LIC=p;local=vigente(p)?'ok':'vencido'}}
+  GATE=local;if(OWNER||local==='ok')applyGate();
+  const cl=window.claude;
+  if(cl){const to=ms=>new Promise(r=>setTimeout(()=>r(null),ms));
+    cl.use('downloads').then(d=>{DL=d}).catch(()=>{});
+    try{const u=await Promise.race([cl.use('user'),to(5000)]);if(u){ISOWN=!!(await u.isOwner());if(ISOWN)OWNER=true;try{UID=await u.id()}catch(e){}}}catch(e){}
+    try{DB=await Promise.race([cl.use('db'),to(5000)])}catch(e){DB=null}
+    if(DB){
+      DB.doc('config/revocados').onSnapshot(s=>{const ids=s.exists&&Array.isArray(s.data().ids)?s.data().ids:[];REV=new Set(ids);ls.set(REV_KEY,ids);
+        if(!OWNER&&LIC&&REV.has(LIC.i)){GATE='retirado';applyGate()}else if(!OWNER&&GATE==='retirado'&&LIC&&!REV.has(LIC.i)){GATE=vigente(LIC)?'ok':'vencido';applyGate()}
+        if(document.querySelector('#v-acc.on'))renderAcc()},()=>{});
+      if(ISOWN&&UID){try{const k=await DB.doc('data/users/'+UID+'/privado/clave').get();if(k.exists&&!MK&&await mkValida(k.data().mk)){MK=k.data().mk;ls.set(MK_KEY,MK)}}catch(e){}
+        try{const c=await DB.doc('data/users/'+UID+'/privado/colegas').get();if(c.exists){const o=JSON.parse(c.data().lista||'{}');COL={...o,...COL};ls.set(COL_KEY,COL)}}catch(e){}}}
+  }
+  applyGate();if(document.querySelector('#v-acc.on'))renderAcc()}
+
+/* ===== Sin internet: service worker y actualizaciones ===== */
+const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const STANDALONE=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+function avisoUpd(){if($('#updBar'))return;const d=document.createElement('div');d.id='updBar';d.className='notice';d.style.cssText='position:fixed;left:16px;right:16px;top:12px;z-index:20;max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,.2)';
+  d.innerHTML='<span><b>Hay una versión nueva de la app.</b> Guarde su cálculo y actualice.</span><button class="btn" id="bUpd">Actualizar</button>';document.body.appendChild(d)}
+if(PROPIA&&'serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    const chk=()=>{if(navigator.onLine)reg.update().catch(()=>{})};
+    window.addEventListener('online',()=>{chk();initAcceso()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()});
+    if(reg.waiting&&navigator.serviceWorker.controller)avisoUpd();
+    reg.addEventListener('updatefound',()=>{const w=reg.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)avisoUpd()})});
+  }).catch(()=>{});
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+}
+if(PROPIA&&IOS&&!STANDALONE){const n=document.createElement('div');n.className='notice';n.style.cssText='margin:10px 16px 0';n.innerHTML='<b>Está usando la app dentro de Safari.</b> Para usarla sin internet: toque Compartir → <b>Agregar a pantalla de inicio</b> y ábrala siempre desde el ícono. Lo que active o guarde aquí no pasa a la app del ícono.';document.querySelector('header').after(n)}
+
+/* ===== Inicio ===== */
+$('#rFile').onchange=e=>{const f=e.target.files[0];if(f)restaurar(f);e.target.value=''};
+bindMeta();renderRes();renderLines();paintLogo();initAcceso();
+</script>
+</body>
+</html>
