@@ -152,6 +152,20 @@ body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .
 .seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
 .seg button{background:transparent;color:var(--mut);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+/* Visor de PDF */
+#pdfv{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 85%,#000);animation:entra .2s ease-out}
+body.pv-on{overflow:hidden}
+.pv-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:var(--card);border-bottom:1px solid var(--line)}
+.pv-x{background:var(--soft);color:var(--ink);border-radius:999px;padding:8px 12px;font-weight:600;font-size:14px;flex:none}
+.pv-t{flex:1;min-width:0;display:grid}.pv-t b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pv-t small{font-size:12px;color:var(--mut)}
+.pv-z{display:flex;gap:4px;flex:none}.pv-z button{background:var(--soft);color:var(--pri);width:38px;height:38px;padding:0;font-size:20px;font-weight:700;border-radius:10px}
+.pv-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 12px 20px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pv-page{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:10px;max-width:none}
+.pv-page canvas{border-radius:4px;box-shadow:0 2px 0 rgba(0,0,0,.08),0 12px 28px -12px rgba(0,0,0,.6);background:#fff;display:block}
+.pv-page span{font-size:11.5px;color:var(--mut)}
+.pv-bar{display:flex;gap:10px;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line)}
+.pv-bar button{flex:1;padding:13px 10px;font-size:15px;display:inline-flex;justify-content:center;align-items:center;gap:8px}
+.pv-bar svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* Documento (siempre en papel blanco) */
 .doc{background:#fff;max-width:820px;margin:0 auto;padding:28px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;color:#111;box-shadow:var(--shadow)}
 .dh{display:flex;gap:14px;align-items:center;border-bottom:3px solid #0b4f8a;padding-bottom:10px}
@@ -259,7 +273,7 @@ body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .
 <section class="view" id="v-prev">
  <div class="row" style="margin-bottom:12px;justify-content:space-between">
   <button class="btn2" data-go="pf">‹ Volver al cálculo</button>
-  <div class="row"><button class="btn2" id="btnPrint">Imprimir</button><button class="btn pdfbtn" id="btnMemPdf"><svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Compartir PDF</button></div>
+  <div class="row"><button class="btn2" id="btnPrint">Imprimir</button><button class="btn pdfbtn" id="btnMemPdf"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Ver PDF</button></div>
  </div>
  <div id="printArea"></div>
 </section>
@@ -270,7 +284,7 @@ body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .
   <h2>Pliego tarifario</h2>
   <input id="tq" type="search" placeholder="Buscar servicio o carga…">
   <div class="chips" id="tchips"></div>
-  <div class="tarbar"><span class="sm" id="tcount"></span><button class="btn pdfbtn" id="btnTarPdf"><svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Compartir PDF</button></div>
+  <div class="tarbar"><span class="sm" id="tcount"></span><button class="btn pdfbtn" id="btnTarPdf"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Ver PDF</button></div>
   <details class="fu" style="margin-top:10px"><summary>Fuentes de las tarifas</summary><p class="sm">Res. DGTA 027-2022 (pliego APBB), Res. DGTA 022-2023 (IV Marías, vigente 01/01/2024), Res. DGTA 003-2024 (ruta Bluefields–Corn Island, vigente 11/03/2024) y la propuesta EPN de tarifas chárter del 24/06/2019 (<span class="warn">pendiente de verificar aprobación DGTA</span>).</p></details>
  </div>
  <div id="tlist"></div>
@@ -640,7 +654,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.30-3';
+const APP_VER='2026.10.30-4';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -814,26 +828,60 @@ async function initAcceso(){
 const HW={"Helvetica":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],"Helvetica-Bold":[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,611,278,556,500,1000,556,556,333,1000,667,333,1000,611,611,611,611,278,278,500,500,350,556,1000,333,1000,556,333,944,611,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]};
 const CP={8364:128,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,352:138,8249:139,338:140,381:142,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,732:152,8482:153,353:154,8250:155,339:156,382:158,376:159};
 function pdfTxt(s){s=String(s??'').replace(/≤/g,'<=').replace(/≥/g,'>=').replace(/ | /g,' ');let o='';for(const ch of s){const c=ch.codePointAt(0);if(c<128||(c>159&&c<256))o+=String.fromCharCode(c);else if(CP[c])o+=String.fromCharCode(CP[c]);else o+='?'}return o}
-function PDFW(){const W=612,H=792;const pages=[];let cur=null;const self={W,H,
+function PDFW(){const W=612,H=792;const pages=[];let cur=null;
+  const rgb=h=>{h=h.replace('#','');return [0,2,4].map(i=>(parseInt(h.substr(i,2),16)/255).toFixed(3)).join(' ')};
+  const width=(s,size,bold)=>{const w=HW[bold?'Helvetica-Bold':'Helvetica'];let t=0;for(const ch of pdfTxt(s)){const c=ch.charCodeAt(0);t+=(c>=32?w[c-32]||556:556)}return t*size/1000};
+  const self={W,H,width,
   page(){cur=[];pages.push(cur);return self},
-  rgb(h){h=h.replace('#','');return [0,2,4].map(i=>(parseInt(h.substr(i,2),16)/255).toFixed(3)).join(' ')},
-  width(s,size,bold){const w=HW[bold?'Helvetica-Bold':'Helvetica'];let t=0;for(const ch of pdfTxt(s)){const c=ch.charCodeAt(0);t+=(c>=32?w[c-32]||556:556)}return t*size/1000},
-  text(x,y,s,o={}){const size=o.size||10,b=o.bold?'F2':'F1';let t=pdfTxt(s);let xx=x;if(o.align==='r')xx=x-self.width(s,size,o.bold);else if(o.align==='c')xx=x-self.width(s,size,o.bold)/2;
-    t=t.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');cur.push('BT /'+b+' '+size+' Tf '+self.rgb(o.color||'#111111')+' rg '+xx.toFixed(2)+' '+(H-y).toFixed(2)+' Td ('+t+') Tj ET')},
-  rect(x,y,w,h,fill){cur.push(self.rgb(fill)+' rg '+x.toFixed(2)+' '+(H-y-h).toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re f')},
-  line(x1,y1,x2,y2,col,lw){cur.push(self.rgb(col||'#999999')+' RG '+(lw||.6)+' w '+x1.toFixed(2)+' '+(H-y1).toFixed(2)+' m '+x2.toFixed(2)+' '+(H-y2).toFixed(2)+' l S')},
-  image(x,y,w,h){cur.push('q '+w.toFixed(2)+' 0 0 '+h.toFixed(2)+' '+x.toFixed(2)+' '+(H-y-h).toFixed(2)+' cm /Im1 Do Q')},
-  wrap(s,size,bold,maxW){const out=[];String(s??'').split('\n').forEach(par=>{let ln='';par.split(/\s+/).forEach(wd=>{const tr=ln?ln+' '+wd:wd;if(self.width(tr,size,bold)<=maxW||!ln)ln=tr;else{out.push(ln);ln=wd}});out.push(ln)});return out},
+  text(x,y,s,o={}){const size=o.size||10;let xx=x;if(o.align==='r')xx=x-width(s,size,o.bold);else if(o.align==='c')xx=x-width(s,size,o.bold)/2;cur.push({k:'t',x:xx,y,s:String(s??''),size,bold:!!o.bold,color:o.color||'#111111'})},
+  rect(x,y,w,h,fill){cur.push({k:'r',x,y,w,h,fill})},
+  line(x1,y1,x2,y2,col,lw){cur.push({k:'l',x1,y1,x2,y2,col:col||'#999999',lw:lw||.6})},
+  image(x,y,w,h){cur.push({k:'i',x,y,w,h})},
+  wrap(s,size,bold,maxW){const out=[];String(s??'').split('\n').forEach(par=>{let ln='';par.split(/\s+/).forEach(wd=>{const tr=ln?ln+' '+wd:wd;if(width(tr,size,bold)<=maxW||!ln)ln=tr;else{out.push(ln);ln=wd}});out.push(ln)});return out},
   get count(){return pages.length},
   setPage(i){cur=pages[i]},
+  /* Dibuja cada página en un canvas, idéntica al PDF, para verla antes de compartir */
+  async render(cssW){const img=new Image();img.src=LOGO;try{await img.decode()}catch(e){}
+    const dpr=Math.min(3,window.devicePixelRatio||1),sc=cssW/W;
+    return pages.map(pg=>{const c=document.createElement('canvas');c.width=Math.round(W*sc*dpr);c.height=Math.round(H*sc*dpr);c.style.width=cssW+'px';c.style.height=Math.round(H*sc)+'px';
+      const g=c.getContext('2d');g.scale(sc*dpr,sc*dpr);g.fillStyle='#fff';g.fillRect(0,0,W,H);
+      pg.forEach(o=>{if(o.k==='r'){g.fillStyle=o.fill;g.fillRect(o.x,o.y,o.w,o.h)}
+        else if(o.k==='l'){g.strokeStyle=o.col;g.lineWidth=o.lw;g.beginPath();g.moveTo(o.x1,o.y1);g.lineTo(o.x2,o.y2);g.stroke()}
+        else if(o.k==='i'){try{g.drawImage(img,o.x,o.y,o.w,o.h)}catch(e){}}
+        else{g.fillStyle=o.color;g.font=(o.bold?'bold ':'')+o.size+'px Helvetica, Arial, sans-serif';g.textBaseline='alphabetic';
+          const s=o.s.replace(/≤/g,'<=').replace(/≥/g,'>=');
+          const natural=g.measureText(s).width,target=width(o.s,o.size,o.bold);
+          if(natural>0&&Math.abs(natural-target)>.5){g.save();g.translate(o.x,o.y);g.scale(target/natural,1);g.fillText(s,0,0);g.restore()}else g.fillText(s,o.x,o.y)}});
+      return c})},
   build(){const jpg=atob(LOGO.split(',')[1]);const objs=[];const add=s=>{objs.push(s);return objs.length};
+    const esc=t=>t.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+    const ops=pg=>pg.map(o=>o.k==='r'?rgb(o.fill)+' rg '+o.x.toFixed(2)+' '+(H-o.y-o.h).toFixed(2)+' '+o.w.toFixed(2)+' '+o.h.toFixed(2)+' re f'
+      :o.k==='l'?rgb(o.col)+' RG '+o.lw+' w '+o.x1.toFixed(2)+' '+(H-o.y1).toFixed(2)+' m '+o.x2.toFixed(2)+' '+(H-o.y2).toFixed(2)+' l S'
+      :o.k==='i'?'q '+o.w.toFixed(2)+' 0 0 '+o.h.toFixed(2)+' '+o.x.toFixed(2)+' '+(H-o.y-o.h).toFixed(2)+' cm /Im1 Do Q'
+      :'BT /'+(o.bold?'F2':'F1')+' '+o.size+' Tf '+rgb(o.color)+' rg '+o.x.toFixed(2)+' '+(H-o.y).toFixed(2)+' Td ('+esc(pdfTxt(o.s))+') Tj ET').join('\n');
     const cat=add(''),pgs=add(''),f1=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'),f2=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
     const im=add('<< /Type /XObject /Subtype /Image /Width '+LOGO_W+' /Height '+LOGO_H+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n'+jpg+'\nendstream');
-    const kids=[];pages.forEach(pc=>{const c=pc.join('\n');const cs=add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');kids.push(add('<< /Type /Page /Parent '+pgs+' 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /Font << /F1 '+f1+' 0 R /F2 '+f2+' 0 R >> /XObject << /Im1 '+im+' 0 R >> >> /Contents '+cs+' 0 R >>'))});
+    const kids=[];pages.forEach(pg=>{const c=ops(pg);const cs=add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');kids.push(add('<< /Type /Page /Parent '+pgs+' 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /Font << /F1 '+f1+' 0 R /F2 '+f2+' 0 R >> /XObject << /Im1 '+im+' 0 R >> >> /Contents '+cs+' 0 R >>'))});
     objs[cat-1]='<< /Type /Catalog /Pages '+pgs+' 0 R >>';objs[pgs-1]='<< /Type /Pages /Kids ['+kids.map(k=>k+' 0 R').join(' ')+'] /Count '+kids.length+' >>';
     let out='%PDF-1.4\n%\xe2\xe3\xcf\xd3\n';const off=[];objs.forEach((o,i)=>{off.push(out.length);out+=(i+1)+' 0 obj\n'+o+'\nendobj\n'});
     const xr=out.length;out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n'+off.map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<< /Size '+(objs.length+1)+' /Root '+cat+' 0 R >>\nstartxref\n'+xr+'\n%%EOF';
     const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return new Blob([u],{type:'application/pdf'})}};return self}
+/* ===== Visor de PDF: se ve primero, luego se decide compartir ===== */
+let VISOR=null;
+async function abrirVisor(doc,nombre,titulo){cerrarVisor();
+  const v=document.createElement('div');v.id='pdfv';v.setAttribute('role','dialog');v.setAttribute('aria-modal','true');
+  v.innerHTML=`<div class="pv-top"><button class="pv-x" data-pv="close" aria-label="Cerrar">✕ Cerrar</button><div class="pv-t"><b>${esc(titulo)}</b><small>${doc.count} página${doc.count===1?'':'s'} · vista previa del PDF</small></div><div class="pv-z"><button data-pv="zout" aria-label="Alejar">−</button><button data-pv="zin" aria-label="Acercar">+</button></div></div>
+   <div class="pv-body" id="pvBody"><p class="mut" style="text-align:center;padding:40px">Preparando vista…</p></div>
+   <div class="pv-bar"><button class="btn2" data-pv="close">No compartir</button><button class="btn" data-pv="share"><svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Compartir PDF</button></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');VISOR={doc,nombre,titulo,z:1,blob:null};await pintarVisor()}
+async function pintarVisor(){if(!VISOR)return;const body=$('#pvBody');const base=Math.min(body.clientWidth-24,820);const cssW=Math.round(base*VISOR.z);
+  const cs=await VISOR.doc.render(cssW);if(!VISOR)return;body.innerHTML='';cs.forEach((c,i)=>{const d=document.createElement('div');d.className='pv-page';d.appendChild(c);const s=document.createElement('span');s.textContent='Página '+(i+1)+' de '+cs.length;d.appendChild(s);body.appendChild(d)})}
+function cerrarVisor(){const v=$('#pdfv');if(v)v.remove();document.body.classList.remove('pv-on');VISOR=null}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(!b||!VISOR)return;const a=b.dataset.pv;
+  if(a==='close')cerrarVisor();
+  else if(a==='zin'||a==='zout'){VISOR.z=Math.max(1,Math.min(2.5,VISOR.z+(a==='zin'?.5:-.5)));pintarVisor()}
+  else if(a==='share'){if(!VISOR.blob)VISOR.blob=VISOR.doc.build();compartirArchivo(VISOR.blob,VISOR.nombre,VISOR.titulo)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&VISOR)cerrarVisor()});
 const NAVY='#0b4f8a',MAGC='#c8326f',GRY='#5a6a80';
 function pdfHeader(d,titulo,sub){const lw=128,lh=lw*LOGO_H/LOGO_W;d.image(40,30,lw,lh);
   d.text(182,44,'EMPRESA PORTUARIA NACIONAL',{size:13,bold:true,color:NAVY});d.text(182,58,'Administración Portuaria Bluff–Bluefields · Nicaragua',{size:9,color:GRY});
@@ -857,7 +905,7 @@ function tarPdf(lista,sub){const d=PDFW();const COLS=[['Servicio',212],['Unidad 
       d.line(X0,y+h,X0+532,y+h,'#e3e8ef',.5);y+=h});
     y+=10});
   if(p19){if(y+20>740)nueva();d.text(X0,y+8,'* Tarifas chárter según propuesta EPN de junio 2019; sujetas a confirmación de su autorización vigente.',{size:7.5,color:MAGC});}
-  pdfFooters(d,'Tarifas máximas autorizadas por la DGTA, en la moneda indicada. No incluyen IVA. Documento informativo.');return d.build()}
+  pdfFooters(d,'Tarifas máximas autorizadas por la DGTA, en la moneda indicada. No incluyen IVA. Documento informativo.');return d}
 function memPdf(){const t=totals();const d=PDFW();d.page();
   let y=pdfHeader(d,'MEMORIA DE CÁLCULO – ESTIMACIÓN DE SERVICIOS PORTUARIOS','Fecha: '+(P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):'')+(P.ref?'  ·  Ref.: '+P.ref:''));
   const datos=[['Cliente',P.cliente],['RUC/ID',P.ruc],['Agencia naviera',P.agencia],['Buque',P.buque],['Bandera',P.bandera],['Actividad',P.act],['TAB',P.tab?fq(P.tab):''],['Eslora',P.eslora?fq(P.eslora)+' m':''],['ETA',P.eta?new Date(P.eta).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'}):'']];
@@ -881,7 +929,7 @@ function memPdf(){const t=totals();const d=PDFW();d.page();
   ['Estimación preliminar sin valor de factura ni de proforma oficial. Una vez pre aprobada, el cobro se emite en el sistema institucional de la EPN.','Tarifas máximas autorizadas por la DGTA (Res. 027-2022 y complementarias). Servicios por hora o día se cobran por fracción; mínimo 1 TM o 1 m³.'].forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(x=>{d.text(40,y+8,x,{size:7.8,color:GRY});y+=10}));
   y=Math.max(y+40,640);if(y>720){d.page();y=640}
   [['Elaborado por',P.elab],['Revisado / Autorizado',''],['Recibido','']].forEach(([a,b],i)=>{const x=40+i*184;d.line(x,y,x+164,y,'#333333',.7);d.text(x+82,y+11,a,{size:8,color:GRY,align:'c'});if(b)d.text(x+82,y+22,b,{size:8,bold:true,color:'#1a1a1a',align:'c'})});
-  pdfFooters(d,'Memoria de cálculo informativa · Empresa Portuaria Nacional · Administración Portuaria Bluff–Bluefields');return d.build()}
+  pdfFooters(d,'Memoria de cálculo informativa · Empresa Portuaria Nacional · Administración Portuaria Bluff–Bluefields');return d}
 async function compartirArchivo(blob,nombre,titulo){const f=new File([blob],nombre,{type:'application/pdf'});
   try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:titulo});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
@@ -905,8 +953,8 @@ $('#tchips').addEventListener('click',e=>{const b=e.target.closest('[data-tcat]'
 $('#btnTarPdf').onclick=()=>{const lista=tarFiltradas();if(!lista.length){toast('No hay tarifas para compartir');return}
   const st=soloTar(),c=st?'rci':TCAT,q=$('#tq').value.trim();const nom=c?CATS.find(x=>x[0]===c)[1]:'Pliego completo';
   const sub=nom+(q?' · búsqueda: “'+q+'”':'')+' · '+lista.length+' tarifas';
-  try{const b=tarPdf(lista,sub);compartirArchivo(b,'Tarifas-APBB-'+slug(c?nom:'completo')+'-'+today()+'.pdf','Tarifas APBB · '+nom)}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
-$('#btnMemPdf').onclick=()=>{try{const b=memPdf();compartirArchivo(b,'Memoria-calculo-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo APBB')}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
+  try{abrirVisor(tarPdf(lista,sub),'Tarifas-APBB-'+slug(c?nom:'completo')+'-'+today()+'.pdf','Tarifas APBB · '+nom)}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
+$('#btnMemPdf').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-calculo-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo APBB')}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
 
 /* ===== Ajustes ===== */
 const THEME_COL={claro:'#07325a',oscuro:'#050d18',gris:'#4a5463'};
