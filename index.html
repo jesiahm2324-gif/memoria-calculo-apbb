@@ -12,6 +12,10 @@
 <style>
 :root{--bg:#eef3f8;--card:#fff;--ink:#13233d;--mut:#5b6b82;--pri:#0b4f8a;--pri2:#0e6bb8;--acc:#f2a900;--line:#dbe3ee;--ok:#1d7a46;--bad:#b42318;--soft:#e7eff8}
 *{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+.grid>*,.lnq>*,.row>*{min-width:0}
+select{max-width:100%;text-overflow:ellipsis}
+.actions{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
 header{background:linear-gradient(135deg,#08365f,#0e6bb8);color:#fff;padding:12px 16px;display:flex;gap:12px;align-items:center}
 .logo{width:58px;height:58px;border-radius:10px;background:rgba(255,255,255,.12);border:1.5px dashed rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:9.5px;line-height:1.2;text-align:center;cursor:pointer;overflow:hidden;flex:none;padding:4px}
@@ -545,7 +549,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.30-1';
+const APP_VER='2026.10.30-2';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -672,7 +676,7 @@ function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Ve
    <div><label>ID de su teléfono</label><input id="gD" maxlength="9" placeholder="XXXX-XXXX" autocapitalize="characters" spellcheck="false"></div>
    <div><label>Plazo</label><select id="gP"><option value="i" selected>Indefinido</option><option value="30">30 días</option><option value="90">90 días</option><option value="180">180 días</option><option value="365">1 año</option><option value="f">Hasta una fecha</option></select></div>
    <div id="gFwrap" hidden><label>Fecha</label><input id="gF" type="date"></div>
-   <div style="grid-column:1/-1"><label>Permiso</label><select id="gR"><option value="">Acceso completo (cálculo, tarifas, historial)</option><option value="rci">Solo consulta de la tarifa Res. DGTA 003-2024 (Bluefields–Corn Island)</option></select></div>
+   <div style="grid-column:1/-1"><label>Permiso</label><select id="gR"><option value="">Acceso completo</option><option value="rci">Solo tarifa Res. 003-2024 (Bluefields–Corn Island)</option></select></div>
   </div><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" type="submit">Generar código</button></div></form>
   <div id="genOut"></div>`:''}
   <h2 style="font-size:14px;margin:16px 0 8px">Colegas con acceso (${arr.length})</h2>
