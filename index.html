@@ -212,6 +212,7 @@ input::-webkit-date-and-time-value{text-align:left}
 details.rg{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 details.rg>summary{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;font-weight:600;list-style:none}
 details.rg>summary::-webkit-details-marker{display:none}
+details.rg .chev{font-size:20px;color:var(--mut);transition:transform .2s;line-height:1}details.rg[open]>summary .chev{transform:rotate(90deg);color:var(--pri)}details.colx{background:var(--card)}details.colx>summary{font-weight:600}details.colw>summary{font-size:14px;color:var(--pri)}
 .rl{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-top:1px solid var(--line);font-size:13.5px}
 .rl small{display:block;color:var(--mut);font-size:11.5px}.rl b{white-space:nowrap;font-variant-numeric:tabular-nums}
 details.crew>summary,details.embd>summary{cursor:pointer;padding:6px 0}
@@ -915,7 +916,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-19';
+const APP_VER='2026.10.31-20';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1056,6 +1057,7 @@ function mostrarListaRev(){const txt=accesosJSON();
   <p class="sm">En su GitHub abra el archivo <b>revocados.json</b>, toque el lápiz (Editar), reemplace todo su contenido por este texto y guarde (Commit changes). Cada teléfono lo recibe la próxima vez que tenga señal.</p>
   <div class="codebox">${esc(txt)}</div><button class="btn" data-copyrev>Copiar texto</button></div>`;
   $('#genOut').scrollIntoView({behavior:'smooth',block:'center'})}
+const ACC_OPEN=new Set();document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.ok){d.open?ACC_OPEN.add(d.dataset.ok):ACC_OPEN.delete(d.dataset.ok)}},true);
 function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'')},0);
   if(!OWNER){$('#accBox').innerHTML=LIC?`<div class="facts"><div><span>A nombre de</span><b>${esc(LIC.n||'—')}</b></div><div><span>Vence</span><b>${LIC.e?fLarga(LIC.e):'Sin vencimiento'}</b></div><div><span>Permiso</span><b>${PERFILES[LIC.p||'']}</b></div><div><span>ID del teléfono</span><b>${devFmt(devId())}</b></div></div>
    <form id="fRenov" style="margin-top:12px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><label style="margin:0">Cargar código nuevo (renovación)</label><button type="button" class="btn2" data-pegar="renIn" style="padding:6px 12px">Pegar</button></div><textarea id="renIn" rows="2" autocomplete="off" spellcheck="false" style="margin-top:6px"></textarea><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Activar código</button></div></form>`:'<p class="mut">Sin acceso activo.</p>';return}
@@ -1078,8 +1080,8 @@ function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Ve
    <div style="grid-column:1/-1"><label>Permiso</label><select id="gR"><option value="">Acceso completo</option><option value="rci">Solo tarifa Res. 003-2024 (Bluefields–Corn Island)</option></select></div>
   </div><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" type="submit">Generar código</button></div></form>
   <div id="genOut"></div>`:''}
-  <h2 style="font-size:14px;margin:16px 0 8px">Colegas con acceso (${arr.length})</h2>
-  ${arr.length?arr.map(c=>{const [t,k]=estadoCol(c);return `<div class="hi"><div><b>${esc(c.n)}</b> <span class="chip ${k}">${t}</span><div class="sm">ID ${devFmt(c.d)} · ${c.e?'vence '+fLarga(c.e):'sin vencimiento'} · ${PERFILES[c.p||'']}${c.mod?' · condición cambiada el '+fLarga(c.mod):''}</div></div><div class="row"><button class="btn2" data-wa="${c.i}">WhatsApp</button>${REV.has(c.i)?'':`<button class="btn2" data-cond="${c.i}">Cambiar condición</button>`}<button class="${REV.has(c.i)?'btn2':'btnd'}" data-rv="${c.i}">${REV.has(c.i)?'Restituir':'Retirar'}</button>${REV.has(c.i)?`<button class="btnd" data-delc="${c.i}">Quitar</button>`:''}</div></div>`}).join(''):'<p class="mut">Todavía no ha dado acceso a nadie.</p>'}
+  <details class="rg colw" data-ok="lista" style="margin-top:16px"${ACC_OPEN.has('lista')?' open':''}><summary><span>Colegas con acceso (${arr.length})${arr.filter(c=>REV.has(c.i)).length?' · '+arr.filter(c=>REV.has(c.i)).length+' retirado(s)':''}</span><span class="chev">›</span></summary><div style="padding:4px 10px 8px">
+  ${arr.length?arr.map(c=>{const [t,k]=estadoCol(c);return `<details class="rg colx" data-ok="${c.i}"${ACC_OPEN.has(c.i)?' open':''}><summary><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.n)}</span><span style="display:flex;gap:6px;align-items:center;flex:none"><span class="chip ${k}">${t}</span><span class="chev">›</span></span></summary><div style="padding:0 11px 10px"><div class="sm">ID ${devFmt(c.d)} · ${c.e?'vence '+fLarga(c.e):'sin vencimiento'} · ${PERFILES[c.p||'']}${c.mod?' · condición cambiada el '+fLarga(c.mod):''}</div><div class="row" style="margin-top:8px"><button class="btn2" data-wa="${c.i}">WhatsApp</button>${REV.has(c.i)?'':`<button class="btn2" data-cond="${c.i}">Cambiar condición</button>`}<button class="${REV.has(c.i)?'btn2':'btnd'}" data-rv="${c.i}">${REV.has(c.i)?'Restituir':'Retirar'}</button>${REV.has(c.i)?`<button class="btnd" data-delc="${c.i}">Quitar</button>`:''}</div></div></details>`}).join(''):'<p class="mut">Todavía no ha dado acceso a nadie.</p>'}</div></details>
   <p class="sm">“Cambiar condición” modifica plazo o permiso sin enviar código nuevo. “Retirar” bloquea la app. Ambos se aplican en el teléfono del colega la próxima vez que la abra con señal; sus cálculos no se borran.${DB?'':' En la versión instalada se completan actualizando revocados.json en GitHub (la app le muestra el texto).'}</p>
   ${!DB&&(REV.size||Object.keys(COND).length)?'<button class="btn2" data-copyrev style="margin-bottom:8px">Copiar contenido de revocados.json</button>':''}
   ${MK&&!ISOWN?'<button class="btn2" id="mkOut">Quitar clave maestra de este teléfono</button>':''}`;
