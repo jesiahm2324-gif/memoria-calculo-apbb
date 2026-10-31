@@ -435,10 +435,12 @@ body.pv-on{overflow:hidden}
   <div class="grid">
    <div><label>Inicia</label><input type="time" id="hIni"></div>
    <div><label>Termina</label><input type="time" id="hFin"></div>
+   <div><label>Receso desde</label><input type="time" id="hPi"></div>
+   <div><label>Receso hasta</label><input type="time" id="hPf"></div>
   </div>
   <label style="margin-top:10px">Días laborales</label>
   <div class="dias" id="hDias"></div>
-  <p class="sm">Fuera de ese horario, en días no laborales y en feriados, todo el tiempo es extraordinario.</p>
+  <p class="sm">Fuera de ese horario, durante el receso del mediodía, en días no laborales y en feriados, el tiempo es extraordinario.</p>
  </div>
  <div class="card"><h2>Feriados</h2>
   <p class="sm" style="margin-top:0">Los feriados nacionales ya están incluidos (Jueves y Viernes Santo se calculan cada año). Agregue los feriados locales.</p>
@@ -800,8 +802,10 @@ function updTot(){const t=totals();const pt=$('#pillTot');if(pt){const nv=money(
  <tr><td class="sm">Equivalente</td><td class="sm">${money(other,t.mon==='USD'?'NIO':'USD')}</td></tr>`}
 
 /* ===== Horario ordinario y feriados ===== */
-const HOR_DEF={ini:'07:00',fin:'16:30',dias:[1,2,3,4,5]};
-let HOR={...HOR_DEF,...ls.get('epn_hor',{})};
+const HOR_DEF={ini:'07:00',fin:'16:30',pi:'12:00',pf:'13:00',dias:[1,2,3,4,5]};
+let HOR={...HOR_DEF,...ls.get('epn_hor',{})};if(!ls.get('epn_hor_p',false)){HOR.pi=HOR_DEF.pi;HOR.pf=HOR_DEF.pf;ls.set('epn_hor_p',true);ls.set('epn_hor',HOR)}
+const horRango=()=>{const p=HOR.pi&&HOR.pf&&hm2m(HOR.pf)>hm2m(HOR.pi);return p?'de '+HOR.ini+' a '+HOR.pi+' y de '+HOR.pf+' a '+HOR.fin:'de '+HOR.ini+' a '+HOR.fin};
+const horTxt=()=>DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')+' '+horRango();
 let FER=ls.get('epn_fer',[]);
 const FER_NAC=[['01-01','Año Nuevo'],['05-01','Día del Trabajador'],['05-30','Día de las Madres'],['07-19','Día de la Revolución'],['09-14','Batalla de San Jacinto'],['09-15','Independencia'],['12-08','Purísima Concepción'],['12-25','Navidad']];
 function pascua(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mes=Math.floor((h+l-7*m+114)/31),dia=((h+l-7*m+114)%31)+1;return new Date(y,mes-1,dia)}
@@ -813,11 +817,12 @@ const ferNombre=d=>feriadosDe(d.getFullYear())[kd(d)]||'';
 const hm2m=s=>{const [h,m]=String(s||'0:0').split(':').map(Number);return (h||0)*60+(m||0)};
 const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 /* Reparte un tramo [a,b) en minutos ordinarios y extraordinarios por día calendario */
-function repartir(a,b,map){let cur=new Date(a);const fin=new Date(b);const ini=hm2m(HOR.ini),fn=hm2m(HOR.fin);
+function repartir(a,b,map){let cur=new Date(a);const fin=new Date(b);const ini=hm2m(HOR.ini),fn=hm2m(HOR.fin);let pi=hm2m(HOR.pi),pf=hm2m(HOR.pf);if(!HOR.pi||!HOR.pf||pf<=pi){pi=pf=fn}
   while(cur<fin){const d0=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate());const k=kd(d0);
-    const lab=HOR.dias.includes(d0.getDay())&&!ferNombre(d0);const md=medioDia(d0);const oI=new Date(d0.getTime()+ini*6e4),oF=new Date(d0.getTime()+(md?Math.min(fn,720):fn)*6e4),nx=new Date(d0);nx.setDate(nx.getDate()+1);
-    const bs=[oI,oF,nx].filter(x=>x>cur).sort((x,y)=>x-y);const nb=new Date(Math.min(fin,bs[0]));const min=(nb-cur)/6e4;
-    const ord=lab&&cur>=oI&&nb<=oF;const r=map[k]||(map[k]={k,d:d0,ord:0,ext:0,lab,fer:ferNombre(d0),md});if(ord)r.ord+=min;else r.ext+=min;cur=nb}}
+    const lab=HOR.dias.includes(d0.getDay())&&!ferNombre(d0);const md=medioDia(d0);const T0=m=>new Date(d0.getTime()+m*6e4);
+    const fEf=md?Math.min(fn,720):fn;const oI=T0(ini),oP1=T0(Math.min(pi,fEf)),oP2=T0(Math.min(pf,fEf)),oF=T0(fEf),nx=new Date(d0);nx.setDate(nx.getDate()+1);
+    const bs=[oI,oP1,oP2,oF,nx].filter(x=>x>cur).sort((x,y)=>x-y);const nb=new Date(Math.min(fin,bs[0]));const min=(nb-cur)/6e4;
+    const ord=lab&&((cur>=oI&&nb<=oP1)||(cur>=oP2&&nb<=oF));const r=map[k]||(map[k]={k,d:d0,ord:0,ext:0,lab,fer:ferNombre(d0),md});if(ord)r.ord+=min;else r.ext+=min;cur=nb}}
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h+' h'+(r?' '+String(r).padStart(2,'0')+' min':'')};
 const fCorta=d=>DIAS[d.getDay()].slice(0,3)+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
 
@@ -858,17 +863,17 @@ function renderTiempos(){const b=$('#tiempos');if(!b)return;const {dias,avisos,n
   const to=dias.reduce((s,r)=>s+r.ord,0),te=dias.reduce((s,r)=>s+r.ext,0);
   b.innerHTML=`<div class="tt-wrap"><table class="ttab"><thead><tr><th>Día</th><th>Ordinario</th><th>Extraordinario</th></tr></thead><tbody>${dias.map(r=>`<tr><td><b>${fCorta(r.d)}</b>${r.fer?`<small class="tag f">${esc(r.fer)}</small>`:!r.lab?`<small class="tag w">No laboral</small>`:r.md?`<small class="tag w">½ día · ${esc(r.md)}</small>`:''}</td><td>${r.ord?hm(r.ord):'—'}</td><td>${r.ext?hm(r.ext):'—'}</td></tr>`).join('')}</tbody>
    <tfoot><tr><td>Navegación ${hm(nav)}</td><td>${hm(to)}</td><td>${hm(te)}</td></tr>${tm?`<tr><td colspan="3">Tiempo muerto (carga/descarga): ${hm(tm)}</td></tr>`:''}</tfoot></table></div>
-   <p class="sm">Horario ordinario: ${DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')} de ${HOR.ini} a ${HOR.fin}. Cada fracción de hora se cobra como hora completa.</p>
+   <p class="sm">Horario ordinario: ${horTxt()}. Cada fracción de hora se cobra como hora completa.</p>
    ${avisos.map(a=>`<div class="notice">${esc(a)}</div>`).join('')}`}
 
 /* ===== Ajustes: horario, feriados y libreta ===== */
-function renderHorFer(){if(!$('#hIni'))return;$('#hIni').value=HOR.ini;$('#hFin').value=HOR.fin;
+function renderHorFer(){if(!$('#hIni'))return;$('#hIni').value=HOR.ini;$('#hFin').value=HOR.fin;$('#hPi').value=HOR.pi||'';$('#hPf').value=HOR.pf||'';
   $('#hDias').innerHTML=[1,2,3,4,5,6,0].map(i=>`<button class="dia${HOR.dias.includes(i)?' on':''}" data-hd="${i}">${DIAS[i].slice(0,3)}</button>`).join('');
   const y=new Date().getFullYear(),nac=feriadosDe(y);
   $('#ferList').innerHTML=`<details><summary class="sm">Ver feriados nacionales ${y}</summary><div class="sm" style="margin:6px 0">${MEDIO_DIAS.map(([md,n])=>new Date(y+'-'+md+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)+' (½ día, Cláusula 23)').join('<br>')+'<br>'+Object.entries(nac).filter(([k])=>!FER.some(f=>(f.anual?y+'-'+f.f.slice(5):f.f)===k)).sort().map(([k,n])=>new Date(k+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)).join('<br>')}</div></details>`+
    (FER.length?FER.map((f,i)=>`<div class="hi"><div><b>${esc(f.n)}</b><div class="sm">${new Date(f.f+'T12:00').toLocaleDateString('es-NI',f.anual?{day:'numeric',month:'long'}:{day:'numeric',month:'long',year:'numeric'})}${f.anual?' · cada año':''}</div></div><button class="btnd" data-fdel="${i}">Quitar</button></div>`).join(''):'<p class="sm">Sin feriados locales agregados.</p>')}
 const horCambio=()=>{ls.set('epn_hor',HOR);if(typeof subAju==='function')subAju();if(P.tipo==='chr')chrRecalc()};
-document.addEventListener('change',e=>{if(e.target.id==='hIni'||e.target.id==='hFin'){HOR[e.target.id==='hIni'?'ini':'fin']=e.target.value||HOR_DEF[e.target.id==='hIni'?'ini':'fin'];horCambio()}});
+document.addEventListener('change',e=>{if(e.target.id==='hPi'||e.target.id==='hPf'){HOR[e.target.id==='hPi'?'pi':'pf']=e.target.value||'';horCambio();return}if(e.target.id==='hIni'||e.target.id==='hFin'){HOR[e.target.id==='hIni'?'ini':'fin']=e.target.value||HOR_DEF[e.target.id==='hIni'?'ini':'fin'];horCambio()}});
 document.addEventListener('click',e=>{const d=e.target.closest('[data-hd]');if(d){const i=+d.dataset.hd;HOR.dias=HOR.dias.includes(i)?HOR.dias.filter(x=>x!==i):[...HOR.dias,i];horCambio();renderHorFer()}
   const f=e.target.closest('[data-fdel]');if(f){FER.splice(+f.dataset.fdel,1);ls.set('epn_fer',FER);for(const k in _ferCache)delete _ferCache[k];renderHorFer();if(P.tipo==='chr')chrRecalc()}
   if(e.target.id==='btnFer'){const fd=$('#fFecha').value,n=$('#fNom').value.trim();if(!fd||!n){toast('Indique fecha y nombre del feriado');return}FER.push({f:fd,n,anual:$('#fAnual').checked});ls.set('epn_fer',FER);for(const k in _ferCache)delete _ferCache[k];$('#fFecha').value='';$('#fNom').value='';renderHorFer();if(P.tipo==='chr')chrRecalc();toast('Feriado agregado')}});
@@ -916,7 +921,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-21';
+const APP_VER='2026.10.31-22';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1268,7 +1273,7 @@ function memPdf(){const t=totals();const d=PDFW();d.page();const tp=P.tipo||'buq
     y+=6;const {dias,tm}=CHRINFO;
     if(dias.length){d.rect(40,y,532,14,'#e8f0f9');[['Día',40],['Ordinario',260],['Extraordinario',400]].forEach(([h,xx])=>d.text(xx+5,y+10,h,{size:7.8,bold:true,color:NAVY}));y+=14;
       dias.forEach(r=>{if(y>700)nueva();d.text(45,y+10,fCorta(r.d)+(r.fer?' · '+r.fer:!r.lab?' · no laboral':''),{size:8,color:'#1a1a1a'});d.text(305,y+10,r.ord?hm(r.ord):'—',{size:8,color:'#1a1a1a'});d.text(445,y+10,r.ext?hm(r.ext):'—',{size:8,color:'#1a1a1a'});d.line(40,y+14,572,y+14,'#e3e8ef',.5);y+=14});
-      d.text(45,y+10,'Horario ordinario: '+DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')+' de '+HOR.ini+' a '+HOR.fin+'. Fuera de ese horario, sábados, domingos y feriados: extraordinario.'+(tm?'  Tiempo muerto: '+hm(tm)+'.':''),{size:7.5,color:GRY});y+=20}}
+      d.wrap('Horario ordinario: '+horTxt()+'. Fuera de ese horario, receso del mediodía, sábados, domingos y feriados: extraordinario.'+(tm?'  Tiempo muerto: '+hm(tm)+'.':''),7.5,false,520).forEach(l=>{d.text(45,y+10,l,{size:7.5,color:GRY});y+=10});y+=10}}
   const dual=tp==='chr';const COLS=dual?[['#',22],['Servicio',178],['Cálculo',162],['US$',80],['C$',90]]:[['#',22],['Servicio',200],['Cálculo',190],['Importe',120]];
   const head=()=>{d.rect(40,y,532,17,NAVY);let x=40;COLS.forEach(([h,w],i)=>{d.text(i>=3?x+w-6:x+5,y+11.5,h,{size:8.5,bold:true,color:'#ffffff',align:i>=3?'r':undefined});x+=w});y+=17};
   if(y+40>700)nueva();head();
@@ -1315,7 +1320,7 @@ function renderTar(){const st=soloTar();
   if(!st)$('#tchips').innerHTML=[['','Todas','#0b4f8a'],...CATS.map(([k,n])=>[k,n.replace(/ \(.+\)$/,'').replace(/:.*/,''),CCOL[k]])].map(([k,n,c])=>`<button class="chipc${TCAT===k?' on':''}" data-tcat="${k}" style="--cc:${c}"><i></i>${esc(n)}</button>`).join('');
   const lista=tarVista(tarFiltradas());$('#tcount').textContent=lista.length+' tarifa'+(lista.length===1?'':'s');
   $('#tlist').innerHTML=CATS.map(([k,n])=>{const r=lista.filter(t=>t.cat===k);if(!r.length)return'';
-   return `<div class="catttl" style="--cc:${CCOL[k]}"><i></i>${esc(n)}<small>${r.length}</small></div>`+(k==='chr'?`<div class="notice" style="font-size:13px"><b>Condiciones:</b> horario ordinario L–V 07:00–12:00 y 13:00–16:00 (Art. 35); extraordinario fuera de ese horario, sábados, domingos y feriados. Servicio de 5 h o más en horario ordinario se cobra por día; 4 h o menos, por hora. Tiempo muerto = carga y descarga del medio alquilado. Para calcularlo use <b>Alquiler chárter</b> en Cálculo.</div>`:'')+r.map(t=>{const S=sym(t.cur);
+   return `<div class="catttl" style="--cc:${CCOL[k]}"><i></i>${esc(n)}<small>${r.length}</small></div>`+(k==='chr'?`<div class="notice" style="font-size:13px"><b>Condiciones:</b> horario ordinario ${esc(horTxt())} (Art. 35); extraordinario fuera de ese horario (incluido el receso de ${HOR.pi}–${HOR.pf}), sábados, domingos y feriados. Servicio de 5 h o más en horario ordinario se cobra por día; 4 h o menos, por hora. Tiempo muerto = carga y descarga del medio alquilado. Para calcularlo use <b>Alquiler chárter</b> en Cálculo.</div>`:'')+r.map(t=>{const S=sym(t.cur);
     const v=t.c==='tier'?'<b>Escalonada</b>':t.c==='h1'?`<b>${S} ${fmt(t.r)}</b><small>1.ª hora · luego ${S} ${fmt(t.r2)}/h</small>`:`<b>${S} ${fmt(t.r)}</b>`;
     const tier=t.c==='tier'?`<div class="tier">${t.tiers.map(([a,b,r])=>`<span>días ${a}${b>=INF?'+':'–'+b}: ${S} ${fmt(r)}</span>`).join('')}</div>`:'';
     return `<div class="tc"><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span></div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
@@ -1347,7 +1352,7 @@ function subAju(){const t=document.documentElement.dataset.theme||'claro',f=docu
   S('apa',{claro:'Claro',oscuro:'Oscuro',gris:'Gris claro'}[t]+' · texto '+(f==='g'?'grande':'normal'));
   S('val','TC '+fmt(ls.get('epn_tc',36.6243),4)+(ls.get('epn_elab','')?' · '+ls.get('epn_elab',''):' · sin “Elaborado por”'));
   S('age',CONT.length?CONT.length+' guardada'+(CONT.length===1?'':'s'):'Ninguna guardada');
-  S('hor',DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')+' · '+HOR.ini+' a '+HOR.fin);
+  S('hor',horTxt());
   S('fer','Nacionales incluidos'+(FER.length?' · '+FER.length+' local'+(FER.length===1?'':'es'):''));
   if(OWNER&&COSTOS)S('cos',COSTOS.personal.length+' persona(s) · '+COSTOS.emb.length+' embarcaciones'+(ls.get('epn_costos_pend',false)?' · sin publicar':''));
   S('ace','Versión '+APP_VER)}
