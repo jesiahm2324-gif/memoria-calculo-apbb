@@ -916,7 +916,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-20';
+const APP_VER='2026.10.31-21';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1304,18 +1304,28 @@ const slug=s=>norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40
 /* ===== Tarifas: vista en tarjetas ===== */
 let TCAT='';
 function tarFiltradas(){const q=norm($('#tq').value.trim()),st=soloTar(),c=st?'rci':TCAT;return T.filter(t=>(!c||t.cat===c)&&(!q||q.split(/\s+/).every(w=>hay(t).includes(w))))}
+function tarVista(l){const o=[];let ad=[];const fl=()=>{o.push(...ad);ad=[]};
+  l.forEach(t=>{if(t.c!=='h1'){fl();o.push(t);return}
+    if(ad.length&&ad[0].cat!==t.cat)fl();
+    o.push({...t,c:'h1v',n:t.n+' – primera hora',unit:'Por la primera hora o fracción',addId:t.id});
+    ad.push({...t,id:t.id+'_a',c:'h1v',r:t.r2,n:'Tiempo adicional – '+t.n.replace(/^.*? – /,''),unit:'A partir de la segunda hora o fracción',addId:t.id})});
+  fl();return o}
 function renderTar(){const st=soloTar();
   $('#tchips').hidden=st;
   if(!st)$('#tchips').innerHTML=[['','Todas','#0b4f8a'],...CATS.map(([k,n])=>[k,n.replace(/ \(.+\)$/,'').replace(/:.*/,''),CCOL[k]])].map(([k,n,c])=>`<button class="chipc${TCAT===k?' on':''}" data-tcat="${k}" style="--cc:${c}"><i></i>${esc(n)}</button>`).join('');
-  const lista=tarFiltradas();$('#tcount').textContent=lista.length+' tarifa'+(lista.length===1?'':'s');
+  const lista=tarVista(tarFiltradas());$('#tcount').textContent=lista.length+' tarifa'+(lista.length===1?'':'s');
   $('#tlist').innerHTML=CATS.map(([k,n])=>{const r=lista.filter(t=>t.cat===k);if(!r.length)return'';
    return `<div class="catttl" style="--cc:${CCOL[k]}"><i></i>${esc(n)}<small>${r.length}</small></div>`+(k==='chr'?`<div class="notice" style="font-size:13px"><b>Condiciones:</b> horario ordinario L–V 07:00–12:00 y 13:00–16:00 (Art. 35); extraordinario fuera de ese horario, sábados, domingos y feriados. Servicio de 5 h o más en horario ordinario se cobra por día; 4 h o menos, por hora. Tiempo muerto = carga y descarga del medio alquilado. Para calcularlo use <b>Alquiler chárter</b> en Cálculo.</div>`:'')+r.map(t=>{const S=sym(t.cur);
     const v=t.c==='tier'?'<b>Escalonada</b>':t.c==='h1'?`<b>${S} ${fmt(t.r)}</b><small>1.ª hora · luego ${S} ${fmt(t.r2)}/h</small>`:`<b>${S} ${fmt(t.r)}</b>`;
     const tier=t.c==='tier'?`<div class="tier">${t.tiers.map(([a,b,r])=>`<span>días ${a}${b>=INF?'+':'–'+b}: ${S} ${fmt(r)}</span>`).join('')}</div>`:'';
-    return `<div class="tc"><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span></div>${tier}</div><div class="tv">${v}</div>${st?'':`<button class="add" data-add="${t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
+    return `<div class="tc"><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span></div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
 $('#tq').oninput=renderTar;
+function tipoDe(id){return ['buq','car'].find(k=>(SRV[k]||[]).includes(id))||''}
+$('#tlist').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(!b)return;const id=b.dataset.add,tp=tipoDe(id);if(!tp)return;
+  if(P.tipo!==tp){if(P.lines.length&&!confirm('Este servicio corresponde a '+TIPOS[tp]+'. Se iniciará ese tipo de cálculo y se quitarán los servicios actuales. ¿Continuar?'))return;setTipo(tp,true)}
+  addLine(id,null,true);toast('Agregado a '+TIPOS[tp]+': '+TT[id].n)});
 $('#tchips').addEventListener('click',e=>{const b=e.target.closest('[data-tcat]');if(!b)return;TCAT=b.dataset.tcat;renderTar();const nb=$('#tchips [data-tcat="'+TCAT+'"]');if(nb&&nb.scrollIntoView)nb.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})});
-$('#btnTarPdf').onclick=()=>{const lista=tarFiltradas();if(!lista.length){toast('No hay tarifas para compartir');return}
+$('#btnTarPdf').onclick=()=>{const lista=tarVista(tarFiltradas());if(!lista.length){toast('No hay tarifas para compartir');return}
   const st=soloTar(),c=st?'rci':TCAT,q=$('#tq').value.trim();const nom=c?CATS.find(x=>x[0]===c)[1]:'Pliego completo';
   const sub=nom+(q?' · búsqueda: “'+q+'”':'')+' · '+lista.length+' tarifas';
   try{abrirVisor(tarPdf(lista,sub),'Tarifas-APBB-'+slug(c?nom:'completo')+'-'+today()+'.pdf','Tarifas APBB · '+nom)}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
