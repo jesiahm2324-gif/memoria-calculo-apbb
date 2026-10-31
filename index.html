@@ -198,6 +198,19 @@ body.solo-tar.oculto #velo{display:flex}
 .tpl .chrbtn{background:color-mix(in srgb,#5c7cfa 16%,var(--card));color:var(--ink);border:1px solid #5c7cfa}
 input[type=date],input[type=datetime-local]{-webkit-appearance:none;appearance:none;min-width:0;display:block;min-height:44px;text-align:left}
 input::-webkit-date-and-time-value{text-align:left}
+/* Ajustes en lista desplegable */
+details.acc{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+details.acc>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;min-height:60px}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc .ai{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--cc) 15%,var(--card));color:var(--cc)}
+details.acc .ai svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+details.acc .at{flex:1;min-width:0}details.acc .at b{display:block;font-size:15.5px;color:var(--ink)}
+details.acc .at small{display:block;font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+details.acc .chev{font-size:24px;color:var(--mut);transition:transform .2s;flex:none;line-height:1}
+details.acc[open]>summary .chev{transform:rotate(90deg);color:var(--pri)}
+details.acc[open]>summary{border-bottom:1px solid var(--line)}
+details.acc .ab{padding:14px}
+details.acc[open] .ab{animation:entra .22s ease-out}
 /* Visor de PDF */
 #pdfv{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 85%,#000);animation:entra .2s ease-out}
 body.pv-on{overflow:hidden}
@@ -686,7 +699,7 @@ function abrirCont(id){const c=CONT.find(x=>x.id===id)||{tipo:'ag'};cerrarSheet(
     const d={id:id||newId(),n,tipo:$('#cT').value,ruc:$('#cR').value.trim(),cont:$('#cC').value.trim(),tel:$('#cTel').value.trim(),mail:$('#cM').value.trim()};
     const i=CONT.findIndex(x=>x.id===d.id);if(i>=0)CONT[i]=d;else CONT.push(d);guardarCont();
     if(!id||P.cliId===d.id){P.cliId=d.id;P.cliente=d.n;P.ruc=d.ruc}renderCliSel();renderContList();cerrarSheet();toast(id?'Datos actualizados':'Guardado: '+n)}}
-function renderContList(){const b=$('#contList');if(!b)return;const o=[...CONT].sort((a,b)=>a.n.localeCompare(b.n));
+function renderContList(){const b=$('#contList');if(!b)return;if(typeof subAju==='function')setTimeout(subAju,0);const o=[...CONT].sort((a,b)=>a.n.localeCompare(b.n));
   b.innerHTML=o.length?o.map(c=>`<div class="hi"><div><b>${esc(c.n)}</b> <span class="chip ${c.tipo==='us'?'warnc':'ok'}">${c.tipo==='us'?'Usuario':'Agencia'}</span><div class="sm">${[c.ruc&&'RUC '+c.ruc,c.cont,c.tel].filter(Boolean).map(esc).join(' · ')||'—'}</div></div><div class="row"><button class="btn2" data-cont="edit" data-id="${c.id}">Editar</button><button class="btnd" data-cont="del" data-id="${c.id}">Eliminar</button></div></div>`).join(''):'<p class="mut">Todavía no hay agencias ni usuarios guardados.</p>'}
 function cerrarSheet(){const v=$('#sheet');if(v)v.remove();if(!$('#pdfv'))document.body.classList.remove('pv-on')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cont],[data-sh]');if(!b)return;
@@ -817,7 +830,7 @@ function renderHorFer(){if(!$('#hIni'))return;$('#hIni').value=HOR.ini;$('#hFin'
   const y=new Date().getFullYear(),nac=feriadosDe(y);
   $('#ferList').innerHTML=`<details><summary class="sm">Ver feriados nacionales ${y}</summary><div class="sm" style="margin:6px 0">${Object.entries(nac).filter(([k])=>!FER.some(f=>(f.anual?y+'-'+f.f.slice(5):f.f)===k)).sort().map(([k,n])=>new Date(k+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)).join('<br>')}</div></details>`+
    (FER.length?FER.map((f,i)=>`<div class="hi"><div><b>${esc(f.n)}</b><div class="sm">${new Date(f.f+'T12:00').toLocaleDateString('es-NI',f.anual?{day:'numeric',month:'long'}:{day:'numeric',month:'long',year:'numeric'})}${f.anual?' · cada año':''}</div></div><button class="btnd" data-fdel="${i}">Quitar</button></div>`).join(''):'<p class="sm">Sin feriados locales agregados.</p>')}
-const horCambio=()=>{ls.set('epn_hor',HOR);if(P.tipo==='chr')chrRecalc()};
+const horCambio=()=>{ls.set('epn_hor',HOR);if(typeof subAju==='function')subAju();if(P.tipo==='chr')chrRecalc()};
 document.addEventListener('change',e=>{if(e.target.id==='hIni'||e.target.id==='hFin'){HOR[e.target.id==='hIni'?'ini':'fin']=e.target.value||HOR_DEF[e.target.id==='hIni'?'ini':'fin'];horCambio()}});
 document.addEventListener('click',e=>{const d=e.target.closest('[data-hd]');if(d){const i=+d.dataset.hd;HOR.dias=HOR.dias.includes(i)?HOR.dias.filter(x=>x!==i):[...HOR.dias,i];horCambio();renderHorFer()}
   const f=e.target.closest('[data-fdel]');if(f){FER.splice(+f.dataset.fdel,1);ls.set('epn_fer',FER);for(const k in _ferCache)delete _ferCache[k];renderHorFer();if(P.tipo==='chr')chrRecalc()}
@@ -865,7 +878,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.30-10';
+const APP_VER='2026.10.30-11';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1207,17 +1220,35 @@ $('#btnTarPdf').onclick=()=>{const lista=tarFiltradas();if(!lista.length){toast(
   try{abrirVisor(tarPdf(lista,sub),'Tarifas-APBB-'+slug(c?nom:'completo')+'-'+today()+'.pdf','Tarifas APBB · '+nom)}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
 
 /* ===== Ajustes ===== */
+const ACC_DEF={'Apariencia':['apa','#7048e8','<circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor"/>'],
+ 'Valores predeterminados':['val','#0e6bb8','<path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="16" r="3"/>'],
+ 'Agencias navieras y usuarios':['age','#12a06a','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.7c1.6.9 2.7 2.7 3 5.3"/>'],
+ 'Horario ordinario (viaje chárter)':['hor','#f2a900','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'],
+ 'Feriados':['fer','#c8326f','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+ 'Acerca de':['ace','#868e96','<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>']};
+(function armarAcordeon(){$$('#v-aju > .card').forEach(card=>{const h=card.querySelector(':scope > h2');if(!h)return;const tit=h.textContent.trim();const [k,cc,ico]=ACC_DEF[tit]||['x','#0b4f8a',''];
+  const d=document.createElement('details');d.className='acc';d.dataset.acc=k;d.style.setProperty('--cc',cc);
+  d.innerHTML=`<summary><span class="ai"><svg viewBox="0 0 24 24">${ico}</svg></span><span class="at"><b>${esc(tit)}</b><small id="sub-${k}"></small></span><span class="chev">›</span></summary>`;
+  const body=document.createElement('div');body.className='ab';h.remove();while(card.firstChild)body.appendChild(card.firstChild);d.appendChild(body);card.replaceWith(d)});
+  $$('#v-aju details.acc').forEach(d=>d.addEventListener('toggle',()=>{if(d.open){$$('#v-aju details.acc').forEach(o=>{if(o!==d)o.open=false});setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'nearest'}),60)}}))})();
+function subAju(){const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';const S=(k,v)=>{const e=$('#sub-'+k);if(e)e.textContent=v};
+  S('apa',{claro:'Claro',oscuro:'Oscuro',gris:'Gris claro'}[t]+' · texto '+(f==='g'?'grande':'normal'));
+  S('val','TC '+fmt(ls.get('epn_tc',36.6243),4)+(ls.get('epn_elab','')?' · '+ls.get('epn_elab',''):' · sin “Elaborado por”'));
+  S('age',CONT.length?CONT.length+' guardada'+(CONT.length===1?'':'s'):'Ninguna guardada');
+  S('hor',DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')+' · '+HOR.ini+' a '+HOR.fin);
+  S('fer','Nacionales incluidos'+(FER.length?' · '+FER.length+' local'+(FER.length===1?'':'es'):''));
+  S('ace','Versión '+APP_VER)}
 const THEME_COL={claro:'#07325a',oscuro:'#050d18',gris:'#4a5463'};
 function setTheme(t){document.documentElement.dataset.theme=t;ls.set('epn_theme',t);const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[t]||'#07325a';renderAju()}
 function setFont(f){document.documentElement.dataset.font=f;ls.set('epn_font',f);renderAju()}
-function renderAju(){renderContList();renderHorFer();const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
+function renderAju(){renderContList();renderHorFer();setTimeout(subAju,0);const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
   $$('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===t));$$('[data-font-set]').forEach(b=>b.classList.toggle('on',b.dataset.fontSet===f));
   $('#ajTc').value=ls.get('epn_tc',36.6243);$('#ajElab').value=ls.get('epn_elab','');
   $('#verTxt').textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'');$('#btnUpd2').hidden=!(PROPIA&&'serviceWorker' in navigator)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-theme-set],[data-font-set],[data-go]');if(!b)return;
   if(b.dataset.themeSet)setTheme(b.dataset.themeSet);if(b.dataset.fontSet)setFont(b.dataset.fontSet);if(b.dataset.go)show(b.dataset.go)});
-$('#ajTc').oninput=e=>{ls.set('epn_tc',e.target.value);if(!P.lines.length){P.tc=e.target.value;bindMeta();updTot()}};
-$('#ajElab').oninput=e=>{ls.set('epn_elab',e.target.value);P.elab=e.target.value;bindMeta()};
+$('#ajTc').oninput=e=>{ls.set('epn_tc',e.target.value);subAju();if(!P.lines.length){P.tc=e.target.value;bindMeta();updTot()}};
+$('#ajElab').oninput=e=>{ls.set('epn_elab',e.target.value);subAju();P.elab=e.target.value;bindMeta()};
 $('#btnUpd2').onclick=async()=>{try{const r=await navigator.serviceWorker.getRegistration();if(r){await r.update();toast('Buscando… si hay una versión nueva aparecerá el aviso')}}catch(e){toast('Sin conexión')}};
 {const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[document.documentElement.dataset.theme]||'#07325a'}
 
