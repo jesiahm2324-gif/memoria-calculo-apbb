@@ -26,6 +26,7 @@
  --srcfg:#5f4c1d;--srcbg:#ece3cb;--hdr1:#4a5463;--hdr2:#6b7a8e;--bar:rgba(244,245,247,.94);--shadow:0 6px 20px -12px rgba(40,48,60,.35);color-scheme:light}
 [data-font="g"]{font-size:17px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 html,body{overflow-x:hidden;max-width:100%}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;transition:background .3s,color .3s}
 [data-font="g"] body{font-size:17px}
@@ -152,6 +153,31 @@ body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .
 .seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
 .seg button{background:transparent;color:var(--mut);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+/* Tipos de servicio */
+.tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.tipo{display:flex;flex-direction:column;align-items:flex-start;gap:3px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:11px 10px;text-align:left;color:var(--ink);box-shadow:var(--shadow)}
+.tipo svg{width:26px;height:26px;stroke:var(--cc);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:2px}
+.tipo b{font-size:13.5px;line-height:1.2}.tipo small{font-size:11px;color:var(--mut);line-height:1.2}
+.tipo.on{border-color:var(--cc);background:color-mix(in srgb,var(--cc) 12%,var(--card));box-shadow:0 0 0 3px color-mix(in srgb,var(--cc) 22%,transparent)}
+@media (max-width:380px){.tipo small{display:none}}
+.lnro{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;margin-top:6px}.lnro b{font-size:16px;color:var(--pri);white-space:nowrap}
+.ln.nuevo{animation:resalta 1.2s ease-out}
+@keyframes resalta{0%{box-shadow:0 0 0 3px var(--acc)}100%{box-shadow:none}}
+.leg{border:1px solid var(--line);border-left:4px solid #f2a900;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.leg-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.leg-h .x{background:var(--badbg);color:var(--bad);width:30px;height:30px;padding:0}
+.tt-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.ttab{width:100%;border-collapse:collapse;font-size:13.5px}
+.ttab th{background:var(--soft);color:var(--pri);text-align:left;padding:7px 9px;font-size:12px}
+.ttab td{padding:7px 9px;border-top:1px solid var(--line);white-space:nowrap}
+.ttab tfoot td{font-weight:700;background:var(--soft)}
+.tag{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:999px}.tag.f{background:var(--badbg);color:var(--bad)}.tag.w{background:var(--warnbg);color:var(--warnfg)}
+.pk{margin-top:10px;display:flex;flex-direction:column}
+.pk-c{font-size:12px;font-weight:700;color:var(--mut);padding:10px 2px 6px;display:flex;align-items:center;gap:6px}.pk-c::before{content:"";width:8px;height:16px;border-radius:3px;background:var(--cc)}
+.pk-i{display:flex;justify-content:space-between;gap:10px;text-align:left;background:var(--soft);color:var(--ink);border-radius:12px;padding:11px 12px;margin-bottom:6px}
+.pk-i b{display:block;font-weight:600}.pk-i small{display:block;font-size:11.5px;color:var(--mut)}
+.pk-r{text-align:right;white-space:nowrap;font-weight:700;color:var(--pri)}.pk-r small{color:var(--ok)}
+.dias{display:flex;flex-wrap:wrap;gap:6px}.dia{background:var(--soft);color:var(--mut);padding:8px 11px;border-radius:999px;font-weight:600;font-size:13px}.dia.on{background:var(--pri);color:#fff}
+[data-theme="oscuro"] .dia.on{color:#06192b}
 /* Hoja de chárter */
 .sheet-bg{position:fixed;inset:0;z-index:35;background:rgba(5,12,22,.55);display:flex;align-items:flex-end;justify-content:center;animation:entra .2s ease-out}
 .sheet{background:var(--card);color:var(--ink);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));border-top:4px solid var(--acc)}
@@ -234,61 +260,76 @@ body.pv-on{overflow:hidden}
 <div id="aviso"></div>
 <!-- CÁLCULO -->
 <section class="view on" id="v-pf">
+ <div class="tipos" id="tipos">
+  <button class="tipo" data-tipo="buq" style="--cc:#0e6bb8"><svg viewBox="0 0 24 24"><path d="M3 17l2 3h14l2-3M5 17V11h14v6M8 11V7h8v4M12 3v4"/><path d="M2 21c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"/></svg><b>Buque mercante</b><small>Atención al buque</small></button>
+  <button class="tipo" data-tipo="car" style="--cc:#c8326f"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="1.5"/><path d="M7 8v10M11 8v10M15 8v10M3 5h18"/></svg><b>Servicio a la carga</b><small>Importación / exportación</small></button>
+  <button class="tipo" data-tipo="chr" style="--cc:#f2a900"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><b>Viaje chárter</b><small>Remolcador · motonave</small></button>
+ </div>
+
  <div class="card">
-  <h2><span class="n">1</span>Datos generales</h2>
+  <h2><span class="n">1</span>Datos</h2>
   <div class="grid">
-   <div><label>Referencia / asunto (opcional)</label><input data-k="ref" placeholder="Ej.: Consulta agencia, escala MV…"></div>
+   <div style="grid-column:1/-1"><label for="cliSel" id="cliLbl">Agencia naviera / usuario</label><div class="row" style="flex-wrap:nowrap"><select id="cliSel" style="flex:1"></select><button class="btn2" data-cont="new" style="flex:none" aria-label="Nueva agencia o usuario">+ Nueva</button></div></div>
+   <div><label>Referencia (opcional)</label><input data-k="ref" placeholder="Ej.: Escala MV…"></div>
    <div><label>Fecha</label><input type="date" data-k="fecha"></div>
-   <div><label>Cliente / consignatario</label><input data-k="cliente"></div>
-   <div><label>RUC / identificación</label><input data-k="ruc"></div>
-   <div><label>Agencia naviera</label><input data-k="agencia"></div>
-   <div><label>Buque / embarcación</label><input data-k="buque"></div>
-   <div><label>Bandera</label><select data-k="bandera"><option>Extranjera</option><option>Nacional</option></select></div>
-   <div><label>Actividad</label><select data-k="act"><option>Internacional</option><option>Cabotaje nacional</option><option>Pesca nacional</option></select></div>
+  </div>
+  <div class="grid" data-t="buq" style="margin-top:10px">
+   <div><label>Buque</label><input data-k="buque"></div>
    <div><label>TAB (arqueo bruto)</label><input type="number" step="any" min="0" inputmode="decimal" data-k="tab"></div>
    <div><label>Eslora (m)</label><input type="number" step="any" min="0" inputmode="decimal" data-k="eslora"></div>
-   <div><label>ETA</label><input type="datetime-local" data-k="eta"></div>
+   <div><label>Atraque (fecha y hora)</label><input type="datetime-local" data-k="atr"></div>
+   <div><label>Desatraque (fecha y hora)</label><input type="datetime-local" data-k="des"></div>
+   <div style="display:flex;align-items:end"><p class="sm" id="estInfo" style="margin:0 0 10px"></p></div>
+  </div>
+  <div class="grid" data-t="car" style="margin-top:10px">
+   <div><label>Buque</label><input data-k="buque"></div>
+   <div><label>Operación</label><select data-k="oper"><option value="imp">Importación</option><option value="exp">Exportación</option></select></div>
+   <div><label>Tipo de carga</label><select data-k="ccarga"><option value="gen">General</option><option value="pel">Peligrosa</option></select></div>
+   <div><label>Descripción de la carga</label><input data-k="desc_carga" placeholder="Ej.: cemento, contenedores…"></div>
+   <div><label>Cantidad total (TM o m³)</label><input type="number" step="any" min="0" inputmode="decimal" data-k="tm"></div>
+   <div><label>Días en recinto</label><input type="number" step="1" min="0" inputmode="numeric" data-k="dias"></div>
+   <div style="grid-column:1/-1"><label class="chk"><input type="checkbox" data-k="exCoc"> Petróleo o banano (no paga COCATRAM)</label></div>
+  </div>
+  <div class="grid" data-t="chr" style="margin-top:10px">
+   <div style="grid-column:1/-1"><label>Medio alquilado</label><select data-k="medio">
+    <option value="rem">Remolcador (Pedro Araúz Palacios / Jimmy Boppel)</option>
+    <option value="mot">Motonave (Hilario Sánchez / Río Escondido)</option>
+    <option value="pcz">Remolcador a Puerto Cabezas (tarifa global, 3 días)</option>
+    <option value="cor">Remolcador a Corn Island (tarifa global, 2 días)</option></select></div>
+   <div style="grid-column:1/-1"><label class="chk"><input type="checkbox" data-k="plana"> Incluye alquiler de plana (US$ 400 por día o fracción)</label></div>
   </div>
  </div>
- <div class="card">
-  <h2><span class="n">2</span>Agregar servicios</h2>
-  <div class="grid">
-   <div><label>Buscar tarifa</label><input id="q" type="search" placeholder="Ej.: practicaje, contenedor, cemento…"></div>
-   <div><label>Categoría</label><select id="cat"></select></div>
-  </div>
-  <div class="tpl"><span class="sm" style="width:100%">Plantillas rápidas:</span>
-   <button data-tpl="intl">Buque internacional</button>
-   <button data-tpl="ivm">Buque tanque IV Marías</button>
-   <button data-tpl="cab">Cabotaje muelle marginal</button>
-   <button data-chr="open" class="chrbtn">Alquiler chárter (remolcador · motonave · plana)</button>
-  </div>
-  <div class="res" id="res"></div>
+
+ <div class="card" data-t="chr">
+  <h2><span class="n">2</span>Itinerario del viaje</h2>
+  <p class="sm" style="margin-top:0">Se cuenta desde la salida del puerto de origen hasta el atraque en el destino final. El tiempo entre la llegada a un puerto y la siguiente salida se cobra como tiempo muerto (carga y descarga).</p>
+  <div id="itin"></div>
+  <button class="btn2" id="btnTramo" style="width:100%;margin-top:4px">+ Agregar tramo</button>
+  <div class="grid" style="margin-top:10px"><div><label>Horas de carga/descarga en el destino final</label><input type="number" step="any" min="0" inputmode="decimal" data-k="desc" placeholder="0"></div></div>
+  <div id="tiempos" style="margin-top:12px"></div>
  </div>
+
  <div class="card">
-  <h2><span class="n">3</span>Servicios del cálculo</h2>
+  <h2><span class="n" id="nServ">2</span><span id="tServ">Servicios</span></h2>
   <div id="lines"></div>
+  <div data-t="buq car" class="row" style="margin-top:6px">
+   <button class="btn" data-pick style="flex:1">+ Agregar servicio</button>
+   <button class="btn2" data-tpl="buq" data-t="buq">Atraque estándar</button>
+  </div>
  </div>
+
  <div class="card">
-  <h2><span class="n">4</span>Totales</h2>
+  <h2><span class="n" id="nTot">3</span>Totales</h2>
   <div class="grid">
    <div><label>Tipo de cambio oficial (C$ por US$)</label><input type="number" step="any" min="0" inputmode="decimal" data-k="tc"></div>
    <div><label>Moneda del total</label><select data-k="mon"><option value="USD">Dólares (US$)</option><option value="NIO">Córdobas (C$)</option></select></div>
-   <div style="display:flex;align-items:end"><label class="chk"><input type="checkbox" data-k="iva"> Aplicar IVA 15 %</label></div>
+   <div style="display:flex;align-items:end" data-t="buq car"><label class="chk"><input type="checkbox" data-k="iva"> Aplicar IVA 15 %</label></div>
   </div>
-  <p class="sm">Las tarifas no incluyen IVA (Art. 8). Desmarque si el cliente presenta exoneración vigente.</p>
+  <p class="sm" id="ivaNota"></p>
   <table class="tot" id="tot"></table>
   <div style="margin-top:10px"><label>Observaciones</label><textarea data-k="obs"></textarea></div>
   <div style="margin-top:10px"><label>Elaborado por</label><input data-k="elab"></div>
  </div>
-</section>
-
-<!-- VISTA PREVIA -->
-<section class="view" id="v-prev">
- <div class="row" style="margin-bottom:12px;justify-content:space-between">
-  <button class="btn2" data-go="pf">‹ Volver al cálculo</button>
-  <div class="row"><button class="btn2" id="btnPrint">Imprimir</button><button class="btn pdfbtn" id="btnMemPdf"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Ver PDF</button></div>
- </div>
- <div id="printArea"></div>
 </section>
 
 <!-- TARIFAS -->
@@ -329,6 +370,30 @@ body.pv-on{overflow:hidden}
    <div><label>Elaborado por</label><input id="ajElab" placeholder="Su nombre y cargo"></div>
   </div>
   <p class="sm">Se usan en cada cálculo nuevo. Actualice el tipo de cambio con el oficial del BCN.</p>
+ </div>
+ <div class="card"><h2>Agencias navieras y usuarios</h2>
+  <p class="sm" style="margin-top:0">Se guardan en este teléfono y aparecen en el selector de Datos. Se incluyen en el respaldo.</p>
+  <div id="contList"></div>
+  <button class="btn2" data-cont="new" style="width:100%">+ Agregar agencia o usuario</button>
+ </div>
+ <div class="card"><h2>Horario ordinario (viaje chárter)</h2>
+  <div class="grid">
+   <div><label>Inicia</label><input type="time" id="hIni"></div>
+   <div><label>Termina</label><input type="time" id="hFin"></div>
+  </div>
+  <label style="margin-top:10px">Días laborales</label>
+  <div class="dias" id="hDias"></div>
+  <p class="sm">Fuera de ese horario, en días no laborales y en feriados, todo el tiempo es extraordinario.</p>
+ </div>
+ <div class="card"><h2>Feriados</h2>
+  <p class="sm" style="margin-top:0">Los feriados nacionales ya están incluidos (Jueves y Viernes Santo se calculan cada año). Agregue los feriados locales.</p>
+  <div id="ferList"></div>
+  <div class="grid" style="margin-top:8px">
+   <div><label>Fecha</label><input type="date" id="fFecha"></div>
+   <div><label>Nombre</label><input id="fNom" placeholder="Ej.: Feriado local Bluefields"></div>
+   <div style="display:flex;align-items:end"><label class="chk"><input type="checkbox" id="fAnual" checked> Se repite cada año</label></div>
+  </div>
+  <button class="btn2" id="btnFer" style="width:100%;margin-top:8px">+ Agregar feriado</button>
  </div>
  <div class="card"><h2>Acerca de</h2><p class="sm" id="verTxt" style="margin:0 0 10px"></p><button class="btn2" id="btnUpd2" hidden>Buscar actualización</button></div>
 </section>
@@ -550,111 +615,224 @@ function calc(l){const t=TT[l.tid];const ce=Math.ceil;const q1=Math.max(0,+l.q1|
 /* ===== Estado ===== */
 const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-function newPF(){return{id:newId(),ref:'',fecha:today(),cliente:'',ruc:'',agencia:'',buque:'',bandera:'Extranjera',act:'Internacional',tab:'',eslora:'',eta:'',obs:'',elab:ls.get('epn_elab',''),tc:ls.get('epn_tc',36.6243),iva:true,mon:'USD',lines:[]}}
+const TIPOS={buq:'Atención a buque mercante',car:'Servicio a la carga',chr:'Viaje chárter'};
+function newPF(tipo){tipo=tipo||ls.get('epn_tipo','buq');return{id:newId(),tipo,ref:'',fecha:today(),cliId:'',cliente:'',ruc:'',
+  buque:'',tab:'',eslora:'',atr:'',des:'',oper:'imp',ccarga:'gen',desc_carga:'',tm:'',dias:'',exCoc:false,
+  medio:'rem',plana:false,itin:[{de:'El Bluff',a:'',sal:'',lle:''}],desc:'',
+  obs:'',elab:ls.get('epn_elab',''),tc:ls.get('epn_tc',36.6243),iva:tipo!=='chr',mon:'USD',lines:[]}}
 let P=newPF();
+const norm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const CATN=Object.fromEntries(CATS);
+const hay=t=>norm(t.n+' '+t.unit+' '+CATN[t.cat]);
+if(TT.cocat){TT.cocat.cat='car';TT.cocat.noIva=true}
 
-function bindMeta(){$$('[data-k]').forEach(el=>{const k=el.dataset.k;if(el.type==='checkbox')el.checked=!!P[k];else el.value=P[k]??''})}
-document.addEventListener('input',e=>{const el=e.target;if(!el.dataset||!el.dataset.k)return;const k=el.dataset.k;P[k]=el.type==='checkbox'?el.checked:el.value;
- if(k==='tc')ls.set('epn_tc',P.tc);if(k==='elab')ls.set('epn_elab',P.elab);
- if(k==='tab'||k==='eslora'){let ch=false;P.lines.forEach(l=>{const c=TT[l.tid].c;if(l.auto&&((k==='tab'&&(c==='tab'||c==='tab_dia'))||(k==='eslora'&&c==='esl_h'))){l.q1=+P[k]||0;ch=true}});if(ch)renderLines()}
- updTot()});
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.k){P[el.dataset.k]=el.type==='checkbox'?el.checked:el.value;updTot()}});
+function bindMeta(){$$('[data-k]').forEach(el=>{const k=el.dataset.k;if(el.type==='checkbox')el.checked=!!P[k];else el.value=P[k]??''});renderCliSel()}
+const AUTO_KEYS=['tab','eslora','atr','des','tm','dias','exCoc','oper'];
+function onMeta(el){const k=el.dataset.k;P[k]=el.type==='checkbox'?el.checked:el.value;
+  if(k==='tc')ls.set('epn_tc',P.tc);if(k==='elab')ls.set('epn_elab',P.elab);
+  if(k==='buque')$$('[data-k=buque]').forEach(x=>{if(x!==el)x.value=P.buque});
+  if(P.tipo==='chr'&&['medio','plana','desc'].includes(k)){chrRecalc();return}
+  if(AUTO_KEYS.includes(k)){P.lines.forEach(autoQ);syncCoc();renderLines();estInfo();return}
+  updTot()}
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.k&&el.closest('#v-pf'))onMeta(el)});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.k&&el.closest('#v-pf'))onMeta(el)});
 
-/* ===== Catálogo ===== */
-const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-$('#cat').innerHTML='<option value="">Todas las categorías</option>'+CATS.map(([k,n])=>`<option value="${k}">${n}</option>`).join('');
-$('#cat').value='buq';
-const CATN=Object.fromEntries(CATS);const KW={chr:'charter chárter alquiler viaje flete remolcador motonave plana'};
-const hay=t=>norm(t.n+' '+t.unit+' '+CATN[t.cat]+' '+(KW[t.cat]||''));
-function renderRes(){const q=norm($('#q').value.trim()),c=$('#cat').value;
- let r=T.filter(t=>(q?q.split(/\s+/).every(w=>hay(t).includes(w)):(!c||t.cat===c)));
- $('#res').innerHTML=r.length?r.slice(0,60).map(t=>`<div class="ri"><div><b>${esc(t.n)}</b><div class="sm">${rateTxt(t)} · ${esc(t.unit)} · <span class="src">${t.src}</span></div></div><button class="add" data-add="${t.id}" aria-label="Agregar">+</button></div>`).join(''):'<div class="ri mut">Sin resultados</div>'}
-$('#q').oninput=renderRes;$('#cat').onchange=renderRes;
-document.addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b){addLine(b.dataset.add)}});
+/* ===== Tipo de servicio ===== */
+function setTipo(t,force){if(P.tipo===t&&!force)return;
+  if(!force&&P.lines.length&&!confirm('Al cambiar el tipo de servicio se quitan los servicios agregados. ¿Continuar?'))return;
+  P.tipo=t;P.lines=[];P.id=newId();P.iva=t!=='chr';ls.set('epn_tipo',t);if(t==='chr'&&(!P.itin||!P.itin.length))P.itin=[{de:'El Bluff',a:'',sal:'',lle:''}];
+  applyTipo();bindMeta();if(t==='chr')chrRecalc();else{syncCoc();renderLines()}}
+function applyTipo(){const t=P.tipo;$$('#tipos .tipo').forEach(b=>b.classList.toggle('on',b.dataset.tipo===t));
+  $$('#v-pf [data-t]').forEach(el=>{el.hidden=!el.dataset.t.split(' ').includes(t)});
+  $('#cliLbl').textContent=t==='car'?'Consignatario / agencia naviera':t==='chr'?'Cliente / usuario':'Agencia naviera / usuario';
+  $('#tServ').textContent=t==='chr'?'Cálculo del viaje':t==='car'?'Servicios a la carga':'Servicios al buque';
+  $('#nServ').textContent=t==='chr'?'3':'2';$('#nTot').textContent=t==='chr'?'4':'3';
+  $('#ivaNota').textContent=t==='chr'?'El servicio chárter no lleva IVA.':t==='car'?'Las tarifas no incluyen IVA (Art. 8). COCATRAM no forma parte de la base del IVA. Desmarque el IVA si hay exoneración vigente.':'Las tarifas no incluyen IVA (Art. 8). Desmarque si el cliente presenta exoneración vigente.';
+  estInfo()}
+$('#tipos').addEventListener('click',e=>{const b=e.target.closest('[data-tipo]');if(b)setTipo(b.dataset.tipo)});
 
-function addLine(id,o,quiet){const t=TT[id],c=CALC[t.c];const l={tid:id,q1:1,q2:c.q2?c.d2:'',auto:false};
- if(t.c==='tab'||t.c==='tab_dia'){l.q1=+P.tab||0;l.auto=true}
- if(t.c==='esl_h'){l.q1=+P.eslora||0;l.auto=true}
- Object.assign(l,o||{});P.lines.push(l);renderLines();if(!quiet)toast('Agregado: '+t.n)}
+/* ===== Libreta de agencias y usuarios ===== */
+let CONT=ls.get('epn_contactos',[]);
+const guardarCont=()=>ls.set('epn_contactos',CONT);
+function renderCliSel(){const s=$('#cliSel');if(!s)return;const o=[...CONT].sort((a,b)=>a.n.localeCompare(b.n));
+  const g=(tp,lb)=>{const r=o.filter(c=>(c.tipo||'ag')===tp);return r.length?`<optgroup label="${lb}">${r.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join('')}</optgroup>`:''};
+  s.innerHTML='<option value="">'+(CONT.length?'— Seleccione —':'— Aún no hay agencias guardadas —')+'</option>'+g('ag','Agencias navieras')+g('us','Usuarios / clientes')+'<option value="__new">+ Agregar nueva…</option>';
+  s.value=P.cliId&&CONT.some(c=>c.id===P.cliId)?P.cliId:'';
+  if(!s.value&&P.cliente){const op=document.createElement('option');op.value='__old';op.textContent=P.cliente;s.insertBefore(op,s.options[1]);s.value='__old'}}
+$('#cliSel').onchange=e=>{const v=e.target.value;if(v==='__new'){e.target.value=P.cliId||'';abrirCont();return}if(v==='__old')return;
+  const c=CONT.find(x=>x.id===v);P.cliId=c?c.id:'';P.cliente=c?c.n:'';P.ruc=c?c.ruc||'':'';updTot()};
+function abrirCont(id){const c=CONT.find(x=>x.id===id)||{tipo:'ag'};cerrarSheet();
+  const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
+  v.innerHTML=`<form class="sheet" id="fCont" role="dialog" aria-modal="true"><div class="sh-h"><b>${id?'Editar':'Nueva'} agencia o usuario</b><button type="button" class="pv-x" data-sh="close">✕</button></div>
+   <div class="grid"><div style="grid-column:1/-1"><label>Nombre</label><input id="cN" required value="${esc(c.n||'')}"></div>
+    <div><label>Tipo</label><select id="cT"><option value="ag">Agencia naviera</option><option value="us">Usuario / cliente</option></select></div>
+    <div><label>RUC / identificación</label><input id="cR" value="${esc(c.ruc||'')}"></div>
+    <div><label>Persona de contacto</label><input id="cC" value="${esc(c.cont||'')}"></div>
+    <div><label>Teléfono</label><input id="cTel" type="tel" value="${esc(c.tel||'')}"></div>
+    <div style="grid-column:1/-1"><label>Correo</label><input id="cM" type="email" value="${esc(c.mail||'')}"></div></div>
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button type="button" class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" style="flex:2">Guardar</button></div></form>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');$('#cT').value=c.tipo||'ag';setTimeout(()=>$('#cN').focus(),50);
+  $('#fCont').onsubmit=e=>{e.preventDefault();const n=$('#cN').value.trim();if(!n)return;
+    const d={id:id||newId(),n,tipo:$('#cT').value,ruc:$('#cR').value.trim(),cont:$('#cC').value.trim(),tel:$('#cTel').value.trim(),mail:$('#cM').value.trim()};
+    const i=CONT.findIndex(x=>x.id===d.id);if(i>=0)CONT[i]=d;else CONT.push(d);guardarCont();
+    if(!id||P.cliId===d.id){P.cliId=d.id;P.cliente=d.n;P.ruc=d.ruc}renderCliSel();renderContList();cerrarSheet();toast(id?'Datos actualizados':'Guardado: '+n)}}
+function renderContList(){const b=$('#contList');if(!b)return;const o=[...CONT].sort((a,b)=>a.n.localeCompare(b.n));
+  b.innerHTML=o.length?o.map(c=>`<div class="hi"><div><b>${esc(c.n)}</b> <span class="chip ${c.tipo==='us'?'warnc':'ok'}">${c.tipo==='us'?'Usuario':'Agencia'}</span><div class="sm">${[c.ruc&&'RUC '+c.ruc,c.cont,c.tel].filter(Boolean).map(esc).join(' · ')||'—'}</div></div><div class="row"><button class="btn2" data-cont="edit" data-id="${c.id}">Editar</button><button class="btnd" data-cont="del" data-id="${c.id}">Eliminar</button></div></div>`).join(''):'<p class="mut">Todavía no hay agencias ni usuarios guardados.</p>'}
+function cerrarSheet(){const v=$('#sheet');if(v)v.remove();if(!$('#pdfv'))document.body.classList.remove('pv-on')}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cont],[data-sh]');if(!b)return;
+  if(b.dataset.sh==='close')return cerrarSheet();
+  const a=b.dataset.cont;if(a==='new')abrirCont();else if(a==='edit')abrirCont(b.dataset.id);
+  else if(a==='del'){if(!b.dataset.armed){b.dataset.armed=1;b.textContent='Toque de nuevo';return}CONT=CONT.filter(x=>x.id!==b.dataset.id);guardarCont();if(P.cliId===b.dataset.id)P.cliId='';renderContList();renderCliSel()}});
 
-const TPL={
- intl:[['faros'],['prbar',{q2:2}],['amarre'],['remol',{q1:2}],['estconv',{q2:24}],['limp'],['protb']],
- ivm:[['ivnav'],['ivam'],['ivpb'],['ivrem'],['ivest',{q1:24}],['ivpr']],
- cab:[['ce20m',{q1:4}],['cl45']]
-};
-$$('[data-tpl]').forEach(b=>b.onclick=()=>{TPL[b.dataset.tpl].forEach(([id,o])=>addLine(id,o,true));toast('Plantilla agregada; ajuste cantidades')});
+/* ===== Servicios: selector y cantidades automáticas ===== */
+const SRV={buq:T.filter(t=>t.cat==='buq').map(t=>t.id).concat(['ener','agua','apan','arem']),
+  car:T.filter(t=>['car','con','alm','veh'].includes(t.cat)&&t.id!=='cocat').map(t=>t.id).concat(['grua','mc35','mc7','trac','trai'])};
+function estadiaH(){if(!P.atr||!P.des)return 0;const h=(new Date(P.des)-new Date(P.atr))/36e5;return h>0?Math.ceil(h-1e-9):0}
+function estInfo(){const el=$('#estInfo');if(!el)return;const h=estadiaH();el.textContent=P.atr&&P.des?(h?'Estadía en muelle: '+h+' h (se usa en la estadía en puesto de atraque)':'El desatraque debe ser después del atraque'):'Con atraque y desatraque se calcula la estadía en muelle.'}
+function autoQ(l){const t=TT[l.tid];if(!t)return;const c=t.c;
+  if(l.auto!==false){if(c==='tab'||c==='tab_dia')l.q1=+P.tab||0;else if(c==='esl_h')l.q1=+P.eslora||0;else if(P.tipo==='car'&&(c==='tm'||c==='tm_dia'||c==='tm_gr'))l.q1=+P.tm||0}
+  if(l.auto2!==false){if(c==='esl_h'){const h=estadiaH();if(h)l.q2=h}else if(P.tipo==='car'&&(c==='tm_gr'||c==='tm_dia'||c==='tier')&&+P.dias)l.q2=+P.dias}}
+function syncCoc(){if(P.tipo!=='car'){P.lines=P.lines.filter(l=>!l.sys);return}const i=P.lines.findIndex(l=>l.sys&&l.tid==='cocat');
+  if(!P.exCoc&&(+P.tm||0)>0){if(i<0)P.lines.push({tid:'cocat',sys:true,q1:+P.tm,q2:'',nota:'COCATRAM sobre la carga de '+(P.oper==='exp'?'exportación':'importación')});else{P.lines[i].q1=+P.tm;P.lines[i].nota='COCATRAM sobre la carga de '+(P.oper==='exp'?'exportación':'importación')}}
+  else if(i>=0)P.lines.splice(i,1)}
+function addLine(id,o,quiet){const t=TT[id],c=CALC[t.c];const l={tid:id,q1:1,q2:c.q2?c.d2:'',auto:true,auto2:true};autoQ(l);Object.assign(l,o||{});
+  const ci=P.lines.findIndex(x=>x.sys);if(ci>=0)P.lines.splice(ci,0,l);else P.lines.push(l);renderLines();if(!quiet){toast('Agregado: '+t.n);setTimeout(()=>{const x=$('#lines .ln.nuevo');if(x)x.scrollIntoView({behavior:'smooth',block:'center'})},60)}}
+const TPL={buq:[['faros'],['prbar',{q2:2,auto2:false}],['amarre'],['remol',{q1:2}],['estconv'],['limp'],['protb']]};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-tpl]');if(!b||!TPL[b.dataset.tpl])return;TPL[b.dataset.tpl].forEach(([id,o])=>addLine(id,o,true));toast('Servicios agregados; revise las cantidades')});
+function abrirPicker(){cerrarSheet();const ids=SRV[P.tipo]||[];
+  const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
+  v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>Agregar servicio</b><button class="pv-x" data-sh="close">✕</button></div>
+   <input id="pkQ" type="search" placeholder="Buscar servicio…" autocomplete="off"><div id="pkL" class="pk"></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');
+  const pinta=()=>{const q=norm($('#pkQ').value.trim());let r=ids.map(i=>TT[i]).filter(Boolean);
+    if(P.tipo==='car')r=r.filter(t=>{const n=norm(t.n);return P.oper==='exp'?!/importaci/.test(n):!/exportaci/.test(n)});
+    if(q)r=r.filter(t=>q.split(/\s+/).every(w=>hay(t).includes(w)));
+    let last='';$('#pkL').innerHTML=r.map(t=>{const h=t.cat!==last?`<div class="pk-c" style="--cc:${CCOL[t.cat]}">${esc(CATN[t.cat])}</div>`:'';last=t.cat;
+      const ya=P.lines.some(l=>l.tid===t.id);return h+`<button class="pk-i" data-pk="${t.id}"><span><b>${esc(t.n)}</b><small>${esc(t.unit)}</small></span><span class="pk-r">${t.c==='tier'?'Escalonada':sym(t.cur)+' '+fmt(t.r)}${ya?'<small>ya agregado</small>':''}</span></button>`}).join('')||'<p class="mut" style="padding:16px">Sin resultados.</p>'};
+  $('#pkQ').oninput=pinta;pinta()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pick],[data-pk]');if(!b)return;if(b.hasAttribute('data-pick'))return abrirPicker();cerrarSheet();addLine(b.dataset.pk)});
 
 /* ===== Líneas ===== */
-function renderLines(){const box=$('#lines');
- if(!P.lines.length){box.innerHTML='<p class="mut">Aún no hay servicios. Agréguelos desde el paso 2 o use una plantilla.</p>';updTot();return}
- box.innerHTML=P.lines.map((l,i)=>{const t=TT[l.tid],c=CALC[t.c],r=calc(l);return `<div class="ln" data-i="${i}" style="--cc:${CCOL[t.cat]||'var(--pri)'}">
-  <div class="lnh"><div><b>${esc(t.n)}</b><div class="sm">${rateTxt(t)} · ${esc(t.unit)} · <span class="src">${t.src}</span></div></div><button class="x" data-del="${i}" aria-label="Quitar">✕</button></div>
-  <div class="lnq"><div><label>${c.q1}</label><input type="number" step="any" min="0" data-q="q1" value="${l.q1}"></div>
-  ${c.q2?`<div><label>${c.q2}</label><input type="number" step="any" min="0" data-q="q2" value="${l.q2}"></div>`:'<div></div>'}
-  <div class="amt"><label>Importe</label><b data-amt>${money(r.a,t.cur)}</b><div class="sm" data-det>${esc(r.d)}</div></div></div></div>`}).join('');
- updTot()}
-$('#lines').addEventListener('input',e=>{const inp=e.target.closest('[data-q]');if(!inp)return;e.stopPropagation();const box=inp.closest('.ln'),l=P.lines[+box.dataset.i];l[inp.dataset.q]=inp.value;if(inp.dataset.q==='q1')l.auto=false;const r=calc(l);box.querySelector('[data-amt]').textContent=money(r.a,TT[l.tid].cur);box.querySelector('[data-det]').textContent=r.d;updTot()});
+function renderLines(){const box=$('#lines');const ro=P.tipo==='chr';
+  if(!P.lines.length){box.innerHTML=ro?'<p class="mut">Complete el itinerario para ver el cálculo.</p>':'<p class="mut">Aún no hay servicios. Toque “+ Agregar servicio”.</p>';updTot();return}
+  const nl=P.lines.length-1;
+  box.innerHTML=P.lines.map((l,i)=>{const t=TT[l.tid],c=CALC[t.c],r=calc(l);const fijo=ro||l.sys;
+   return `<div class="ln${i===nl&&!ro?' nuevo':''}" data-i="${i}" style="--cc:${CCOL[t.cat]||'var(--pri)'}">
+   <div class="lnh"><div><b>${esc(t.n)}</b><div class="sm">${rateTxt(t)} · ${esc(t.unit)}${l.sys?' · <b>obligatorio</b>':''}</div></div>${fijo?'':`<button class="x" data-del="${i}" aria-label="Quitar">✕</button>`}</div>
+   ${fijo?`<div class="lnro"><span class="sm" data-det>${esc(r.d)}</span><b data-amt>${money(r.a,t.cur)}</b></div>`:
+   `<div class="lnq"><div><label>${c.q1}</label><input type="number" step="any" min="0" inputmode="decimal" data-q="q1" value="${l.q1}"></div>
+   ${c.q2?`<div><label>${c.q2}</label><input type="number" step="any" min="0" inputmode="decimal" data-q="q2" value="${l.q2}"></div>`:'<div></div>'}
+   <div class="amt"><label>Importe</label><b data-amt>${money(r.a,t.cur)}</b><div class="sm" data-det>${esc(r.d)}</div></div></div>`}</div>`}).join('');
+  updTot()}
+$('#lines').addEventListener('input',e=>{const inp=e.target.closest('[data-q]');if(!inp)return;e.stopPropagation();const box=inp.closest('.ln'),l=P.lines[+box.dataset.i];l[inp.dataset.q]=inp.value;if(inp.dataset.q==='q1')l.auto=false;else l.auto2=false;const r=calc(l);box.querySelector('[data-amt]').textContent=money(r.a,TT[l.tid].cur);box.querySelector('[data-det]').textContent=r.d;updTot()});
 $('#lines').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){P.lines.splice(+b.dataset.del,1);renderLines()}});
 
 /* ===== Totales ===== */
-function totals(){let u=0,n=0;P.lines.forEach(l=>{const a=calc(l).a;TT[l.tid].cur==='USD'?u+=a:n+=a});
- const tc=+P.tc||0,iv=P.iva?0.15:0,mon=P.mon;
- const sub=mon==='USD'?u+(tc?n/tc:0):n+u*tc;
- return{u,n,tc,iv,mon,sub,iva:sub*iv,total:sub*(1+iv)}}
+function totals(){const tc=+P.tc||0,mon=P.mon;let u=0,n=0,noIva=0;const conv=(a,c)=>c===mon?a:(mon==='USD'?(tc?a/tc:0):a*tc);
+  P.lines.forEach(l=>{const t=TT[l.tid],a=calc(l).a;t.cur==='USD'?u+=a:n+=a;if(t.noIva)noIva+=conv(a,t.cur)});
+  const iv=P.tipo==='chr'?0:(P.iva?0.15:0);const sub=mon==='USD'?u+(tc?n/tc:0):n+u*tc;const base=Math.max(0,sub-noIva);
+  return{u,n,tc,iv,mon,sub,noIva,base,iva:base*iv,total:sub+base*iv}}
 function updTot(){const t=totals();const pt=$('#pillTot');if(pt){const nv=money(t.total,t.mon);if(pt.textContent!==nv){pt.textContent=nv;const pl=$('#pill');pl.classList.remove('bump');void pl.offsetWidth;pl.classList.add('bump')}}const other=t.mon==='USD'?t.total*t.tc:(t.tc?t.total/t.tc:0);
- $('#tot').innerHTML=`<tr><td>Servicios en dólares</td><td>${money(t.u,'USD')}</td></tr>
- <tr><td>Servicios en córdobas</td><td>${money(t.n,'NIO')}</td></tr>
- <tr><td>Subtotal consolidado (${t.mon==='USD'?'US$':'C$'}, TC ${fq(t.tc)})</td><td>${money(t.sub,t.mon)}</td></tr>
- <tr><td>IVA ${t.iv?'15 %':'(exonerado / no aplicado)'}</td><td>${money(t.iva,t.mon)}</td></tr>
+ $('#tot').innerHTML=`${t.u?`<tr><td>Servicios en dólares</td><td>${money(t.u,'USD')}</td></tr>`:''}
+ ${t.n?`<tr><td>Servicios en córdobas</td><td>${money(t.n,'NIO')}</td></tr>`:''}
+ <tr><td>Subtotal (${t.mon==='USD'?'US$':'C$'}, TC ${fq(t.tc)})</td><td>${money(t.sub,t.mon)}</td></tr>
+ ${t.noIva&&t.iv?`<tr><td class="sm">No sujeto a IVA (COCATRAM)</td><td class="sm">${money(t.noIva,t.mon)}</td></tr>`:''}
+ <tr><td>IVA ${P.tipo==='chr'?'(no aplica al chárter)':t.iv?'15 %':'(exonerado / no aplicado)'}</td><td>${money(t.iva,t.mon)}</td></tr>
  <tr class="big"><td>TOTAL ESTIMADO</td><td>${money(t.total,t.mon)}</td></tr>
  <tr><td class="sm">Equivalente</td><td class="sm">${money(other,t.mon==='USD'?'NIO':'USD')}</td></tr>`}
 
-/* ===== Documento ===== */
-function addDays(s,n){const d=new Date(s+'T12:00');d.setDate(d.getDate()+(+n||0));return d.toLocaleDateString('es-NI')}
-function buildDoc(){const t=totals(),logo=LOGO;let i=0,rows='';
- CATS.forEach(([k,name])=>{const ls_=P.lines.filter(l=>TT[l.tid].cat===k);if(!ls_.length)return;rows+=`<tr class="g"><td colspan="5">${name}</td></tr>`;
-  ls_.forEach(l=>{const tr=TT[l.tid],r=calc(l);rows+=`<tr><td>${++i}</td><td>${esc(tr.n)}<div style="color:#666;font-size:10.5px">${esc(tr.unit)} · ${tr.src}</div></td><td>${esc(r.d)}</td><td class="r">${tr.c==='tier'||tr.c==='h1'?'Ver cálculo':sym(tr.cur)+' '+fmt(tr.r)}</td><td class="r">${money(r.a,tr.cur)}</td></tr>`})});
- const hasP19=P.lines.some(l=>TT[l.tid].src===P19);
- $('#printArea').innerHTML=`<div class="doc">
- <div class="dh">${logo?`<img src="${logo}" alt="">`:''}<div class="t"><b>EMPRESA PORTUARIA NACIONAL</b><div>Administración Portuaria Bluff–Bluefields</div><div>Puerto El Bluff, Bluefields, RACCS, Nicaragua</div></div>
-  <div class="num">Fecha: ${P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):''}<br>Elaborado: ${new Date().toLocaleTimeString('es-NI',{hour:'2-digit',minute:'2-digit'})}${P.ref?`<br>Ref.: ${esc(P.ref)}`:''}</div></div>
- <div class="dtitle">MEMORIA DE CÁLCULO – ESTIMACIÓN DE SERVICIOS PORTUARIOS</div>
- <div class="dd"><div><span>Cliente:</span> ${esc(P.cliente)}</div><div><span>RUC/ID:</span> ${esc(P.ruc)}</div><div><span>Agencia naviera:</span> ${esc(P.agencia)}</div>
-  <div><span>Buque:</span> ${esc(P.buque)}</div><div><span>Bandera:</span> ${esc(P.bandera)}</div><div><span>Actividad:</span> ${esc(P.act)}</div>
-  <div><span>TAB:</span> ${P.tab?fq(P.tab):''}</div><div><span>Eslora:</span> ${P.eslora?fq(P.eslora)+' m':''}</div><div><span>ETA:</span> ${P.eta?new Date(P.eta).toLocaleString('es-NI'):''}</div></div>
- <table><thead><tr><th>#</th><th>Servicio</th><th>Cálculo</th><th class="r">Tarifa</th><th class="r">Importe</th></tr></thead><tbody>${rows||'<tr><td colspan="5">Sin servicios</td></tr>'}</tbody></table>
- <table class="dtot"><tr><td>Servicios en US$</td><td class="r">${money(t.u,'USD')}</td></tr><tr><td>Servicios en C$</td><td class="r">${money(t.n,'NIO')}</td></tr>
-  <tr><td>Subtotal (TC ${fq(t.tc)})</td><td class="r">${money(t.sub,t.mon)}</td></tr><tr><td>IVA ${t.iv?'15 %':'(exonerado)'}</td><td class="r">${money(t.iva,t.mon)}</td></tr>
-  <tr class="big"><td>TOTAL ESTIMADO</td><td class="r">${money(t.total,t.mon)}</td></tr></table>
- ${P.obs?`<p><b>Observaciones:</b> ${esc(P.obs)}</p>`:''}
- <div class="cond"><b>Condiciones</b><ol>
-  <li>Tarifas máximas autorizadas por la DGTA. No incluyen IVA salvo indicación (Art. 8, Res. DGTA 027-2022).</li>
-  <li>Documento de estimación preliminar, sin valor de factura ni de proforma oficial. Una vez pre aprobado, el cobro se emite en el sistema institucional de la EPN y se liquida según la operación real (Art. 4).</li>
-  <li>El depósito previo debe efectuarse con un mínimo de 24 h y máximo de 48 h antes del ETA, en días y horario hábil (Art. 4).</li>
-  <li>Se aceptan pagos en efectivo, cheque certificado o transferencia bancaria. Navieras nacionales y usuarios nacionales pueden pagar en córdobas al tipo de cambio oficial del día del pago (Arts. 4 y 5).</li>
-  <li>Los servicios cobrados por hora o día se cobran por fracción. Mínimo de cobro: 1 TM o 1 m³ (Art. 6).</li>
-  <li>Reclamos por facturación: dentro de 4 días hábiles desde la notificación de la factura (Art. 10).</li>
-  ${hasP19?'<li>* Tarifas de alquiler chárter según propuesta EPN de junio 2019; sujetas a confirmación de su autorización vigente.</li>':''}
- </ol></div>
- <div class="firmas"><div>Elaborado por<br>${esc(P.elab)}</div><div>Revisado / Autorizado</div><div>Recibido – Cliente</div></div></div>`}
-$('#btnPrint').onclick=()=>{buildDoc();window.print()};
+/* ===== Horario ordinario y feriados ===== */
+const HOR_DEF={ini:'07:00',fin:'16:30',dias:[1,2,3,4,5]};
+let HOR={...HOR_DEF,...ls.get('epn_hor',{})};
+let FER=ls.get('epn_fer',[]);
+const FER_NAC=[['01-01','Año Nuevo'],['05-01','Día del Trabajador'],['05-30','Día de las Madres'],['07-19','Día de la Revolución'],['09-14','Batalla de San Jacinto'],['09-15','Independencia'],['12-08','Purísima Concepción'],['12-25','Navidad']];
+function pascua(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mes=Math.floor((h+l-7*m+114)/31),dia=((h+l-7*m+114)%31)+1;return new Date(y,mes-1,dia)}
+const kd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const _ferCache={};
+function feriadosDe(y){if(_ferCache[y])return _ferCache[y];const m={};FER_NAC.forEach(([md,n])=>m[y+'-'+md]=n);const p=pascua(y);const j=new Date(p);j.setDate(p.getDate()-3);const v=new Date(p);v.setDate(p.getDate()-2);m[kd(j)]='Jueves Santo';m[kd(v)]='Viernes Santo';
+  FER.forEach(f=>{if(f.anual)m[y+'-'+f.f.slice(5)]=f.n;else if(f.f.slice(0,4)==String(y))m[f.f]=f.n});return _ferCache[y]=m}
+const ferNombre=d=>feriadosDe(d.getFullYear())[kd(d)]||'';
+const hm2m=s=>{const [h,m]=String(s||'0:0').split(':').map(Number);return (h||0)*60+(m||0)};
+const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+/* Reparte un tramo [a,b) en minutos ordinarios y extraordinarios por día calendario */
+function repartir(a,b,map){let cur=new Date(a);const fin=new Date(b);const ini=hm2m(HOR.ini),fn=hm2m(HOR.fin);
+  while(cur<fin){const d0=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate());const k=kd(d0);
+    const lab=HOR.dias.includes(d0.getDay())&&!ferNombre(d0);const oI=new Date(d0.getTime()+ini*6e4),oF=new Date(d0.getTime()+fn*6e4),nx=new Date(d0);nx.setDate(nx.getDate()+1);
+    const bs=[oI,oF,nx].filter(x=>x>cur).sort((x,y)=>x-y);const nb=new Date(Math.min(fin,bs[0]));const min=(nb-cur)/6e4;
+    const ord=lab&&cur>=oI&&nb<=oF;const r=map[k]||(map[k]={k,d:d0,ord:0,ext:0,lab,fer:ferNombre(d0)});if(ord)r.ord+=min;else r.ext+=min;cur=nb}}
+const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h+' h'+(r?' '+String(r).padStart(2,'0')+' min':'')};
+const fCorta=d=>DIAS[d.getDay()].slice(0,3)+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+
+/* ===== Viaje chárter por itinerario ===== */
+const CHR_M={rem:{dia:'ch1',h1:'ch2',hx:'ch3',tm:'ch4'},mot:{dia:'ch5',h1:'ch6',hx:'ch7',tm:'ch8'},pcz:{glob:'ch9',inc:3,tm:'ch4'},cor:{glob:'ch10',inc:2,tm:'ch4'}};
+let CHRINFO={dias:[],avisos:[],nav:0,tm:0};
+function chrRecalc(){const m=CHR_M[P.medio]||CHR_M.rem,L=[],av=[];const map={};let nav=0,gap=0,okLegs=0,first=null,last=null;
+  (P.itin||[]).forEach((g,i)=>{if(!g.sal||!g.lle)return;const a=new Date(g.sal),b=new Date(g.lle);if(!(b>a)){av.push('Tramo '+(i+1)+': la llegada debe ser después de la salida.');return}
+    if(last&&a<last)av.push('Tramo '+(i+1)+': sale antes de la llegada del tramo anterior.');else if(last)gap+=(a-last)/6e4;
+    repartir(a,b,map);nav+=(b-a)/6e4;okLegs++;if(!first)first=a;last=b});
+  const desc=Math.max(0,+P.desc||0)*60;const tmMin=gap+desc;
+  const dias=Object.values(map).sort((x,y)=>x.d-y.d);
+  if(m.dia){dias.forEach(r=>{const lb=fCorta(r.d);const H=Math.ceil(r.ord/60-1e-9),E=Math.ceil(r.ext/60-1e-9);
+     if(H>=5)L.push({tid:m.dia,q1:1,nota:lb+': '+hm(r.ord)+' en horario ordinario (5 h o más: cobro por día)'});
+     else if(H>0)L.push({tid:m.hx,q1:H,nota:lb+': '+hm(r.ord)+' en horario ordinario (4 h o menos: cobro por hora)'});
+     if(E>0)L.push({tid:m.h1,q1:1,nota:lb+': primera hora extraordinaria del día'+(r.fer?' ('+r.fer+')':!r.lab?' ('+DIAS[r.d.getDay()]+')':'')});
+     if(E>1)L.push({tid:m.hx,q1:E-1,nota:lb+': '+(E-1)+' h extraordinarias adicionales (total del día '+hm(r.ext)+')'})})}
+  else if(m.glob&&okLegs){L.push({tid:m.glob,q1:1,nota:'Tarifa global: '+m.inc+' días calendario desde la salida hasta el retorno a su puerto base'});
+    const dc=Math.round((new Date(last.getFullYear(),last.getMonth(),last.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
+    if(dc>m.inc)av.push('El itinerario abarca '+dc+' días calendario y la tarifa global cubre '+m.inc+'. La propuesta no define el cobro de los días adicionales.')}
+  if(tmMin>0)L.push({tid:m.tm,q1:Math.ceil(tmMin/60-1e-9),nota:'Tiempo muerto (carga y descarga): '+hm(tmMin)+(gap&&desc?' ('+hm(gap)+' en puertos intermedios + '+hm(desc)+' en destino)':gap?' en puertos intermedios':' en destino')});
+  if(P.plana&&okLegs){const fin=new Date(last.getTime()+desc*6e4);const dd=Math.round((new Date(fin.getFullYear(),fin.getMonth(),fin.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
+    L.push({tid:'ch11',q1:dd,nota:'Plana: '+dd+' día(s) calendario o fracción ('+fCorta(first)+' a '+fCorta(fin)+')'})}
+  P.lines=L.map(l=>({...l,q2:'',auto:false}));CHRINFO={dias,avisos:av,nav,tm:tmMin};renderTiempos();renderLines()}
+function renderItin(){const b=$('#itin');if(!b)return;
+  b.innerHTML=(P.itin||[]).map((g,i)=>`<div class="leg" data-li="${i}"><div class="leg-h"><b>Tramo ${i+1}</b>${P.itin.length>1?`<button class="x" data-ldel="${i}" aria-label="Quitar tramo">✕</button>`:''}</div>
+   <div class="grid"><div><label>Desde</label><input list="lugares" data-lk="de" value="${esc(g.de)}" placeholder="Ej.: El Bluff"></div><div><label>Hasta</label><input list="lugares" data-lk="a" value="${esc(g.a)}" placeholder="Ej.: Bluefields"></div>
+   <div><label>Salida</label><input type="datetime-local" data-lk="sal" value="${g.sal||''}"></div><div><label>Llegada (atraque)</label><input type="datetime-local" data-lk="lle" value="${g.lle||''}"></div></div></div>`).join('')+
+   `<datalist id="lugares">${['El Bluff','Bluefields','Corn Island','Little Corn Island','Laguna de Perlas','Puerto Cabezas','El Rama','Puerto Arlen Siu','San Juan de Nicaragua','Kukra Hill'].map(x=>`<option value="${x}">`).join('')}</datalist>`}
+$('#itin').addEventListener('input',e=>{const el=e.target.closest('[data-lk]');if(!el)return;const i=+el.closest('[data-li]').dataset.li;P.itin[i][el.dataset.lk]=el.value;chrRecalc()});
+$('#itin').addEventListener('change',e=>{const el=e.target.closest('[data-lk]');if(!el)return;const i=+el.closest('[data-li]').dataset.li;P.itin[i][el.dataset.lk]=el.value;chrRecalc()});
+$('#itin').addEventListener('click',e=>{const b=e.target.closest('[data-ldel]');if(!b)return;P.itin.splice(+b.dataset.ldel,1);renderItin();chrRecalc()});
+$('#btnTramo').onclick=()=>{const p=P.itin[P.itin.length-1]||{};P.itin.push({de:p.a||'',a:'',sal:p.lle||'',lle:''});renderItin();chrRecalc();setTimeout(()=>{const l=$$('#itin .leg');l[l.length-1].scrollIntoView({behavior:'smooth',block:'center'})},50)};
+function renderTiempos(){const b=$('#tiempos');if(!b)return;const {dias,avisos,nav,tm}=CHRINFO;
+  if(!dias.length){b.innerHTML=avisos.map(a=>`<div class="notice">${esc(a)}</div>`).join('')||'<p class="sm">Indique salida y llegada de cada tramo para separar el tiempo ordinario y el extraordinario.</p>';return}
+  const to=dias.reduce((s,r)=>s+r.ord,0),te=dias.reduce((s,r)=>s+r.ext,0);
+  b.innerHTML=`<div class="tt-wrap"><table class="ttab"><thead><tr><th>Día</th><th>Ordinario</th><th>Extraordinario</th></tr></thead><tbody>${dias.map(r=>`<tr><td><b>${fCorta(r.d)}</b>${r.fer?`<small class="tag f">${esc(r.fer)}</small>`:!r.lab?`<small class="tag w">No laboral</small>`:''}</td><td>${r.ord?hm(r.ord):'—'}</td><td>${r.ext?hm(r.ext):'—'}</td></tr>`).join('')}</tbody>
+   <tfoot><tr><td>Navegación ${hm(nav)}</td><td>${hm(to)}</td><td>${hm(te)}</td></tr>${tm?`<tr><td colspan="3">Tiempo muerto (carga/descarga): ${hm(tm)}</td></tr>`:''}</tfoot></table></div>
+   <p class="sm">Horario ordinario: ${DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')} de ${HOR.ini} a ${HOR.fin}. Cada fracción de hora se cobra como hora completa.</p>
+   ${avisos.map(a=>`<div class="notice">${esc(a)}</div>`).join('')}`}
+
+/* ===== Ajustes: horario, feriados y libreta ===== */
+function renderHorFer(){if(!$('#hIni'))return;$('#hIni').value=HOR.ini;$('#hFin').value=HOR.fin;
+  $('#hDias').innerHTML=[1,2,3,4,5,6,0].map(i=>`<button class="dia${HOR.dias.includes(i)?' on':''}" data-hd="${i}">${DIAS[i].slice(0,3)}</button>`).join('');
+  const y=new Date().getFullYear(),nac=feriadosDe(y);
+  $('#ferList').innerHTML=`<details><summary class="sm">Ver feriados nacionales ${y}</summary><div class="sm" style="margin:6px 0">${Object.entries(nac).filter(([k])=>!FER.some(f=>(f.anual?y+'-'+f.f.slice(5):f.f)===k)).sort().map(([k,n])=>new Date(k+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)).join('<br>')}</div></details>`+
+   (FER.length?FER.map((f,i)=>`<div class="hi"><div><b>${esc(f.n)}</b><div class="sm">${new Date(f.f+'T12:00').toLocaleDateString('es-NI',f.anual?{day:'numeric',month:'long'}:{day:'numeric',month:'long',year:'numeric'})}${f.anual?' · cada año':''}</div></div><button class="btnd" data-fdel="${i}">Quitar</button></div>`).join(''):'<p class="sm">Sin feriados locales agregados.</p>')}
+const horCambio=()=>{ls.set('epn_hor',HOR);if(P.tipo==='chr')chrRecalc()};
+document.addEventListener('change',e=>{if(e.target.id==='hIni'||e.target.id==='hFin'){HOR[e.target.id==='hIni'?'ini':'fin']=e.target.value||HOR_DEF[e.target.id==='hIni'?'ini':'fin'];horCambio()}});
+document.addEventListener('click',e=>{const d=e.target.closest('[data-hd]');if(d){const i=+d.dataset.hd;HOR.dias=HOR.dias.includes(i)?HOR.dias.filter(x=>x!==i):[...HOR.dias,i];horCambio();renderHorFer()}
+  const f=e.target.closest('[data-fdel]');if(f){FER.splice(+f.dataset.fdel,1);ls.set('epn_fer',FER);for(const k in _ferCache)delete _ferCache[k];renderHorFer();if(P.tipo==='chr')chrRecalc()}
+  if(e.target.id==='btnFer'){const fd=$('#fFecha').value,n=$('#fNom').value.trim();if(!fd||!n){toast('Indique fecha y nombre del feriado');return}FER.push({f:fd,n,anual:$('#fAnual').checked});ls.set('epn_fer',FER);for(const k in _ferCache)delete _ferCache[k];$('#fFecha').value='';$('#fNom').value='';renderHorFer();if(P.tipo==='chr')chrRecalc();toast('Feriado agregado')}});
+
+/* ===== Abrir un cálculo ===== */
+function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(!Array.isArray(P.itin)||!P.itin.length)P.itin=[{de:'El Bluff',a:'',sal:'',lle:''}];
+  applyTipo();bindMeta();renderItin();if(P.tipo==='chr')chrRecalc();else{syncCoc();renderLines()}}
 
 /* ===== Navegación ===== */
 function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
-$('#btnPrev').onclick=()=>show('prev');
+$('#btnPrev').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-'+(P.tipo||'buq')+'-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo · '+TIPOS[P.tipo||'buq'])}catch(e){console.error(e);toast('No se pudo generar la vista')}};
 
 
 /* ===== Guardar / historial ===== */
 $('#btnSave').onclick=()=>{const arr=ls.get('epn_pf',[]);if(!P.id)P.id=newId();const i=arr.findIndex(x=>x.id===P.id);const t=totals();P.saved=new Date().toISOString();P._tot=money(t.total,t.mon);
  const copy=JSON.parse(JSON.stringify(P));if(i>=0)arr[i]=copy;else arr.unshift(copy);if(arr.length>300)arr.length=300;
  toast(ls.set('epn_pf',arr)?'Cálculo guardado en este teléfono':'No se pudo guardar en este navegador')};
-$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar un cálculo nuevo? Lo no guardado se perderá.'))return;P=newPF();bindMeta();renderLines();show('pf')};
+$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar un cálculo nuevo? Lo no guardado se perderá.'))return;cargarP(newPF(P.tipo));show('pf')};
 function renderHis(){const ub=$('#ultBk');if(ub){const u=ls.get('epn_ultbk',null);ub.textContent=u?'Último respaldo: '+new Date(u+'T12:00').toLocaleDateString('es-NI'):'Todavía no ha descargado un respaldo.'}
-const arr=ls.get('epn_pf',[]);arr.forEach(x=>{if(!x.id)x.id=newId()});$('#hlist').innerHTML=arr.length?arr.map((p,i)=>`<div class="hi"><div><b>${esc(p.cliente||p.buque||'Sin nombre')}</b>${p.ref?' · '+esc(p.ref):''}<div class="sm">${esc(p.buque||'')} · ${p.fecha} · ${esc(p._tot||'')}</div></div><div class="row"><button class="btn2" data-open="${i}">Abrir</button><button class="btn2" data-dup="${i}">Duplicar</button><button class="btnd" data-rm="${i}">Eliminar</button></div></div>`).join(''):'<p class="mut">No hay cálculos guardados.</p>'}
+const arr=ls.get('epn_pf',[]);arr.forEach(x=>{if(!x.id)x.id=newId()});$('#hlist').innerHTML=arr.length?arr.map((p,i)=>`<div class="hi"><div><b>${esc(p.cliente||p.buque||'Sin nombre')}</b> <span class="chip ${p.tipo==='chr'?'warnc':p.tipo==='car'?'bad':'ok'}">${TIPOS[p.tipo||'buq']}</span>${p.ref?' · '+esc(p.ref):''}<div class="sm">${esc(p.buque||'')} · ${p.fecha} · ${esc(p._tot||'')}</div></div><div class="row"><button class="btn2" data-open="${i}">Abrir</button><button class="btn2" data-dup="${i}">Duplicar</button><button class="btnd" data-rm="${i}">Eliminar</button></div></div>`).join(''):'<p class="mut">No hay cálculos guardados.</p>'}
 $('#hlist').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const arr=ls.get('epn_pf',[]);
- if(b.dataset.open){P=JSON.parse(JSON.stringify(arr[+b.dataset.open]));bindMeta();renderLines();show('pf')}
- if(b.dataset.dup){P=JSON.parse(JSON.stringify(arr[+b.dataset.dup]));P.id=newId();P.fecha=today();bindMeta();renderLines();show('pf');toast('Copia creada')}
+ if(b.dataset.open){cargarP(JSON.parse(JSON.stringify(arr[+b.dataset.open])));show('pf')}
+ if(b.dataset.dup){const o=JSON.parse(JSON.stringify(arr[+b.dataset.dup]));o.id=newId();o.fecha=today();cargarP(o);show('pf');toast('Copia creada')}
  if(b.dataset.rm&&confirm('¿Eliminar este cálculo?')){arr.splice(+b.dataset.rm,1);ls.set('epn_pf',arr);renderHis()}});
 
 const LOGO_W=420,LOGO_H=188;
@@ -669,7 +847,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.30-5';
+const APP_VER='2026.10.30-6';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -808,13 +986,13 @@ function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Ve
 
 /* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
 const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
-async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),...(OWNER?{colegas:COL,retirados:[...REV]}:{})},null,1);
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{colegas:COL,retirados:[...REV]}:{})},null,1);
   const fn='respaldo-calculos-apbb-'+today()+'.json';
   try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
 async function restaurar(file){try{const o=JSON.parse(await file.text());const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
   const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
-  ls.set('epn_pf',cur);if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
+  ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
 
 async function initAcceso(){
   let h='';try{h=(location.hash||'').slice(1)}catch(e){}
@@ -921,30 +1099,50 @@ function tarPdf(lista,sub){const d=PDFW();const COLS=[['Servicio',212],['Unidad 
     y+=10});
   if(p19){if(y+20>740)nueva();d.text(X0,y+8,'* Tarifas chárter según propuesta EPN de junio 2019; sujetas a confirmación de su autorización vigente.',{size:7.5,color:MAGC});}
   pdfFooters(d,'Tarifas máximas autorizadas por la DGTA, en la moneda indicada. No incluyen IVA. Documento informativo.');return d}
-function memPdf(){const t=totals();const d=PDFW();d.page();
-  let y=pdfHeader(d,'MEMORIA DE CÁLCULO – ESTIMACIÓN DE SERVICIOS PORTUARIOS','Fecha: '+(P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):'')+(P.ref?'  ·  Ref.: '+P.ref:''));
-  const datos=[['Cliente',P.cliente],['RUC/ID',P.ruc],['Agencia naviera',P.agencia],['Buque',P.buque],['Bandera',P.bandera],['Actividad',P.act],['TAB',P.tab?fq(P.tab):''],['Eslora',P.eslora?fq(P.eslora)+' m':''],['ETA',P.eta?new Date(P.eta).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'}):'']];
-  datos.forEach(([k,v],i)=>{const cx=40+(i%3)*178,cy=y+Math.floor(i/3)*15;d.text(cx,cy,k+':',{size:8.5,color:GRY});d.text(cx+d.width(k+': ',8.5)+2,cy,String(v||'—').slice(0,34),{size:8.5,bold:true,color:'#1a1a1a'})});
+function memPdf(){const t=totals();const d=PDFW();d.page();const tp=P.tipo||'buq';
+  const TIT={buq:'MEMORIA DE CÁLCULO – ATENCIÓN A BUQUE MERCANTE',car:'MEMORIA DE CÁLCULO – SERVICIOS A LA CARGA',chr:'MEMORIA DE CÁLCULO – VIAJE CHÁRTER'}[tp];
+  const fdt=s=>s?new Date(s).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'}):'—';
+  let y=pdfHeader(d,TIT,'Fecha: '+(P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):'')+(P.ref?'  ·  Ref.: '+P.ref:''));
+  const cliL=tp==='car'?'Consignatario':tp==='chr'?'Cliente':'Agencia';
+  const MED={rem:'Remolcador (P. Araúz Palacios / J. Boppel)',mot:'Motonave (H. Sánchez / Río Escondido)',pcz:'Remolcador a Puerto Cabezas (global)',cor:'Remolcador a Corn Island (global)'};
+  const datos=tp==='buq'?[[cliL,P.cliente],['RUC/ID',P.ruc],['Buque',P.buque],['TAB',P.tab?fq(P.tab):''],['Eslora',P.eslora?fq(P.eslora)+' m':''],['Estadía',estadiaH()?estadiaH()+' h':''],['Atraque',fdt(P.atr)],['Desatraque',fdt(P.des)],['Bandera','Internacional']]
+   :tp==='car'?[[cliL,P.cliente],['RUC/ID',P.ruc],['Buque',P.buque],['Operación',P.oper==='exp'?'Exportación':'Importación'],['Carga',(P.ccarga==='pel'?'Peligrosa':'General')+(P.desc_carga?' · '+P.desc_carga:'')],['Cantidad',P.tm?fq(P.tm)+' TM/m³':''],['Días en recinto',P.dias||''],['COCATRAM',P.exCoc?'No aplica (petróleo/banano)':'Aplica']]
+   :[[cliL,P.cliente],['RUC/ID',P.ruc],['Medio',MED[P.medio]||''],['Plana',P.plana?'Sí':'No']];
+  datos.forEach(([k,v],i)=>{const cx=40+(i%3)*178,cy=y+Math.floor(i/3)*15;d.text(cx,cy,k+':',{size:8.5,color:GRY});const w=d.width(k+': ',8.5)+2;d.text(cx+w,cy,d.wrap(String(v||'—'),8.5,true,172-w)[0],{size:8.5,bold:true,color:'#1a1a1a'})});
   y+=Math.ceil(datos.length/3)*15+6;
+  const nueva=()=>{d.page();y=pdfHeader(d,TIT+' (continuación)','')};
+  if(tp==='chr'){
+    d.rect(40,y,532,16,NAVY);d.text(46,y+11,'Itinerario',{size:8.5,bold:true,color:'#ffffff'});y+=16;
+    const IC=[['#',22],['Desde',120],['Hasta',120],['Salida',95],['Llegada',95],['Duración',80]];let x=40;d.rect(40,y,532,14,'#e8f0f9');IC.forEach(([h,w])=>{d.text(x+5,y+10,h,{size:7.8,bold:true,color:NAVY});x+=w});y+=14;
+    (P.itin||[]).forEach((g,i)=>{if(!g.sal||!g.lle)return;const dur=(new Date(g.lle)-new Date(g.sal))/6e4;x=40;[String(i+1),g.de||'—',g.a||'—',fdt(g.sal),fdt(g.lle),dur>0?hm(dur):'—'].forEach((s,j)=>{d.text(x+5,y+10,d.wrap(s,8,false,IC[j][1]-8)[0],{size:8,color:'#1a1a1a'});x+=IC[j][1]});d.line(40,y+14,572,y+14,'#e3e8ef',.5);y+=14});
+    y+=6;const {dias,tm}=CHRINFO;
+    if(dias.length){d.rect(40,y,532,14,'#e8f0f9');[['Día',40],['Ordinario',260],['Extraordinario',400]].forEach(([h,xx])=>d.text(xx+5,y+10,h,{size:7.8,bold:true,color:NAVY}));y+=14;
+      dias.forEach(r=>{if(y>700)nueva();d.text(45,y+10,fCorta(r.d)+(r.fer?' · '+r.fer:!r.lab?' · no laboral':''),{size:8,color:'#1a1a1a'});d.text(305,y+10,r.ord?hm(r.ord):'—',{size:8,color:'#1a1a1a'});d.text(445,y+10,r.ext?hm(r.ext):'—',{size:8,color:'#1a1a1a'});d.line(40,y+14,572,y+14,'#e3e8ef',.5);y+=14});
+      d.text(45,y+10,'Horario ordinario: '+DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')+' de '+HOR.ini+' a '+HOR.fin+'. Fuera de ese horario, sábados, domingos y feriados: extraordinario.'+(tm?'  Tiempo muerto: '+hm(tm)+'.':''),{size:7.5,color:GRY});y+=20}}
   const COLS=[['#',22],['Servicio',200],['Cálculo',190],['Importe',120]];
-  const head=()=>{d.rect(40,y,532,17,NAVY);let x=40;COLS.forEach(([h,w],i)=>{d.text(i===3?x+w-6:x+5,y+11.5,h,{size:8.5,bold:true,color:'#ffffff',align:i===3?'r':undefined});x+=w});y+=17};head();
+  const head=()=>{d.rect(40,y,532,17,NAVY);let x=40;COLS.forEach(([h,w],i)=>{d.text(i===3?x+w-6:x+5,y+11.5,h,{size:8.5,bold:true,color:'#ffffff',align:i===3?'r':undefined});x+=w});y+=17};
+  if(y+40>700)nueva();head();
   let n=0;CATS.forEach(([k,name])=>{const ls_=P.lines.filter(l=>TT[l.tid].cat===k);if(!ls_.length)return;
-    if(y+40>700){d.page();y=pdfHeader(d,'MEMORIA DE CÁLCULO (continuación)','');head()}
+    if(y+40>700){nueva();head()}
     d.rect(40,y,532,15,'#e8f0f9');d.text(46,y+10.5,name,{size:8.5,bold:true,color:NAVY});y+=15;
     ls_.forEach(l=>{const tr=TT[l.tid],r=calc(l);const c1=d.wrap(tr.n,8.5,false,188),c2=d.wrap(r.d,8,false,180);const h=Math.max(c1.length,c2.length)*10.5+6;
-      if(y+h>700){d.page();y=pdfHeader(d,'MEMORIA DE CÁLCULO (continuación)','');head()}
+      if(y+h>700){nueva();head()}
       d.text(45,y+11,String(++n),{size:8.5,color:GRY});c1.forEach((s,j)=>d.text(67,y+11+j*10.5,s,{size:8.5,color:'#1a1a1a'}));c2.forEach((s,j)=>d.text(267,y+11+j*10.5,s,{size:8,color:GRY}));
       d.text(566,y+11,money(r.a,tr.cur),{size:9,bold:true,color:'#1a1a1a',align:'r'});d.line(40,y+h,572,y+h,'#e3e8ef',.5);y+=h})});
   if(!n){d.text(46,y+12,'Sin servicios',{size:9,color:GRY});y+=18}
-  if(y+110>700){d.page();y=pdfHeader(d,'MEMORIA DE CÁLCULO (continuación)','')}
-  y+=10;const tl=[['Servicios en US$',money(t.u,'USD')],['Servicios en C$',money(t.n,'NIO')],['Subtotal (TC '+fq(t.tc)+')',money(t.sub,t.mon)],['IVA '+(t.iv?'15 %':'(exonerado)'),money(t.iva,t.mon)]];
-  tl.forEach(([a,b])=>{d.text(400,y+10,a,{size:9,color:GRY});d.text(566,y+10,b,{size:9,color:'#1a1a1a',align:'r'});y+=14});
-  d.rect(392,y+2,180,22,NAVY);d.text(400,y+16.5,'TOTAL ESTIMADO',{size:10,bold:true,color:'#ffffff'});d.text(566,y+16.5,money(t.total,t.mon),{size:11,bold:true,color:'#ffffff',align:'r'});y+=34;
+  if(y+120>700)nueva();
+  y+=10;const tl=[];if(t.u)tl.push(['Servicios en US$',money(t.u,'USD')]);if(t.n)tl.push(['Servicios en C$',money(t.n,'NIO')]);tl.push(['Subtotal (TC '+fq(t.tc)+')',money(t.sub,t.mon)]);
+  if(t.noIva&&t.iv)tl.push(['No sujeto a IVA (COCATRAM)',money(t.noIva,t.mon)]);tl.push([tp==='chr'?'IVA (no aplica)':'IVA '+(t.iv?'15 %':'(exonerado)'),money(t.iva,t.mon)]);
+  tl.forEach(([a,b])=>{d.text(392,y+10,a,{size:9,color:GRY});d.text(566,y+10,b,{size:9,color:'#1a1a1a',align:'r'});y+=14});
+  d.rect(384,y+2,188,22,NAVY);d.text(392,y+16.5,'TOTAL ESTIMADO',{size:10,bold:true,color:'#ffffff'});d.text(566,y+16.5,money(t.total,t.mon),{size:11,bold:true,color:'#ffffff',align:'r'});y+=34;
   if(P.obs){d.wrap('Observaciones: '+P.obs,8.5,false,532).forEach(s=>{d.text(40,y+8,s,{size:8.5,color:'#1a1a1a'});y+=11});y+=4}
-  ['Estimación preliminar sin valor de factura ni de proforma oficial. Una vez pre aprobada, el cobro se emite en el sistema institucional de la EPN.','Tarifas máximas autorizadas por la DGTA (Res. 027-2022 y complementarias). Servicios por hora o día se cobran por fracción; mínimo 1 TM o 1 m³.'].forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(x=>{d.text(40,y+8,x,{size:7.8,color:GRY});y+=10}));
+  const notas=['Estimación preliminar sin valor de factura ni de proforma oficial. Una vez pre aprobada, el cobro se emite en el sistema institucional de la EPN.'];
+  if(tp==='chr')notas.push('Tarifas chárter según propuesta EPN del 24/06/2019 (pendiente de confirmar aprobación DGTA). Horas y días se cobran por fracción. El servicio chárter no lleva IVA.');
+  else notas.push('Tarifas máximas autorizadas por la DGTA (Res. 027-2022). Servicios por hora o día se cobran por fracción; mínimo 1 TM o 1 m³.');
+  notas.forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(x=>{d.text(40,y+8,x,{size:7.8,color:GRY});y+=10}));
   y=Math.max(y+40,640);if(y>720){d.page();y=640}
   [['Elaborado por',P.elab],['Revisado / Autorizado',''],['Recibido','']].forEach(([a,b],i)=>{const x=40+i*184;d.line(x,y,x+164,y,'#333333',.7);d.text(x+82,y+11,a,{size:8,color:GRY,align:'c'});if(b)d.text(x+82,y+22,b,{size:8,bold:true,color:'#1a1a1a',align:'c'})});
-  pdfFooters(d,'Memoria de cálculo informativa · Empresa Portuaria Nacional · Administración Portuaria Bluff–Bluefields');return d}
+  pdfFooters(d,'Memoria de cálculo informativa · '+TIPOS[tp]+' · Empresa Portuaria Nacional · APBB');return d}
 async function compartirArchivo(blob,nombre,titulo){const f=new File([blob],nombre,{type:'application/pdf'});
   try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:titulo});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
@@ -969,13 +1167,12 @@ $('#btnTarPdf').onclick=()=>{const lista=tarFiltradas();if(!lista.length){toast(
   const st=soloTar(),c=st?'rci':TCAT,q=$('#tq').value.trim();const nom=c?CATS.find(x=>x[0]===c)[1]:'Pliego completo';
   const sub=nom+(q?' · búsqueda: “'+q+'”':'')+' · '+lista.length+' tarifas';
   try{abrirVisor(tarPdf(lista,sub),'Tarifas-APBB-'+slug(c?nom:'completo')+'-'+today()+'.pdf','Tarifas APBB · '+nom)}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
-$('#btnMemPdf').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-calculo-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo APBB')}catch(e){console.error(e);toast('No se pudo generar el PDF')}};
 
 /* ===== Ajustes ===== */
 const THEME_COL={claro:'#07325a',oscuro:'#050d18',gris:'#4a5463'};
 function setTheme(t){document.documentElement.dataset.theme=t;ls.set('epn_theme',t);const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[t]||'#07325a';renderAju()}
 function setFont(f){document.documentElement.dataset.font=f;ls.set('epn_font',f);renderAju()}
-function renderAju(){const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
+function renderAju(){renderContList();renderHorFer();const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
   $$('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===t));$$('[data-font-set]').forEach(b=>b.classList.toggle('on',b.dataset.fontSet===f));
   $('#ajTc').value=ls.get('epn_tc',36.6243);$('#ajElab').value=ls.get('epn_elab','');
   $('#verTxt').textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'');$('#btnUpd2').hidden=!(PROPIA&&'serviceWorker' in navigator)}
@@ -986,63 +1183,6 @@ $('#ajElab').oninput=e=>{ls.set('epn_elab',e.target.value);P.elab=e.target.value
 $('#btnUpd2').onclick=async()=>{try{const r=await navigator.serviceWorker.getRegistration();if(r){await r.update();toast('Buscando… si hay una versión nueva aparecerá el aviso')}}catch(e){toast('Sin conexión')}};
 {const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[document.documentElement.dataset.theme]||'#07325a'}
 
-
-/* ===== Calculadora de alquiler chárter (notas 1–9 de la propuesta EPN 2019) =====
-   Horario ordinario (Art. 35 Reglamento APBB): lunes a viernes 07:00–12:00 y 13:00–16:00.
-   Extraordinario: fuera de ese horario, sábados, domingos y feriados (24 h). */
-const CHR_MEDIOS={
- rem:{n:'Remolcador (Pedro Araúz Palacios / Jimmy Boppel)',dia:'ch1',h1:'ch2',hx:'ch3',tm:'ch4'},
- mot:{n:'Motonave (Hilario Sánchez / Río Escondido)',dia:'ch5',h1:'ch6',hx:'ch7',tm:'ch8'},
- pcz:{n:'Remolcador a Puerto Cabezas (global, 3 días calendario)',glob:'ch9',inc:3,tm:'ch4'},
- cor:{n:'Remolcador a Corn Island (global, 2 días calendario)',glob:'ch10',inc:2,tm:'ch4'},
- pla:{n:'Plana',plana:'ch11'}};
-let CHR={m:'rem',ho:'',dias:'',he:'',tm:'',dc:'',dp:1};
-const ce0=v=>Math.max(0,Math.ceil((+v||0)-1e-9));
-function chrLineas(){const m=CHR_MEDIOS[CHR.m],L=[],avisos=[];
-  if(m.dia){const H=ce0(CHR.ho),E=ce0(CHR.he),M=ce0(CHR.tm);
-    if(H>0){if(H<=4)L.push({tid:m.hx,q1:H,nota:'Horario ordinario, '+H+' h efectivas (≤ 4 h: cobro por hora, notas 3/6)'});
-      else{const D=Math.max(1,ce0(CHR.dias)||Math.ceil(H/8));L.push({tid:m.dia,q1:D,nota:'Horario ordinario, '+H+' h efectivas (≥ 5 h: cobro por día o fracción, notas 1/4)'})}}
-    if(E>0){L.push({tid:m.h1,q1:1,nota:'Horario extraordinario, primera hora (notas 2/5)'});if(E>1)L.push({tid:m.hx,q1:E-1,nota:'Horario extraordinario, de la 2.ª a la '+E+'.ª hora (notas 3/6)'})}
-    if(M>0)L.push({tid:m.tm,q1:M,nota:'Tiempo muerto: carga y descarga del medio alquilado (nota 9)'});
-    if(!H&&!E)avisos.push('Indique las horas efectivas del servicio.')}
-  else if(m.glob){L.push({tid:m.glob,q1:1,nota:'Global: '+m.inc+' días calendario desde la salida hasta el retorno a su puerto base (notas 7/8)'});
-    const M=ce0(CHR.tm);if(M>0)L.push({tid:m.tm,q1:M,nota:'Tiempo muerto: carga y descarga del medio alquilado (nota 9)'});
-    const dc=ce0(CHR.dc);if(dc>m.inc)avisos.push('El servicio dura '+dc+' días calendario y la tarifa global cubre '+m.inc+'. La propuesta no define el cobro de los días adicionales: consulte antes de cotizar.')}
-  else if(m.plana){const D=Math.max(1,ce0(CHR.dp));L.push({tid:m.plana,q1:D,nota:'Alquiler de plana, '+D+' día(s) o fracción'});const M=ce0(CHR.tm);if(M>0)avisos.push('La propuesta no define tiempo muerto para la plana; no se incluyó.')}
-  return{L,avisos}}
-function abrirChr(){cerrarChr();const v=document.createElement('div');v.id='chrSheet';v.className='sheet-bg';
-  v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-label="Alquiler chárter"><div class="sh-h"><b>Alquiler chárter</b><button class="pv-x" data-chr="close">✕</button></div>
-   <p class="sm" style="margin-top:0">Aplica las condiciones de la propuesta EPN (24/06/2019). <b>Horario ordinario:</b> lunes a viernes 07:00–12:00 y 13:00–16:00. <b>Extraordinario:</b> fuera de ese horario, sábados, domingos y feriados (Art. 35).</p>
-   <div class="grid">
-    <div style="grid-column:1/-1"><label>Medio alquilado</label><select id="chM">${Object.entries(CHR_MEDIOS).map(([k,m])=>`<option value="${k}">${m.n}</option>`).join('')}</select></div>
-    <div data-f="dia"><label>Horas efectivas en horario ordinario</label><input id="chHo" type="number" min="0" step="any" inputmode="decimal" placeholder="0"></div>
-    <div data-f="dia"><label>Días cobrables (si son 5 h o más)</label><input id="chD" type="number" min="1" step="1" inputmode="numeric" placeholder="auto"></div>
-    <div data-f="dia"><label>Horas efectivas en horario extraordinario</label><input id="chHe" type="number" min="0" step="any" inputmode="decimal" placeholder="0"></div>
-    <div data-f="glob"><label>Días calendario del servicio</label><input id="chDc" type="number" min="1" step="1" inputmode="numeric" placeholder="incluidos"></div>
-    <div data-f="pla"><label>Días de alquiler</label><input id="chDp" type="number" min="1" step="1" inputmode="numeric" value="1"></div>
-    <div data-f="tm"><label>Horas de tiempo muerto (carga/descarga)</label><input id="chTm" type="number" min="0" step="any" inputmode="decimal" placeholder="0"></div>
-   </div>
-   <div id="chRes" style="margin-top:12px"></div>
-   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn2" data-chr="close" style="flex:1">Cancelar</button><button class="btn" data-chr="add" style="flex:2">Agregar al cálculo</button></div></div>`;
-  document.body.appendChild(v);document.body.classList.add('pv-on');
-  const bind=(id,k)=>{const el=$('#'+id);el.value=CHR[k]??'';el.oninput=el.onchange=()=>{CHR[k]=el.value;pintarChr()}};
-  bind('chM','m');bind('chHo','ho');bind('chD','dias');bind('chHe','he');bind('chDc','dc');bind('chDp','dp');bind('chTm','tm');pintarChr()}
-function pintarChr(){const m=CHR_MEDIOS[CHR.m];
-  $$('#chrSheet [data-f]').forEach(d=>{const f=d.dataset.f;d.hidden=!(f==='dia'&&m.dia||f==='glob'&&m.glob||f==='pla'&&m.plana||f==='tm'&&!m.plana)});
-  if(m.dia){const H=ce0(CHR.ho);$('#chD').placeholder=H>=5?'auto: '+Math.ceil(H/8):'no aplica';$('#chD').disabled=H<5}
-  const {L,avisos}=chrLineas();let tot=0;
-  $('#chRes').innerHTML=`<div class="chr-res">${L.map(l=>{const t=TT[l.tid],r=calc(l);tot+=r.a;return `<div class="chr-l"><div><b>${esc(t.n)}</b><div class="sm">${esc(l.nota)}</div><div class="sm">${esc(r.d.replace(l.nota+' · ',''))}</div></div><b>${money(r.a,t.cur)}</b></div>`}).join('')||'<p class="sm" style="margin:0">Complete los datos para ver el cálculo.</p>'}
-   ${L.length?`<div class="chr-l chr-t"><span>Subtotal chárter</span><b>${money(tot,'USD')}</b></div>`:''}</div>
-   ${avisos.map(a=>`<div class="notice" style="margin:8px 0 0">${esc(a)}</div>`).join('')}`}
-function cerrarChr(){const v=$('#chrSheet');if(v)v.remove();if(!$('#pdfv'))document.body.classList.remove('pv-on')}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-chr]');if(!b)return;const a=b.dataset.chr;
-  if(a==='open')abrirChr();else if(a==='close')cerrarChr();
-  else if(a==='add'){const {L}=chrLineas();if(!L.length){toast('Complete las horas del servicio');return}
-    L.forEach(l=>P.lines.push({...l,q2:'',auto:false}));
-    const nota='Alquiler chárter calculado según notas de la propuesta EPN 24/06/2019 (pendiente de confirmar aprobación DGTA). Horario ordinario: L–V 07:00–12:00 y 13:00–16:00.';
-    if(!String(P.obs||'').includes('Alquiler chárter')){P.obs=(P.obs?P.obs+'\n':'')+nota;bindMeta()}
-    renderLines();cerrarChr();toast('Chárter agregado: '+L.length+' línea(s)');setTimeout(()=>{const x=$('#lines .ln:last-child');if(x)x.scrollIntoView({behavior:'smooth',block:'center'})},100)}
-  if(e.target.id==='chrSheet')cerrarChr()});
 
 /* ===== Sin internet: service worker y actualizaciones ===== */
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -1062,7 +1202,7 @@ if(PROPIA&&IOS&&!STANDALONE){const n=document.createElement('div');n.className='
 
 /* ===== Inicio ===== */
 $('#rFile').onchange=e=>{const f=e.target.files[0];if(f)restaurar(f);e.target.value=''};
-bindMeta();renderRes();renderLines();paintLogo();initAcceso();
+cargarP(P);paintLogo();initAcceso();
 </script>
 </body>
 </html>
