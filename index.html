@@ -198,6 +198,29 @@ body.solo-tar.oculto #velo{display:flex}
 .tpl .chrbtn{background:color-mix(in srgb,#5c7cfa 16%,var(--card));color:var(--ink);border:1px solid #5c7cfa}
 input[type=date],input[type=datetime-local]{-webkit-appearance:none;appearance:none;min-width:0;display:block;min-height:44px;text-align:left}
 input::-webkit-date-and-time-value{text-align:left}
+/* Rentabilidad */
+.rent-res{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.rent-k{display:grid;grid-template-columns:1fr;gap:6px}
+.rent-k div{background:var(--soft);border-radius:12px;padding:9px 12px;min-width:0;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 10px}
+.rent-k span{display:block;font-size:11px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rent-k b{font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rent-k small{width:100%;text-align:right;font-size:12px;font-weight:700}
+.rent-k .ok{background:var(--okbg)}.rent-k .ok b,.rent-k .ok small{color:var(--ok)}
+.rent-k .warnc{background:var(--warnbg)}.rent-k .warnc b,.rent-k .warnc small{color:var(--warnfg)}
+.rent-k .bad{background:var(--badbg)}.rent-k .bad b,.rent-k .bad small{color:var(--bad)}
+.bar2{height:8px;border-radius:4px;background:var(--okbg);overflow:hidden;margin-top:10px}.bar2 i{display:block;height:100%;background:var(--mag)}
+details.rg{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
+details.rg>summary{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;font-weight:600;list-style:none}
+details.rg>summary::-webkit-details-marker{display:none}
+.rl{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-top:1px solid var(--line);font-size:13.5px}
+.rl small{display:block;color:var(--mut);font-size:11.5px}.rl b{white-space:nowrap;font-variant-numeric:tabular-nums}
+details.crew>summary,details.embd>summary{cursor:pointer;padding:6px 0}
+.crew-l{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px}
+.crew-i{display:grid!important;grid-template-columns:auto 1fr 120px;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);margin:0}
+.crew-i span{min-width:0;font-size:13.5px}.crew-i small{display:block;color:var(--mut);font-size:11.5px}
+.crew-i select{padding:6px;font-size:13px}
+details.embd{border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-bottom:8px}
+h3.sub{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:14px 0 6px}
 /* Pasos de invitación */
 .pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .pasos div{background:var(--soft);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--ink);line-height:1.25}
@@ -356,6 +379,7 @@ body.pv-on{overflow:hidden}
   <div style="margin-top:10px"><label>Observaciones</label><textarea data-k="obs"></textarea></div>
   <div style="margin-top:10px"><label>Elaborado por</label><input data-k="elab"></div>
  </div>
+ <div class="card" data-t="chr" id="cRent" hidden><h2><span class="n">5</span>Rentabilidad <span class="chip warnc" style="margin-left:auto">Uso interno</span></h2><div id="rentBox"></div></div>
 </section>
 
 <!-- TARIFAS -->
@@ -421,6 +445,7 @@ body.pv-on{overflow:hidden}
   </div>
   <button class="btn2" id="btnFer" style="width:100%;margin-top:8px">+ Agregar feriado</button>
  </div>
+ <div class="card"><h2>Estructura de costos (chárter)</h2><div id="costBox"></div></div>
  <div class="card"><h2>Acerca de</h2><p class="sm" id="verTxt" style="margin:0 0 10px"></p><button class="btn2" id="btnUpd2" hidden>Buscar actualización</button></div>
 </section>
 </main>
@@ -646,7 +671,7 @@ const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const TIPOS={buq:'Atención a buque mercante',car:'Servicio a la carga',chr:'Viaje chárter'};
 function newPF(tipo){tipo=tipo||ls.get('epn_tipo','buq');return{id:newId(),tipo,ref:'',fecha:today(),cliId:'',cliente:'',ruc:'',
   buque:'',tab:'',eslora:'',atr:'',des:'',oper:'imp',ccarga:'gen',desc_carga:'',tm:'',dias:'',exCoc:false,
-  medio:'rem',plana:false,itin:[{de:'El Bluff',a:'',sal:'',lle:''}],desc:'',
+  medio:'rem',plana:false,itin:[{de:'El Bluff',a:'',sal:'',lle:''}],desc:'',rent:{emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]},
   obs:'',elab:ls.get('epn_elab',''),tc:ls.get('epn_tc',36.6243),iva:tipo!=='chr',mon:tipo==='chr'?'NIO':'USD',lines:[]}}
 let P=newPF();
 const norm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
@@ -676,7 +701,7 @@ function applyTipo(){const t=P.tipo;$$('#tipos .tipo').forEach(b=>b.classList.to
   $('#tServ').textContent=t==='chr'?'Cálculo del viaje':t==='car'?'Servicios a la carga':'Servicios al buque';
   $('#nServ').textContent=t==='chr'?'3':'2';$('#nTot').textContent=t==='chr'?'4':'3';
   $('#ivaNota').textContent=t==='chr'?'Tarifas en dólares; el total se presenta en córdobas al tipo de cambio oficial del BCN del día. El servicio chárter no lleva IVA.':t==='car'?'Las tarifas no incluyen IVA (Art. 8). COCATRAM no forma parte de la base del IVA. Desmarque el IVA si hay exoneración vigente.':'Las tarifas no incluyen IVA (Art. 8). Desmarque si el cliente presenta exoneración vigente.';
-  estInfo()}
+  estInfo();if(typeof renderRent==='function')renderRent()}
 $('#tipos').addEventListener('click',e=>{const b=e.target.closest('[data-tipo]');if(b)setTipo(b.dataset.tipo)});
 
 /* ===== Libreta de agencias y usuarios ===== */
@@ -785,9 +810,9 @@ const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'
 /* Reparte un tramo [a,b) en minutos ordinarios y extraordinarios por día calendario */
 function repartir(a,b,map){let cur=new Date(a);const fin=new Date(b);const ini=hm2m(HOR.ini),fn=hm2m(HOR.fin);
   while(cur<fin){const d0=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate());const k=kd(d0);
-    const lab=HOR.dias.includes(d0.getDay())&&!ferNombre(d0);const oI=new Date(d0.getTime()+ini*6e4),oF=new Date(d0.getTime()+fn*6e4),nx=new Date(d0);nx.setDate(nx.getDate()+1);
+    const lab=HOR.dias.includes(d0.getDay())&&!ferNombre(d0);const md=medioDia(d0);const oI=new Date(d0.getTime()+ini*6e4),oF=new Date(d0.getTime()+(md?Math.min(fn,720):fn)*6e4),nx=new Date(d0);nx.setDate(nx.getDate()+1);
     const bs=[oI,oF,nx].filter(x=>x>cur).sort((x,y)=>x-y);const nb=new Date(Math.min(fin,bs[0]));const min=(nb-cur)/6e4;
-    const ord=lab&&cur>=oI&&nb<=oF;const r=map[k]||(map[k]={k,d:d0,ord:0,ext:0,lab,fer:ferNombre(d0)});if(ord)r.ord+=min;else r.ext+=min;cur=nb}}
+    const ord=lab&&cur>=oI&&nb<=oF;const r=map[k]||(map[k]={k,d:d0,ord:0,ext:0,lab,fer:ferNombre(d0),md});if(ord)r.ord+=min;else r.ext+=min;cur=nb}}
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h+' h'+(r?' '+String(r).padStart(2,'0')+' min':'')};
 const fCorta=d=>DIAS[d.getDay()].slice(0,3)+' '+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
 
@@ -811,7 +836,7 @@ function chrRecalc(){const m=CHR_M[P.medio]||CHR_M.rem,L=[],av=[];const map={};l
   if(tmMin>0)L.push({tid:m.tm,q1:Math.ceil(tmMin/60-1e-9),nota:'Tiempo muerto (carga y descarga): '+hm(tmMin)+(gap&&desc?' ('+hm(gap)+' en puertos intermedios + '+hm(desc)+' en destino)':gap?' en puertos intermedios':' en destino')});
   if(P.plana&&okLegs){const fin=new Date(last.getTime()+desc*6e4);const dd=Math.round((new Date(fin.getFullYear(),fin.getMonth(),fin.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
     L.push({tid:'ch11',q1:dd,nota:'Plana: '+dd+' día(s) calendario o fracción ('+fCorta(first)+' a '+fCorta(fin)+')'})}
-  P.lines=L.map(l=>({...l,q2:'',auto:false}));CHRINFO={dias,avisos:av,nav,tm:tmMin};renderTiempos();renderLines()}
+  P.lines=L.map(l=>({...l,q2:'',auto:false}));CHRINFO={dias,avisos:av,nav,tm:tmMin};renderTiempos();renderLines();if(typeof renderRent==='function')renderRent()}
 function renderItin(){const b=$('#itin');if(!b)return;
   b.innerHTML=(P.itin||[]).map((g,i)=>`<div class="leg" data-li="${i}"><div class="leg-h"><b>Tramo ${i+1}</b>${P.itin.length>1?`<button class="x" data-ldel="${i}" aria-label="Quitar tramo">✕</button>`:''}</div>
    <div class="grid"><div><label>Desde</label><input list="lugares" data-lk="de" value="${esc(g.de)}" placeholder="Ej.: El Bluff"></div><div><label>Hasta</label><input list="lugares" data-lk="a" value="${esc(g.a)}" placeholder="Ej.: Bluefields"></div>
@@ -824,7 +849,7 @@ $('#btnTramo').onclick=()=>{const p=P.itin[P.itin.length-1]||{};P.itin.push({de:
 function renderTiempos(){const b=$('#tiempos');if(!b)return;const {dias,avisos,nav,tm}=CHRINFO;
   if(!dias.length){b.innerHTML=avisos.map(a=>`<div class="notice">${esc(a)}</div>`).join('')||'<p class="sm">Indique salida y llegada de cada tramo para separar el tiempo ordinario y el extraordinario.</p>';return}
   const to=dias.reduce((s,r)=>s+r.ord,0),te=dias.reduce((s,r)=>s+r.ext,0);
-  b.innerHTML=`<div class="tt-wrap"><table class="ttab"><thead><tr><th>Día</th><th>Ordinario</th><th>Extraordinario</th></tr></thead><tbody>${dias.map(r=>`<tr><td><b>${fCorta(r.d)}</b>${r.fer?`<small class="tag f">${esc(r.fer)}</small>`:!r.lab?`<small class="tag w">No laboral</small>`:''}</td><td>${r.ord?hm(r.ord):'—'}</td><td>${r.ext?hm(r.ext):'—'}</td></tr>`).join('')}</tbody>
+  b.innerHTML=`<div class="tt-wrap"><table class="ttab"><thead><tr><th>Día</th><th>Ordinario</th><th>Extraordinario</th></tr></thead><tbody>${dias.map(r=>`<tr><td><b>${fCorta(r.d)}</b>${r.fer?`<small class="tag f">${esc(r.fer)}</small>`:!r.lab?`<small class="tag w">No laboral</small>`:r.md?`<small class="tag w">½ día · ${esc(r.md)}</small>`:''}</td><td>${r.ord?hm(r.ord):'—'}</td><td>${r.ext?hm(r.ext):'—'}</td></tr>`).join('')}</tbody>
    <tfoot><tr><td>Navegación ${hm(nav)}</td><td>${hm(to)}</td><td>${hm(te)}</td></tr>${tm?`<tr><td colspan="3">Tiempo muerto (carga/descarga): ${hm(tm)}</td></tr>`:''}</tfoot></table></div>
    <p class="sm">Horario ordinario: ${DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')} de ${HOR.ini} a ${HOR.fin}. Cada fracción de hora se cobra como hora completa.</p>
    ${avisos.map(a=>`<div class="notice">${esc(a)}</div>`).join('')}`}
@@ -833,7 +858,7 @@ function renderTiempos(){const b=$('#tiempos');if(!b)return;const {dias,avisos,n
 function renderHorFer(){if(!$('#hIni'))return;$('#hIni').value=HOR.ini;$('#hFin').value=HOR.fin;
   $('#hDias').innerHTML=[1,2,3,4,5,6,0].map(i=>`<button class="dia${HOR.dias.includes(i)?' on':''}" data-hd="${i}">${DIAS[i].slice(0,3)}</button>`).join('');
   const y=new Date().getFullYear(),nac=feriadosDe(y);
-  $('#ferList').innerHTML=`<details><summary class="sm">Ver feriados nacionales ${y}</summary><div class="sm" style="margin:6px 0">${Object.entries(nac).filter(([k])=>!FER.some(f=>(f.anual?y+'-'+f.f.slice(5):f.f)===k)).sort().map(([k,n])=>new Date(k+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)).join('<br>')}</div></details>`+
+  $('#ferList').innerHTML=`<details><summary class="sm">Ver feriados nacionales ${y}</summary><div class="sm" style="margin:6px 0">${MEDIO_DIAS.map(([md,n])=>new Date(y+'-'+md+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)+' (½ día, Cláusula 23)').join('<br>')+'<br>'+Object.entries(nac).filter(([k])=>!FER.some(f=>(f.anual?y+'-'+f.f.slice(5):f.f)===k)).sort().map(([k,n])=>new Date(k+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'})+' · '+esc(n)).join('<br>')}</div></details>`+
    (FER.length?FER.map((f,i)=>`<div class="hi"><div><b>${esc(f.n)}</b><div class="sm">${new Date(f.f+'T12:00').toLocaleDateString('es-NI',f.anual?{day:'numeric',month:'long'}:{day:'numeric',month:'long',year:'numeric'})}${f.anual?' · cada año':''}</div></div><button class="btnd" data-fdel="${i}">Quitar</button></div>`).join(''):'<p class="sm">Sin feriados locales agregados.</p>')}
 const horCambio=()=>{ls.set('epn_hor',HOR);if(typeof subAju==='function')subAju();if(P.tipo==='chr')chrRecalc()};
 document.addEventListener('change',e=>{if(e.target.id==='hIni'||e.target.id==='hFin'){HOR[e.target.id==='hIni'?'ini':'fin']=e.target.value||HOR_DEF[e.target.id==='hIni'?'ini':'fin'];horCambio()}});
@@ -883,7 +908,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.30-12';
+const APP_VER='2026.10.31-13';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -906,7 +931,7 @@ async function verificar(code){try{
   if(REVOCADOS.includes(j.i)||REV.has(j.i))return{rev:true,n:j.n||''};
   if(j.d!==devId())return{dev:true,n:j.n||''};
   const o=COND[j.i];/* condición cambiada por el administrador, sin código nuevo */
-  return{n:j.n||'',e:o?(o.e||''):(j.e||''),i:j.i||'',p:o?(o.p||''):(j.p||''),code}}catch(e){return null}}
+  return{n:j.n||'',e:o?(o.e||''):(j.e||''),i:j.i||'',p:o?(o.p||''):(j.p||''),k:j.k||'',code}}catch(e){return null}}
 async function firmar(payload){
   const key=await crypto.subtle.importKey('jwk',{...PUB,d:MK,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
   const p=b64u(new TextEncoder().encode(JSON.stringify(payload)));
@@ -927,6 +952,7 @@ function copiar(t,ok){try{navigator.clipboard.writeText(t).then(()=>toast(ok),()
 function applyGate(){
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
   $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';
+  {const dd=document.querySelector('details.acc[data-acc=cos]');if(dd)dd.hidden=!OWNER}
   const st=!!(ok&&soloTar());document.body.classList.toggle('solo-tar',st);if(st)pintarMarca();
   if(st&&!document.querySelector('#v-tar.on,#v-acc.on'))show('tar');
   if(ok){$('#aviso').innerHTML=(!OWNER&&LIC&&LIC.e&&diasA(LIC.e)<=7)?`<div class="notice"><b>Su acceso vence ${diasA(LIC.e)===0?'hoy':'en '+diasA(LIC.e)+' día(s)'}</b> (${fLarga(LIC.e)}). Pida la renovación y cargue el código en “Mi acceso”.</div>`:'';return}
@@ -987,7 +1013,7 @@ async function generar(f){const box=f.querySelector('.msg-bad');
   if(!/^[A-Z0-9]{8}$/.test(d)){box.textContent='El ID del teléfono tiene 8 letras o números (ej.: AV2D-VGC2).';return}
   if(pl==='f'){e=$('#gF').value;if(!e||e<today()){box.textContent='Elija una fecha futura.';return}}else if(pl!=='i')e=addD(today(),+pl);
   const prev=Object.values(COL).find(c=>c.d===d);const i=newId();
-  let code;try{code=await firmar({v:1,a:APP_ID,n,d,i,...(e?{e}:{}),...(pr?{p:pr}:{})})}catch(x){box.textContent='No se pudo firmar el código en este navegador.';return}
+  let code;try{const kc=pr?'':b64u(await llaveOwner());code=await firmar({v:1,a:APP_ID,n,d,i,...(e?{e}:{}),...(pr?{p:pr}:{}),...(kc?{k:kc}:{})})}catch(x){box.textContent='No se pudo firmar el código en este navegador.';return}
   let retAnt=false;if(prev&&prev.i!==i){REV.add(prev.i);delete COND[prev.i];ls.set(REV_KEY,[...REV]);ls.set('epn_cond_cache',COND);delete COL[prev.i];retAnt=true}
   const inv=(ls.get('epn_inv',[])||[]).find(x=>norm(x.n)===norm(n));COL[i]={i,n,d,e,p:pr,code,creado:today(),tel:(inv&&inv.tel)||(prev&&prev.tel)||''};if(inv)ls.set('epn_inv',ls.get('epn_inv',[]).filter(x=>x!==inv&&norm(x.n)!==norm(n)));guardarCol();f.reset();$('#gFwrap').hidden=true;renderAcc();
   const c=COL[i];$('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Código para ${esc(n)}</b> · ${e?'vence '+fLarga(e):'indefinido'} · ${PERFILES[pr]}<div class="codebox">${esc(code)}</div><div class="row"><button class="btn" data-wa="${i}">Enviar código por WhatsApp</button><button class="btn2" data-cm="${i}">Copiar mensaje</button><button class="btn2" data-cc="${i}">Copiar solo el código</button></div></div>`;
@@ -1073,13 +1099,13 @@ document.addEventListener('focusin',e=>{if(e.target.id!=='gN')return;const a=ls.
 
 /* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
 const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
-async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS}:{}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
   const fn='respaldo-calculos-apbb-'+today()+'.json';
   try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
 async function restaurar(file){try{const o=JSON.parse(await file.text());const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
   const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
-  ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}if(o.condiciones){COND={...o.condiciones,...COND};ls.set('epn_cond_cache',COND)}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
+  ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(OWNER&&o.costos&&!(COSTOS&&COSTOS.personal.length)){COSTOS=o.costos;ls.set('epn_costos',COSTOS)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}if(o.condiciones){COND={...o.condiciones,...COND};ls.set('epn_cond_cache',COND)}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
 
 async function initAcceso(){
   let h='';try{h=(location.hash||'').slice(1)}catch(e){}
@@ -1089,17 +1115,21 @@ async function initAcceso(){
   const l=leerLic();let local='sin';
   if(l&&l.code){const p=await verificar(l.code);if(p&&p.rev)local='retirado';else if(p&&!p.dev){LIC=p;local=vigente(p)?'ok':'vencido'}}
   GATE=local;if(OWNER||local==='ok')applyGate();
+  cargarCostos();
+  if(PROPIA&&!OWNER&&LIC&&LIC.k){try{const r=await fetch('costos.json',{cache:'no-store'});if(r.ok)await recibirCostos(await r.json())}catch(e){}}
+  renderRent();
   const cl=window.claude;
   if(cl){const to=ms=>new Promise(r=>setTimeout(()=>r(null),ms));
     cl.use('downloads').then(d=>{DL=d}).catch(()=>{});
     try{const u=await Promise.race([cl.use('user'),to(5000)]);if(u){ISOWN=!!(await u.isOwner());if(ISOWN)OWNER=true;try{UID=await u.id()}catch(e){}}}catch(e){}
     try{DB=await Promise.race([cl.use('db'),to(5000)])}catch(e){DB=null}
     if(DB){
+      DB.doc('config/costos').onSnapshot(s=>{if(s.exists)recibirCostos(s.data())},()=>{});
       DB.doc('config/revocados').onSnapshot(s=>{aplicarAccesos(s.exists?s.data():{});revalidarLic();if(document.querySelector('#v-acc.on'))renderAcc()},()=>{});
       if(ISOWN&&UID){try{const k=await DB.doc('data/users/'+UID+'/privado/clave').get();if(k.exists&&!MK&&await mkValida(k.data().mk)){MK=k.data().mk;ls.set(MK_KEY,MK)}}catch(e){}
         try{const c=await DB.doc('data/users/'+UID+'/privado/colegas').get();if(c.exists){const o=JSON.parse(c.data().lista||'{}');COL={...o,...COL};ls.set(COL_KEY,COL)}}catch(e){}}}
   }
-  applyGate();if(document.querySelector('#v-acc.on'))renderAcc()}
+  cargarCostos();renderRent();applyGate();if(document.querySelector('#v-acc.on'))renderAcc()}
 
 
 /* ===== Generador de PDF propio (sin internet, sin librerías) ===== */
@@ -1261,6 +1291,7 @@ const ACC_DEF={'Apariencia':['apa','#7048e8','<circle cx="12" cy="12" r="9"/><pa
  'Agencias navieras y usuarios':['age','#12a06a','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.7c1.6.9 2.7 2.7 3 5.3"/>'],
  'Horario ordinario (viaje chárter)':['hor','#f2a900','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'],
  'Feriados':['fer','#c8326f','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+ 'Estructura de costos (chárter)':['cos','#e8590c','<path d="M4 19h16M7 16V9M12 16V5M17 16v-4"/>'],
  'Acerca de':['ace','#868e96','<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>']};
 (function armarAcordeon(){$$('#v-aju > .card').forEach(card=>{const h=card.querySelector(':scope > h2');if(!h)return;const tit=h.textContent.trim();const [k,cc,ico]=ACC_DEF[tit]||['x','#0b4f8a',''];
   const d=document.createElement('details');d.className='acc';d.dataset.acc=k;d.style.setProperty('--cc',cc);
@@ -1273,11 +1304,12 @@ function subAju(){const t=document.documentElement.dataset.theme||'claro',f=docu
   S('age',CONT.length?CONT.length+' guardada'+(CONT.length===1?'':'s'):'Ninguna guardada');
   S('hor',DIAS.filter((_,i)=>HOR.dias.includes(i)).map(x=>x.slice(0,3)).join(', ')+' · '+HOR.ini+' a '+HOR.fin);
   S('fer','Nacionales incluidos'+(FER.length?' · '+FER.length+' local'+(FER.length===1?'':'es'):''));
+  if(OWNER&&COSTOS)S('cos',COSTOS.personal.length+' persona(s) · '+COSTOS.emb.length+' embarcaciones'+(ls.get('epn_costos_pend',false)?' · sin publicar':''));
   S('ace','Versión '+APP_VER)}
 const THEME_COL={claro:'#07325a',oscuro:'#050d18',gris:'#4a5463'};
 function setTheme(t){document.documentElement.dataset.theme=t;ls.set('epn_theme',t);const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[t]||'#07325a';renderAju()}
 function setFont(f){document.documentElement.dataset.font=f;ls.set('epn_font',f);renderAju()}
-function renderAju(){renderContList();renderHorFer();setTimeout(subAju,0);const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
+function renderAju(){renderContList();renderHorFer();cargarCostos();renderCostAdm();setTimeout(subAju,0);const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
   $$('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===t));$$('[data-font-set]').forEach(b=>b.classList.toggle('on',b.dataset.fontSet===f));
   $('#ajTc').value=ls.get('epn_tc',36.6243);$('#ajElab').value=ls.get('epn_elab','');
   $('#verTxt').textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'');$('#btnUpd2').hidden=!(PROPIA&&'serviceWorker' in navigator)}
@@ -1299,6 +1331,174 @@ window.addEventListener('pageshow',()=>document.body.classList.remove('oculto'))
 window.addEventListener('focus',()=>document.body.classList.remove('oculto'));
 window.addEventListener('beforeprint',()=>{if(document.body.classList.contains('solo-tar'))document.body.classList.add('oculto')});
 $('#btnTarPdf').addEventListener('click',e=>{if(soloTar()){e.stopImmediatePropagation();toast('Su permiso es solo de consulta')}},true);
+
+
+/* ===== Estructura de costos y rentabilidad (viaje chárter) =====
+   Todos los valores en córdobas. Montos mensuales ÷ 30 × días del viaje (salario, vacaciones, aguinaldo,
+   uniformes, botas, seguro, depreciación). Catálogo cifrado para los colegas con acceso completo. */
+const COSTO_DEF={personal:[],emb:[
+  {id:'pap',n:'MR Pedro Araúz Palacios',tipo:'rem',seg:217000,dep:1769983.75,gal:11,crew:[]},
+  {id:'jbo',n:'Remolcador Jimmy Boppel',tipo:'rem',seg:0,dep:0,gal:11,crew:[]},
+  {id:'hsa',n:'Motonave Hilario Sánchez',tipo:'mot',seg:0,dep:0,gal:11,crew:[]},
+  {id:'res',n:'Motonave Río Escondido',tipo:'mot',seg:0,dep:0,gal:11,crew:[]}],
+ par:{diesel:168,desay:100,alm:130,cena:120,hosp:700,unif:4500,botas:3600,bonoCap:1000,bonoOtro:750,inss:22.5,inatec:2,
+  lub:[{n:'Lubricante (10 gal, cada 250 h)',p:5773.01,h:250},{n:'Filtro de diésel (cada 250 h)',p:1299,h:250},{n:'Filtro de aire (cada 250 h)',p:0,h:250},{n:'Filtro de aceite (cada 250 h)',p:0,h:250}]}};
+const ROLES={cap:'Capitán / patrón',maq:'Maquinista',mar:'Marino',otr:'Otro'};
+const rolDe=c=>/patr|capit/i.test(c)?'cap':/maquin/i.test(c)?'maq':/marin/i.test(c)?'mar':'otr';
+let COSTOS=null;
+function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||JSON.parse(JSON.stringify(COSTO_DEF))):ls.get('epn_costos_rx',null);
+  if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[]}return COSTOS}
+const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}};
+const puedeCostos=()=>OWNER||(!!LIC&&!LIC.p);
+const salTot=p=>(+p.sal||0)+(+p.ant||0);
+
+/* --- Cifrado: la llave sale de la clave maestra y viaja dentro de los códigos de acceso completo --- */
+async function llaveOwner(){return new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('costos:'+MK)))}
+const aesKey=raw=>crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);
+async function cifrarCostos(obj){const k=await aesKey(await llaveOwner());const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(obj)));return{v:1,f:today(),iv:b64u(iv),data:b64u(new Uint8Array(ct))}}
+async function descifrarCostos(pub,kb64){const k=await aesKey(b64uToBytes(kb64));const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(pub.iv)},k,b64uToBytes(pub.data));return JSON.parse(new TextDecoder().decode(pt))}
+async function recibirCostos(pub){if(OWNER||!pub||!pub.data||!LIC||!LIC.k)return;try{const o=await descifrarCostos(pub,LIC.k);ls.set('epn_costos_rx',o);cargarCostos();renderRent()}catch(e){}}
+async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
+  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par});
+  if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
+  const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
+  v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>Publicar costos</b><button class="pv-x" data-sh="close">✕</button></div>
+   <p class="sm" style="margin-top:0">Los datos van <b>cifrados</b>: en GitHub nadie puede leer los salarios. Solo los teléfonos con acceso completo tienen la llave.</p>
+   <ol class="sm" style="padding-left:18px"><li>Toque <b>Copiar texto</b>.</li><li>Toque <b>Abrir costos.json</b>, luego el lápiz (Editar).</li><li>Borre todo, pegue el texto y toque <b>Commit changes</b>.</li></ol>
+   <div class="codebox" style="max-height:120px;overflow:auto">${esc(txt.slice(0,400))}${txt.length>400?'…':''}</div>
+   <div class="row" style="flex-wrap:nowrap"><button class="btn" id="pcCopy" style="flex:1">Copiar texto</button><a class="btn2" style="flex:1;text-align:center;text-decoration:none;padding:10px;border-radius:10px" target="_blank" rel="noopener" href="https://github.com/jesiahm2324-gif/memoria-calculo-apbb/edit/main/costos.json">Abrir costos.json</a></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');$('#pcCopy').onclick=()=>{copiar(txt,'Texto copiado');ls.set('epn_costos_pend',false);renderCostAdm()}}
+
+/* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
+const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
+const medioDia=d=>{const x=MEDIO_DIAS.find(m=>m[0]===kd(d).slice(5));return x?x[1]:''};
+
+/* --- Cálculo --- */
+function rentAuto(){const it=(P.itin||[]).filter(g=>g.sal&&g.lle&&new Date(g.lle)>new Date(g.sal));if(!it.length)return null;
+  const first=new Date(it[0].sal),last=new Date(it[it.length-1].lle),fin=new Date(last.getTime()+Math.max(0,+P.desc||0)*36e5);
+  const d0=new Date(first.getFullYear(),first.getMonth(),first.getDate()),d1=new Date(fin.getFullYear(),fin.getMonth(),fin.getDate());
+  const dias=Math.round((d1-d0)/864e5)+1;let dh=0;for(let d=new Date(d0);d<=d1;d.setDate(d.getDate()+1)){if(HOR.dias.includes(d.getDay())&&!ferNombre(d))dh++}
+  const m={};it.forEach(g=>repartir(new Date(g.sal),new Date(g.lle),m));if(fin>last)repartir(last,fin,m);const ext=Object.values(m).reduce((s,r)=>s+r.ext,0);
+  return{dias,dh,hn:Math.round(CHRINFO.nav/60*100)/100,hx:Math.ceil(ext/60-1e-9),first,fin}}
+function embDe(){if(!COSTOS)return null;const tipo=P.medio==='mot'?'mot':'rem';const r=P.rent||{};return COSTOS.emb.find(e=>e.id===r.emb&&e.tipo===tipo)||COSTOS.emb.find(e=>e.tipo===tipo)||null}
+function crewDe(){const r=P.rent||{},e=embDe();const base=Array.isArray(r.crew)?r.crew:(e?e.crew:[]);return (base||[]).map(c=>({...c,p:COSTOS.personal.find(x=>x.id===c.pid)})).filter(c=>c.p)}
+function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=embDe(),par=COSTOS.par,crew=crewDe();
+  const v=(k,def)=>r[k]!==''&&r[k]!=null&&!isNaN(+r[k])?+r[k]:def;
+  const dias=v('dias',a?a.dias:0),dh=v('dh',a?a.dh:0),hn=v('hn',a?a.hn:0),hx=v('hx',a?a.hx:0);
+  const n=crew.length,sm=crew.reduce((s,c)=>s+salTot(c.p),0);const R=[];const add=(g,c,d,m)=>R.push({g,c,d,m:Math.round(m*100)/100});
+  crew.forEach(c=>add('Salarios',c.p.n,ROLES[c.rol]+' · C$ '+fmt(salTot(c.p))+' ÷ 30 × '+dias+' día(s)',salTot(c.p)/30*dias));
+  crew.forEach(c=>add('Horas extras',c.p.n,hx+' h × 2 × C$ '+fmt(salTot(c.p)/30/8)+' (valor hora)',salTot(c.p)/30/8*2*hx));
+  const sal=sm/30*dias,hxm=crew.reduce((s,c)=>s+salTot(c.p)/30/8*2*hx,0),vac=sm/12/30*dias,agu=sm/12/30*dias;
+  add('Prestaciones','Vacaciones proporcionales','Salarios ÷ 12 ÷ 30 × '+dias+' día(s)',vac);
+  add('Prestaciones','Aguinaldo proporcional','Salarios ÷ 12 ÷ 30 × '+dias+' día(s)',agu);
+  const base=sal+hxm+vac;add('Cargas sociales','INSS patronal '+fq(par.inss)+' %','Sobre salarios, horas extras y vacaciones',base*par.inss/100);
+  add('Cargas sociales','INATEC '+fq(par.inatec)+' %','Sobre salarios, horas extras y vacaciones',base*par.inatec/100);
+  add('Convenio colectivo','Uniformes',n+' persona(s) × C$ '+fmt(par.unif)+' anual ÷ 12 ÷ 30 × '+dias,n*par.unif/12/30*dias);
+  add('Convenio colectivo','Botas',n+' persona(s) × C$ '+fmt(par.botas)+' anual ÷ 12 ÷ 30 × '+dias,n*par.botas/12/30*dias);
+  const nc=crew.filter(c=>c.rol==='cap').length;add('Convenio colectivo','Bono por viaje',nc+' capitán × C$ '+fmt(par.bonoCap)+' + '+(n-nc)+' × C$ '+fmt(par.bonoOtro),nc*par.bonoCap+(n-nc)*par.bonoOtro);
+  if(e){add('Seguro y depreciación','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12 ÷ 30 × '+dias,(+e.seg||0)/12/30*dias);add('Seguro y depreciación','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12 ÷ 30 × '+dias,(+e.dep||0)/12/30*dias)}
+  const dv=par.desay+par.alm+par.cena+par.hosp;add('Viáticos','Alimentación y hospedaje',n+' persona(s) × '+dh+' día(s) hábil(es) × C$ '+fmt(dv),n*dh*dv);
+  const gal=e?(+e.gal||0):0;add('Combustible y lubricantes','Diésel',gal+' gal/h × '+fq(hn)+' h × C$ '+fmt(par.diesel),gal*hn*par.diesel);
+  (par.lub||[]).forEach(l=>{if(+l.p)add('Combustible y lubricantes',l.n,'C$ '+fmt(l.p)+' ÷ '+l.h+' h × '+fq(hn)+' h',(+l.p)/(+l.h||250)*hn)});
+  (r.otros||[]).forEach(o=>{if(+o.m)add('Otros gastos',o.d||'Otro gasto','',+o.m)});
+  const t=totals();const ing=t.u*t.tc+t.n;const gas=R.reduce((s,x)=>s+x.m,0);const ut=ing-gas;const mg=ing?ut/ing*100:0;
+  return{R,ing,gas,ut,mg,tc:t.tc,dias,dh,hn,hx,auto:a,emb:e,crew,n}}
+
+/* --- Interfaz en Cálculo --- */
+function renderRent(){const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
+  if(P.tipo!=='chr'||!puedeCostos()){card.hidden=true;return}card.hidden=false;cargarCostos();
+  if(!COSTOS){box.innerHTML=`<div class="notice" style="margin:0">${LIC&&!LIC.k?'Su código de acceso no incluye la llave de costos. Pida al administrador un código actualizado.':'El administrador aún no ha publicado la estructura de costos. Abra la app con señal para recibirla.'}</div>`;return}
+  if(!COSTOS.personal.length){box.innerHTML=`<div class="notice" style="margin:0">${OWNER?'Cargue el personal en <b>Ajustes → Estructura de costos</b> (pegando desde Excel).':'El administrador aún no ha cargado el personal.'}</div>`;return}
+  const r=P.rent||(P.rent={emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]});const c=rentCalc(),a=c.auto,e=c.emb;const tipo=P.medio==='mot'?'mot':'rem';
+  const crewIds=new Set(c.crew.map(x=>x.pid));const ph=(k,v)=>a?'auto: '+v:'auto';
+  const sem=c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
+  const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
+  box.innerHTML=`<div class="grid">
+    <div style="grid-column:1/-1"><label>Embarcación</label><select data-r="emb">${COSTOS.emb.filter(x=>x.tipo===tipo).map(x=>`<option value="${x.id}" ${e&&e.id===x.id?'selected':''}>${esc(x.n)}</option>`).join('')}</select></div>
+    <div><label>Días del viaje</label><input type="number" min="0" step="1" data-r="dias" value="${r.dias}" placeholder="${ph('dias',a&&a.dias)}"></div>
+    <div><label>Días hábiles (viáticos)</label><input type="number" min="0" step="1" data-r="dh" value="${r.dh}" placeholder="${ph('dh',a&&a.dh)}"></div>
+    <div><label>Horas de navegación</label><input type="number" min="0" step="any" data-r="hn" value="${r.hn}" placeholder="${ph('hn',a&&fq(a.hn))}"></div>
+    <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-r="hx" value="${r.hx}" placeholder="${ph('hx',a&&a.hx)}"></div></div>
+   <details class="crew" style="margin-top:10px"><summary><b>Tripulación (${c.n})</b> <span class="sm">· toque para cambiar</span></summary>
+    <div class="crew-l">${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>{const cc=c.crew.find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-crew="${p.id}" ${crewIds.has(p.id)?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo||'')}</small></span><select data-rol="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')}</div></details>
+   <div style="margin-top:10px"><label>Otros gastos del viaje (C$)</label>${(r.otros||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-ro="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Muellaje Corn Island" style="flex:2"><input data-ro="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="x btnd" data-rodel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}<button class="btn2" data-roadd style="width:100%">+ Agregar gasto</button></div>
+   <div class="rent-res">
+    <div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
+    <div class="bar2"><i style="width:${Math.max(0,Math.min(100,c.ing?c.gas/c.ing*100:100))}%"></i></div>
+    <p class="sm" style="margin:4px 0 10px">Gastos = ${c.ing?fq(c.gas/c.ing*100):'—'} % del ingreso · Utilidad US$ ${fmt(c.tc?c.ut/c.tc:0)} · <b>Punto de equilibrio: ${money(c.gas,'NIO')}</b> (US$ ${fmt(c.tc?c.gas/c.tc:0)})</p>
+    ${Object.entries(grupos).map(([g,xs])=>`<details class="rg"><summary><span>${esc(g)}</span><b>${money(xs.reduce((s,x)=>s+x.m,0),'NIO')}</b></summary>${xs.map(x=>`<div class="rl"><div>${esc(x.c)}${x.d?`<small>${esc(x.d)}</small>`:''}</div><b>${money(x.m,'NIO')}</b></div>`).join('')}</details>`).join('')}
+    <button class="btn" id="btnRentPdf" style="width:100%;margin-top:10px">Ver análisis de rentabilidad (PDF interno)</button></div>`}
+function rentSet(k,v){P.rent=P.rent||{emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]};P.rent[k]=v}
+document.addEventListener('change',e=>{const el=e.target;if(!el.closest('#rentBox'))return;
+  if(el.dataset.r){rentSet(el.dataset.r,el.value);if(el.dataset.r==='emb')rentSet('crew',null);renderRent()}
+  else if(el.dataset.crew!=null){const cur=crewDe().map(c=>({pid:c.pid,rol:c.rol}));const id=el.dataset.crew;const p=COSTOS.personal.find(x=>x.id===id);
+    rentSet('crew',el.checked?[...cur.filter(c=>c.pid!==id),{pid:id,rol:rolDe(p&&p.cargo)}]:cur.filter(c=>c.pid!==id));renderRent();const d=$('#rentBox details.crew');if(d)d.open=true}
+  else if(el.dataset.rol){const cur=crewDe().map(c=>({pid:c.pid,rol:c.pid===el.dataset.rol?el.value:c.rol}));rentSet('crew',cur);renderRent();const d=$('#rentBox details.crew');if(d)d.open=true}
+  else if(el.dataset.ro!=null){P.rent.otros[+el.dataset.ro][el.dataset.f]=el.value;renderRent()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-roadd],[data-rodel],#btnRentPdf');if(!b||!b.closest('#rentBox'))return;
+  if(b.hasAttribute('data-roadd')){rentSet('otros',[...((P.rent&&P.rent.otros)||[]),{d:'',m:''}]);renderRent()}
+  else if(b.dataset.rodel!=null){P.rent.otros.splice(+b.dataset.rodel,1);renderRent()}
+  else if(b.id==='btnRentPdf'){try{abrirVisor(rentPdf(),'Rentabilidad-chárter-'+slug(P.cliente||P.ref||'viaje')+'-'+today()+'.pdf','Análisis de rentabilidad · uso interno')}catch(err){console.error(err);toast('No se pudo generar el PDF')}}});
+
+/* --- PDF interno --- */
+function rentPdf(){const c=rentCalc();const d=PDFW();d.page();
+  let y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD – VIAJE CHÁRTER','USO INTERNO · Fecha: '+(P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):'')+(P.ref?' · Ref.: '+P.ref:''));
+  const dat=[['Cliente',P.cliente],['Embarcación',c.emb?c.emb.n:'—'],['Tripulación',c.n+' persona(s)'],['Días del viaje',c.dias],['Días hábiles',c.dh],['Horas navegación',fq(c.hn)],['Horas extra c/u',c.hx],['Tipo de cambio','C$ '+fmt(c.tc,4)],['Ruta',(P.itin||[]).map(g=>g.de).concat([(P.itin||[]).slice(-1)[0]?.a||'']).filter(Boolean).join(' – ')]];
+  dat.forEach(([k,v],i)=>{const cx=40+(i%3)*178,cy=y+Math.floor(i/3)*15;d.text(cx,cy,k+':',{size:8.5,color:GRY});const w=d.width(k+': ',8.5)+2;d.text(cx+w,cy,d.wrap(String(v??'—'),8.5,true,172-w)[0],{size:8.5,bold:true,color:'#1a1a1a'})});
+  y+=Math.ceil(dat.length/3)*15+6;
+  const k=[['INGRESOS',money(c.ing,'NIO'),NAVY],['GASTOS',money(c.gas,'NIO'),MAGC],['UTILIDAD',money(c.ut,'NIO')+'  ('+fq(c.mg)+' %)',c.ut>=0?'#17804a':'#b42318']];
+  k.forEach(([a,b,col],i)=>{const x=40+i*180;d.rect(x,y,172,40,col);d.text(x+10,y+15,a,{size:8,bold:true,color:'#ffffff'});d.text(x+10,y+31,b,{size:11,bold:true,color:'#ffffff'})});y+=52;
+  d.text(40,y,'Punto de equilibrio (precio mínimo del viaje): '+money(c.gas,'NIO')+'  ·  US$ '+fmt(c.tc?c.gas/c.tc:0)+'   ·   Utilidad en dólares: US$ '+fmt(c.tc?c.ut/c.tc:0),{size:8.5,bold:true,color:'#1a1a1a'});y+=14;
+  const head=()=>{d.rect(40,y,532,16,NAVY);d.text(46,y+11,'Concepto',{size:8.5,bold:true,color:'#ffffff'});d.text(250,y+11,'Base de cálculo',{size:8.5,bold:true,color:'#ffffff'});d.text(566,y+11,'C$',{size:8.5,bold:true,color:'#ffffff',align:'r'});y+=16};head();
+  const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
+  Object.entries(grupos).forEach(([g,xs])=>{if(y>700){d.page();y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD (continuación)','USO INTERNO');head()}
+    d.rect(40,y,532,15,'#e8f0f9');d.text(46,y+10.5,g,{size:8.5,bold:true,color:NAVY});d.text(566,y+10.5,money(xs.reduce((s,x)=>s+x.m,0),'NIO'),{size:8.5,bold:true,color:NAVY,align:'r'});y+=15;
+    xs.forEach(x=>{const c1=d.wrap(x.c,8.2,false,196),c2=d.wrap(x.d,7.6,false,236);const h=Math.max(c1.length,c2.length)*10+5;if(y+h>720){d.page();y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD (continuación)','USO INTERNO');head()}
+      c1.forEach((s,j)=>d.text(50,y+10+j*10,s,{size:8.2,color:'#1a1a1a'}));c2.forEach((s,j)=>d.text(250,y+10+j*10,s,{size:7.6,color:GRY}));d.text(566,y+10,money(x.m,'NIO'),{size:8.5,color:'#1a1a1a',align:'r'});d.line(40,y+h,572,y+h,'#e3e8ef',.4);y+=h})});
+  if(y>690){d.page();y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD (continuación)','USO INTERNO')}
+  y+=8;[['Total ingresos (sin IVA)',money(c.ing,'NIO')],['Total gastos',money(c.gas,'NIO')]].forEach(([a,b])=>{d.text(372,y+10,a,{size:9,color:GRY});d.text(566,y+10,b,{size:9,color:'#1a1a1a',align:'r'});y+=14});
+  d.rect(364,y+2,208,22,c.ut>=0?'#17804a':'#b42318');d.text(372,y+16.5,'UTILIDAD',{size:10,bold:true,color:'#ffffff'});d.text(566,y+16.5,money(c.ut,'NIO'),{size:11,bold:true,color:'#ffffff',align:'r'});y+=36;
+  ['Montos mensuales ÷ 30 × días del viaje (salario, vacaciones, aguinaldo, uniformes, botas, seguro, depreciación). Horas extras al doble del valor hora (salario ÷ 30 ÷ 8).','Viáticos solo en días hábiles. Cláusula 23: en los medios días de asueto, el tiempo después del mediodía es extraordinario. Documento de uso interno: no se entrega al cliente.'].forEach(s=>d.wrap('• '+s,7.6,false,532).forEach(x=>{d.text(40,y+8,x,{size:7.6,color:GRY});y+=10}));
+  pdfFooters(d,'Análisis de rentabilidad · USO INTERNO · Empresa Portuaria Nacional · APBB');return d}
+
+/* --- Administración del catálogo (Ajustes, solo administrador) --- */
+function importarPersonal(txt){const filas=String(txt||'').split(/\r?\n/).map(l=>l.split('\t').map(x=>x.trim())).filter(f=>f.length>=3&&f[0]);
+  const num=s=>{s=String(s||'').replace(/[C$\s]/g,'');if(/,\d{1,2}$/.test(s)&&!/\.\d/.test(s))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');return +s||0};
+  let n=0;filas.forEach(f=>{if(/idpersona|nombre/i.test(f[0])&&isNaN(num(f[2])))return;const sal=num(f[2]);if(!sal)return;
+    const ex=COSTOS.personal.find(p=>norm(p.n)===norm(f[0]));const d={n:f[0].replace(/\s+/g,' '),cargo:f[1]||'',sal,ant:num(f[3])};if(ex)Object.assign(ex,d);else COSTOS.personal.push({id:newId(),...d});n++});
+  guardarCostos();return n}
+function renderCostAdm(){const b=$('#costBox');const dd=$('details.acc[data-acc=cos]');if(dd)dd.hidden=!OWNER;if(!b||!OWNER)return;cargarCostos();const par=COSTOS.par;const pend=ls.get('epn_costos_pend',false);
+  b.innerHTML=`${pend?'<div class="notice">Hay cambios sin publicar a los colegas.</div>':''}
+  <h3 class="sub">Personal (${COSTOS.personal.length})</h3>
+  <p class="sm" style="margin-top:0">En su Excel seleccione las columnas <b>Nombre, Cargo, Salario básico y Antigüedad</b>, cópielas y péguelas aquí. Si un nombre ya existe, se actualiza.</p>
+  <textarea id="cpPaste" rows="3" placeholder="Pegue aquí las filas copiadas del Excel"></textarea><button class="btn2" id="cpImp" style="width:100%;margin-top:6px">Importar personal</button>
+  ${COSTOS.personal.length?`<details style="margin-top:8px"><summary class="sm">Ver lista de personal</summary>${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>`<div class="hi" style="padding:8px 10px"><div><b style="font-size:14px">${esc(p.n)}</b><div class="sm">${esc(p.cargo)} · C$ ${fmt(salTot(p))}</div></div><button class="btnd" data-pdel="${p.id}" style="padding:6px 10px">Quitar</button></div>`).join('')}</details>`:''}
+  <h3 class="sub">Embarcaciones</h3>
+  ${COSTOS.emb.map((e,i)=>`<details class="embd"><summary><b>${esc(e.n)}</b> <span class="sm">· ${e.tipo==='mot'?'Motonave':'Remolcador'} · ${(e.crew||[]).length} tripulante(s)</span></summary>
+   <div class="grid" style="margin-top:8px"><div style="grid-column:1/-1"><label>Nombre</label><input data-ce="${i}" data-f="n" value="${esc(e.n)}"></div>
+    <div><label>Seguro anual (C$)</label><input type="number" step="any" data-ce="${i}" data-f="seg" value="${e.seg}"></div>
+    <div><label>Depreciación anual (C$)</label><input type="number" step="any" data-ce="${i}" data-f="dep" value="${e.dep}"></div>
+    <div><label>Consumo diésel (gal/h)</label><input type="number" step="any" data-ce="${i}" data-f="gal" value="${e.gal}"></div></div>
+   <label style="margin-top:8px">Tripulación habitual</label>
+   <div class="crew-l">${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>{const cc=(e.crew||[]).find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-ecrew="${i}" data-pid="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-erol="${i}" data-pid="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')||'<p class="sm">Primero importe el personal.</p>'}</div></details>`).join('')}
+  <h3 class="sub">Parámetros (C$)</h3>
+  <div class="grid">${[['diesel','Diésel por galón'],['desay','Desayuno'],['alm','Almuerzo'],['cena','Cena'],['hosp','Hospedaje por noche'],['unif','Uniformes anual por persona'],['botas','Botas anual por persona'],['bonoCap','Bono capitán por viaje'],['bonoOtro','Bono maquinista / marino'],['inss','INSS patronal %'],['inatec','INATEC %']].map(([k,l])=>`<div><label>${l}</label><input type="number" step="any" data-cp="${k}" value="${par[k]}"></div>`).join('')}</div>
+  <label style="margin-top:8px">Lubricantes y filtros</label>${(par.lub||[]).map((l,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-cl="${i}" data-f="n" value="${esc(l.n)}" style="flex:2"><input type="number" step="any" data-cl="${i}" data-f="p" value="${l.p}" placeholder="Precio" style="flex:1"><input type="number" step="any" data-cl="${i}" data-f="h" value="${l.h}" placeholder="Horas" style="width:70px"></div>`).join('')}
+  <button class="btn" id="cpPub" style="width:100%;margin-top:12px">Publicar costos a los colegas</button>
+  <p class="sm">Los colegas con acceso completo reciben los costos cifrados la próxima vez que abran la app con señal.</p>`}
+document.addEventListener('change',e=>{const el=e.target;if(!el.closest('#costBox')||!COSTOS)return;
+  if(el.dataset.ce!=null){const x=COSTOS.emb[+el.dataset.ce];x[el.dataset.f]=el.dataset.f==='n'?el.value:(+el.value||0)}
+  else if(el.dataset.cp){COSTOS.par[el.dataset.cp]=+el.value||0}
+  else if(el.dataset.cl!=null){const l=COSTOS.par.lub[+el.dataset.cl];l[el.dataset.f]=el.dataset.f==='n'?el.value:(+el.value||0)}
+  else if(el.dataset.ecrew!=null){const x=COSTOS.emb[+el.dataset.ecrew];const p=COSTOS.personal.find(q=>q.id===el.dataset.pid);x.crew=(x.crew||[]).filter(c=>c.pid!==el.dataset.pid);if(el.checked)x.crew.push({pid:el.dataset.pid,rol:rolDe(p&&p.cargo)})}
+  else if(el.dataset.erol!=null){const x=COSTOS.emb[+el.dataset.erol];const c=(x.crew||[]).find(c=>c.pid===el.dataset.pid);if(c)c.rol=el.value}
+  else return;
+  guardarCostos();const open=[...$$('#costBox details')].map(d=>d.open);renderCostAdm();$$('#costBox details').forEach((d,i)=>{if(open[i])d.open=true});renderRent();if(typeof subAju==='function')subAju()});
+document.addEventListener('click',e=>{const b=e.target.closest('#cpImp,#cpPub,[data-pdel]');if(!b||!b.closest('#costBox'))return;
+  if(b.id==='cpImp'){const n=importarPersonal($('#cpPaste').value);toast(n?n+' persona(s) importada(s)':'No se reconocieron filas. Copie desde Excel las columnas Nombre, Cargo, Salario y Antigüedad.');renderCostAdm();renderRent();if(typeof subAju==='function')subAju()}
+  else if(b.id==='cpPub')publicarCostos();
+  else if(b.dataset.pdel){if(!b.dataset.armed){b.dataset.armed=1;b.textContent='¿Seguro?';return}COSTOS.personal=COSTOS.personal.filter(p=>p.id!==b.dataset.pdel);COSTOS.emb.forEach(x=>x.crew=(x.crew||[]).filter(c=>c.pid!==b.dataset.pdel));guardarCostos();renderCostAdm();renderRent()}});
 
 /* ===== Sin internet: service worker y actualizaciones ===== */
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
