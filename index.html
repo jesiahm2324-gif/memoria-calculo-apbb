@@ -914,7 +914,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-14';
+const APP_VER='2026.10.31-15';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1486,7 +1486,7 @@ function rentPdf(){const c=rentCalc();const d=PDFW();d.page();
       c1.forEach((s,j)=>d.text(50,y+10+j*10,s,{size:8.2,color:'#1a1a1a'}));c2.forEach((s,j)=>d.text(250,y+10+j*10,s,{size:7.6,color:GRY}));d.text(566,y+10,money(x.m,'NIO'),{size:8.5,color:'#1a1a1a',align:'r'});d.line(40,y+h,572,y+h,'#e3e8ef',.4);y+=h})});
   if(y>690){d.page();y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD (continuación)','USO INTERNO')}
   y+=8;[['Total ingresos (sin IVA)',money(c.ing,'NIO')],['Total gastos',money(c.gas,'NIO')]].forEach(([a,b])=>{d.text(372,y+10,a,{size:9,color:GRY});d.text(566,y+10,b,{size:9,color:'#1a1a1a',align:'r'});y+=14});
-  d.rect(364,y+2,208,22,c.ut>=0?'#17804a':'#b42318');d.text(372,y+16.5,'UTILIDAD',{size:10,bold:true,color:'#ffffff'});d.text(566,y+16.5,money(c.ut,'NIO'),{size:11,bold:true,color:'#ffffff',align:'r'});y+=36;
+  d.rect(364,y+2,208,22,c.ut>=0?'#17804a':'#b42318');d.text(372,y+16.5,'UTILIDAD',{size:10,bold:true,color:'#ffffff'});d.text(566,y+16.5,money(c.ut,'NIO'),{size:11,bold:true,color:'#ffffff',align:'r'});y+=36;if(y>712){d.page();y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD (continuación)','USO INTERNO')}
   ['Montos mensuales ÷ 30 × días del viaje (salario, vacaciones, aguinaldo, uniformes, botas, seguro, depreciación). Horas extras al doble del valor hora (salario ÷ 30 ÷ 8).','Viáticos solo en días hábiles. Cláusula 23: en los medios días de asueto, el tiempo después del mediodía es extraordinario. Documento de uso interno: no se entrega al cliente.'].forEach(s=>d.wrap('• '+s,7.6,false,532).forEach(x=>{d.text(40,y+8,x,{size:7.6,color:GRY});y+=10}));
   pdfFooters(d,'Análisis de rentabilidad · USO INTERNO · Empresa Portuaria Nacional · APBB');return d}
 
