@@ -921,7 +921,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-22';
+const APP_VER='2026.10.31-24';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1389,15 +1389,16 @@ $('#btnTarPdf').addEventListener('click',e=>{if(soloTar()){e.stopImmediatePropag
 const COSTO_DEF={personal:[],emb:[
   {id:'pap',n:'MR Pedro Araúz Palacios',tipo:'rem',seg:217000,dep:1769983.75,gal:11,crew:[]},
   {id:'jbo',n:'Remolcador Jimmy Boppel',tipo:'rem',seg:0,dep:0,gal:11,crew:[]},
-  {id:'hsa',n:'Motonave Hilario Sánchez',tipo:'mot',seg:0,dep:0,gal:11,crew:[]},
-  {id:'res',n:'Motonave Río Escondido',tipo:'mot',seg:0,dep:0,gal:11,crew:[]}],
+  {id:'hsa',n:'Motonave Hilario Sánchez',tipo:'mot',seg:0,dep:0,gal:11,mot:2,gen:1,genH:2,crew:[]},
+  {id:'res',n:'Motonave Río Escondido',tipo:'mot',seg:0,dep:0,gal:11,mot:2,gen:1,genH:2,crew:[]}],
  par:{diesel:168,desay:100,alm:130,cena:120,hosp:700,unif:4500,botas:3600,bonoCap:1000,bonoOtro:750,inss:22.5,inatec:2,
   lub:[{n:'Lubricante (10 gal, cada 250 h)',p:5773.01,h:250},{n:'Filtro de diésel (cada 250 h)',p:1299,h:250},{n:'Filtro de aire (cada 250 h)',p:0,h:250},{n:'Filtro de aceite (cada 250 h)',p:0,h:250}]}};
 const ROLES={cap:'Capitán / patrón',maq:'Maquinista',mar:'Marino',otr:'Otro'};
 const rolDe=c=>/patr|capit/i.test(c)?'cap':/maquin/i.test(c)?'maq':/marin/i.test(c)?'mar':'otr';
 let COSTOS=null;
 function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||JSON.parse(JSON.stringify(COSTO_DEF))):ls.get('epn_costos_rx',null);
-  if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[]}return COSTOS}
+  if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[];COSTOS.emb.forEach(e=>{if(e.mot==null)e.mot=e.tipo==='mot'?2:1;if(e.gen==null)e.gen=e.tipo==='mot'?1:0;if(e.genH==null)e.genH=2})}
+  if(OWNER&&COSTOS&&!ls.get('epn_gen_v1',false)){COSTOS.emb.forEach(e=>{if(e.tipo==='mot'&&!+e.gen)e.gen=1});ls.set('epn_gen_v1',true);ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}return COSTOS}
 const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}};
 const puedeCostos=()=>OWNER||(!!LIC&&!LIC.p);
 const salTot=p=>(+p.sal||0)+(+p.ant||0);
@@ -1442,12 +1443,12 @@ function rentAuto(){const it=(P.itin||[]).filter(g=>g.sal&&g.lle&&new Date(g.lle
   const d0=new Date(first.getFullYear(),first.getMonth(),first.getDate()),d1=new Date(fin.getFullYear(),fin.getMonth(),fin.getDate());
   const dias=Math.round((d1-d0)/864e5)+1;let dh=0;for(let d=new Date(d0);d<=d1;d.setDate(d.getDate()+1)){if(HOR.dias.includes(d.getDay())&&!ferNombre(d))dh++}
   const m={};it.forEach(g=>{const b=new Date(g.lle);repartir(new Date(g.sal),b,m);if(+g.cd>0)repartir(b,new Date(b.getTime()+(+g.cd)*36e5),m)});const ext=Object.values(m).reduce((s,r)=>s+r.ext,0);
-  return{dias,dh,hn:Math.round(CHRINFO.nav/60*100)/100,hx:Math.ceil(ext/60-1e-9),first,fin}}
+  return{dias,dh,hn:Math.round(CHRINFO.nav/60*100)/100,hg:(()=>{const e=embDe(),gh=e&&e.genH!=null?+e.genH:2;let h=0;it.forEach((g,i)=>{const a=new Date(g.sal),b=new Date(g.lle);h+=(b-a)/36e5;const nx=it[i+1]?new Date(it[i+1].sal):null;h+=Math.max(0,nx?Math.min(gh,(nx-b)/36e5):gh)});return Math.round(h*100)/100})(),hx:Math.ceil(ext/60-1e-9),first,fin}}
 function embDe(){if(!COSTOS)return null;const tipo=P.medio==='mot'?'mot':'rem';const r=P.rent||{};return COSTOS.emb.find(e=>e.id===r.emb&&e.tipo===tipo)||COSTOS.emb.find(e=>e.tipo===tipo)||null}
 function crewDe(){const r=P.rent||{},e=embDe();const base=Array.isArray(r.crew)?r.crew:(e?e.crew:[]);return (base||[]).map(c=>({...c,p:COSTOS.personal.find(x=>x.id===c.pid)})).filter(c=>c.p)}
 function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=embDe(),par=COSTOS.par,crew=crewDe();
   const v=(k,def)=>r[k]!==''&&r[k]!=null&&!isNaN(+r[k])?+r[k]:def;
-  const dias=v('dias',a?a.dias:0),dh=v('dh',a?a.dh:0),hn=v('hn',a?a.hn:0),hx=v('hx',a?a.hx:0);
+  const dias=v('dias',a?a.dias:0),dh=v('dh',a?a.dh:0),hn=v('hn',a?a.hn:0),hx=v('hx',a?a.hx:0),hg=v('hg',a?a.hg:0);
   const n=crew.length,sm=crew.reduce((s,c)=>s+salTot(c.p),0);const R=[];const add=(g,c,d,m)=>R.push({g,c,d,m:Math.round(m*100)/100});
   crew.forEach(c=>add('Salarios',c.p.n,ROLES[c.rol]+' · C$ '+fmt(salTot(c.p))+' ÷ 30 × '+dias+' día(s)',salTot(c.p)/30*dias));
   crew.forEach(c=>add('Horas extras',c.p.n,hx+' h × 2 × C$ '+fmt(salTot(c.p)/30/8)+' (valor hora)',salTot(c.p)/30/8*2*hx));
@@ -1461,11 +1462,12 @@ function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=emb
   const nc=crew.filter(c=>c.rol==='cap').length;add('Convenio colectivo','Bono por viaje',nc+' capitán × C$ '+fmt(par.bonoCap)+' + '+(n-nc)+' × C$ '+fmt(par.bonoOtro),nc*par.bonoCap+(n-nc)*par.bonoOtro);
   if(e){add('Seguro y depreciación','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12 ÷ 30 × '+dias,(+e.seg||0)/12/30*dias);add('Seguro y depreciación','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12 ÷ 30 × '+dias,(+e.dep||0)/12/30*dias)}
   const dv=par.desay+par.alm+par.cena+par.hosp;add('Viáticos','Alimentación y hospedaje',n+' persona(s) × '+dh+' día(s) hábil(es) × C$ '+fmt(dv),n*dh*dv);
-  const gal=e?(+e.gal||0):0;add('Combustible y lubricantes','Diésel',gal+' gal/h × '+fq(hn)+' h × C$ '+fmt(par.diesel),gal*hn*par.diesel);
-  (par.lub||[]).forEach(l=>{if(+l.p)add('Combustible y lubricantes',l.n,'C$ '+fmt(l.p)+' ÷ '+l.h+' h × '+fq(hn)+' h',(+l.p)/(+l.h||250)*hn)});
+  const gal=e?(+e.gal||0):0,mot=e?Math.max(1,+e.mot||1):1,gen=e?(+e.gen||0):0;add('Combustible y lubricantes','Diésel motores'+(mot>1?' ('+mot+')':''),(mot>1?mot+' motores × ':'')+gal+' gal/h × '+fq(hn)+' h navegación × C$ '+fmt(par.diesel)+' = '+fq(Math.round(mot*gal*hn*100)/100)+' gal',mot*gal*hn*par.diesel);
+  if(gen>0)add('Combustible y lubricantes','Diésel generador',gen+' gal/h × '+fq(hg)+' h (navegación + '+(e.genH==null?2:+e.genH)+' h tras cada atraque) × C$ '+fmt(par.diesel)+' = '+fq(Math.round(gen*hg*100)/100)+' gal',gen*hg*par.diesel);
+  (par.lub||[]).forEach(l=>{if(+l.p)add('Combustible y lubricantes',l.n,'C$ '+fmt(l.p)+' ÷ '+l.h+' h × '+fq(hn)+' h'+(mot>1?' × '+mot+' motores':''),(+l.p)/(+l.h||250)*hn*mot)});
   (r.otros||[]).forEach(o=>{if(+o.m)add('Otros gastos',o.d||'Otro gasto','',+o.m)});
   const t=totals();const ing=t.u*t.tc+t.n;const gas=R.reduce((s,x)=>s+x.m,0);const ut=ing-gas;const mg=ing?ut/ing*100:0;
-  return{R,ing,gas,ut,mg,tc:t.tc,dias,dh,hn,hx,auto:a,emb:e,crew,n}}
+  return{R,ing,gas,ut,mg,tc:t.tc,dias,dh,hn,hg,hx,auto:a,emb:e,crew,n}}
 
 /* --- Interfaz en Cálculo --- */
 function renderRent(){renderEmbCrew();const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
@@ -1486,7 +1488,7 @@ function renderRent(){renderEmbCrew();const box=$('#rentBox'),card=$('#cRent');i
     <div><label>Días del viaje</label><input type="number" min="0" step="1" data-r="dias" value="${r.dias}" placeholder="${ph('dias',a&&a.dias)}"></div>
     <div><label>Días hábiles (viáticos)</label><input type="number" min="0" step="1" data-r="dh" value="${r.dh}" placeholder="${ph('dh',a&&a.dh)}"></div>
     <div><label>Horas de navegación</label><input type="number" min="0" step="any" data-r="hn" value="${r.hn}" placeholder="${ph('hn',a&&fq(a.hn))}"></div>
-    <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-r="hx" value="${r.hx}" placeholder="${ph('hx',a&&a.hx)}"></div></div>
+    <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-r="hx" value="${r.hx}" placeholder="${ph('hx',a&&a.hx)}"></div>${e&&+e.gen>0?`<div><label>Horas de generador</label><input type="number" min="0" step="any" data-r="hg" value="${r.hg||''}" placeholder="${ph('hg',a&&fq(a.hg))}"></div>`:''}</div>
 
    <div style="margin-top:10px"><label>Otros gastos del viaje (C$)</label>${(r.otros||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-ro="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Muellaje Corn Island" style="flex:2"><input data-ro="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="x btnd" data-rodel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}<button class="btn2" data-roadd style="width:100%">+ Agregar gasto</button></div>
    <div class="rent-res">
@@ -1536,7 +1538,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-crewed],[d
 /* --- PDF interno --- */
 function rentPdf(){const c=rentCalc();const d=PDFW();d.page();
   let y=pdfHeader(d,'ANÁLISIS DE RENTABILIDAD – VIAJE CHÁRTER','USO INTERNO · Fecha: '+(P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI'):'')+(P.ref?' · Ref.: '+P.ref:''));
-  const dat=[['Cliente',P.cliente],['Embarcación',c.emb?c.emb.n:'—'],['Tripulación',c.n+' persona(s)'],['Días del viaje',c.dias],['Días hábiles',c.dh],['Horas navegación',fq(c.hn)],['Horas extra c/u',c.hx],['Tipo de cambio','C$ '+fmt(c.tc,4)],['Ruta',(P.itin||[]).map(g=>g.de).concat([(P.itin||[]).slice(-1)[0]?.a||'']).filter(Boolean).join(' – ')]];
+  const dat=[['Cliente',P.cliente],['Embarcación',c.emb?c.emb.n:'—'],['Tripulación',c.n+' persona(s)'],['Días del viaje',c.dias],['Días hábiles',c.dh],['Horas navegación',fq(c.hn)],...(c.emb&&+c.emb.gen>0?[['Horas generador',fq(c.hg)]]:[]),['Horas extra c/u',c.hx],['Tipo de cambio','C$ '+fmt(c.tc,4)],['Ruta',(P.itin||[]).map(g=>g.de).concat([(P.itin||[]).slice(-1)[0]?.a||'']).filter(Boolean).join(' – ')]];
   dat.forEach(([k,v],i)=>{const cx=40+(i%3)*178,cy=y+Math.floor(i/3)*15;d.text(cx,cy,k+':',{size:8.5,color:GRY});const w=d.width(k+': ',8.5)+2;d.text(cx+w,cy,d.wrap(String(v??'—'),8.5,true,172-w)[0],{size:8.5,bold:true,color:'#1a1a1a'})});
   y+=Math.ceil(dat.length/3)*15+6;
   const k=[['INGRESOS',money(c.ing,'NIO'),NAVY],['GASTOS',money(c.gas,'NIO'),MAGC],['UTILIDAD',money(c.ut,'NIO')+'  ('+fq(c.mg)+' %)',c.ut>=0?'#17804a':'#b42318']];
@@ -1571,7 +1573,11 @@ function renderCostAdm(){const b=$('#costBox');const dd=$('details.acc[data-acc=
    <div class="grid" style="margin-top:8px"><div style="grid-column:1/-1"><label>Nombre</label><input data-ce="${i}" data-f="n" value="${esc(e.n)}"></div>
     <div><label>Seguro anual (C$)</label><input type="number" step="any" data-ce="${i}" data-f="seg" value="${e.seg}"></div>
     <div><label>Depreciación anual (C$)</label><input type="number" step="any" data-ce="${i}" data-f="dep" value="${e.dep}"></div>
-    <div><label>Consumo diésel (gal/h)</label><input type="number" step="any" data-ce="${i}" data-f="gal" value="${e.gal}"></div></div>
+    <div><label>Motores principales</label><input type="number" min="1" step="1" data-ce="${i}" data-f="mot" value="${e.mot||1}"></div>
+    <div><label>Consumo por motor (gal/h)</label><input type="number" step="any" data-ce="${i}" data-f="gal" value="${e.gal}"></div>
+    <div><label>Generador (gal/h, 0 = no tiene)</label><input type="number" step="any" data-ce="${i}" data-f="gen" value="${e.gen||0}"></div>
+    <div><label>Generador: horas tras atracar</label><input type="number" min="0" step="any" data-ce="${i}" data-f="genH" value="${e.genH==null?2:e.genH}"></div></div>
+   <p class="sm" style="margin:4px 0 0">El generador funciona durante la navegación y las horas indicadas después de cada atraque (sin pasar de la siguiente salida).</p>
    <label style="margin-top:8px">Tripulación habitual</label>
    <div class="crew-l">${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>{const cc=(e.crew||[]).find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-ecrew="${i}" data-pid="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-erol="${i}" data-pid="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')||'<p class="sm">Primero importe el personal.</p>'}</div></details>`).join('')}
   <h3 class="sub">Parámetros (C$)</h3>
