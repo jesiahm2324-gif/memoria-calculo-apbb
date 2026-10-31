@@ -134,7 +134,15 @@ details.fu summary{cursor:pointer;font-size:12px;color:var(--mut);font-weight:60
 body[data-view="pf"] .toast{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 body.locked nav,body.locked main,body.locked .actions,body.locked #gear{display:none}
-body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .actions{display:none!important}
+body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .actions,body.solo-tar #btnTarPdf{display:none!important}
+body.solo-tar #v-tar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;position:relative}
+#marca{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;display:none}
+body.solo-tar[data-view="tar"] #marca{display:block}
+#marca div{position:absolute;left:-50%;top:-50%;width:200%;height:200%;transform:rotate(-28deg);display:flex;flex-wrap:wrap;align-content:flex-start;gap:46px 60px;padding:20px;opacity:.11}
+#marca span{font:700 15px system-ui,sans-serif;color:var(--ink);white-space:nowrap}
+#velo{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--mut);font-weight:600}
+body.solo-tar.oculto #velo{display:flex}
+@media print{body.solo-tar *{display:none!important}}
 #gate{max-width:520px;margin:0 auto;padding:22px 16px 40px}
 #gate h2{font-size:20px;margin:6px 0 8px;color:var(--pri)}
 .codebox{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--soft);border-radius:8px;padding:8px;word-break:break-all;margin:8px 0;user-select:all}
@@ -408,6 +416,8 @@ body.pv-on{overflow:hidden}
  </div>
 </div></div>
 <div class="toast" id="toast" role="status"></div>
+<div id="marca" aria-hidden="true"></div>
+<div id="velo" aria-hidden="true"><img alt="" style="width:160px" id="veloLogo">Contenido protegido</div>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -855,7 +865,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.30-9';
+const APP_VER='2026.10.30-10';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -899,7 +909,7 @@ function copiar(t,ok){try{navigator.clipboard.writeText(t).then(()=>toast(ok),()
 function applyGate(){
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
   $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';
-  const st=!!(ok&&soloTar());document.body.classList.toggle('solo-tar',st);
+  const st=!!(ok&&soloTar());document.body.classList.toggle('solo-tar',st);if(st)pintarMarca();
   if(st&&!document.querySelector('#v-tar.on,#v-acc.on'))show('tar');
   if(ok){$('#aviso').innerHTML=(!OWNER&&LIC&&LIC.e&&diasA(LIC.e)<=7)?`<div class="notice"><b>Su acceso vence ${diasA(LIC.e)===0?'hoy':'en '+diasA(LIC.e)+' día(s)'}</b> (${fLarga(LIC.e)}). Pida la renovación y cargue el código en “Mi acceso”.</div>`:'';return}
   const venc=GATE==='vencido',ret=GATE==='retirado';
@@ -1211,6 +1221,17 @@ $('#ajElab').oninput=e=>{ls.set('epn_elab',e.target.value);P.elab=e.target.value
 $('#btnUpd2').onclick=async()=>{try{const r=await navigator.serviceWorker.getRegistration();if(r){await r.update();toast('Buscando… si hay una versión nueva aparecerá el aviso')}}catch(e){toast('Sin conexión')}};
 {const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[document.documentElement.dataset.theme]||'#07325a'}
 
+
+/* ===== Protección para el permiso de solo consulta ===== */
+function pintarMarca(){const m=$('#marca');if(!m)return;const txt=['Solo consulta',(LIC&&LIC.n)||'',devFmt(devId()),new Date().toLocaleDateString('es-NI')].filter(Boolean).join(' · ');
+  m.innerHTML='<div>'+Array(90).fill('<span>'+esc(txt)+'</span>').join('')+'</div>';const vl=$('#veloLogo');if(vl&&!vl.src)vl.src=LOGO}
+['copy','cut','contextmenu','selectstart','dragstart'].forEach(ev=>document.addEventListener(ev,e=>{if(document.body.classList.contains('solo-tar')&&!e.target.closest('input,textarea'))e.preventDefault()}));
+document.addEventListener('visibilitychange',()=>{if(document.body.classList.contains('solo-tar'))document.body.classList.toggle('oculto',document.hidden)});
+window.addEventListener('pagehide',()=>{if(document.body.classList.contains('solo-tar'))document.body.classList.add('oculto')});
+window.addEventListener('pageshow',()=>document.body.classList.remove('oculto'));
+window.addEventListener('focus',()=>document.body.classList.remove('oculto'));
+window.addEventListener('beforeprint',()=>{if(document.body.classList.contains('solo-tar'))document.body.classList.add('oculto')});
+$('#btnTarPdf').addEventListener('click',e=>{if(soloTar()){e.stopImmediatePropagation();toast('Su permiso es solo de consulta')}},true);
 
 /* ===== Sin internet: service worker y actualizaciones ===== */
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
