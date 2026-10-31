@@ -221,6 +221,9 @@ details.crew>summary,details.embd>summary{cursor:pointer;padding:6px 0}
 .crew-i select{padding:6px;font-size:13px}
 details.embd{border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-bottom:8px}
 h3.sub{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:14px 0 6px}
+.embbox{border:1px solid var(--line);border-left:4px solid #e8590c;border-radius:12px;padding:10px 12px;margin-top:4px}
+.crewsum{margin-top:10px}.cs-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.cs-i{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}.cs-i small{color:var(--mut);white-space:nowrap}
 /* Pasos de invitación */
 .pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .pasos div{background:var(--soft);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--ink);line-height:1.25}
@@ -346,15 +349,15 @@ body.pv-on{overflow:hidden}
     <option value="pcz">Remolcador a Puerto Cabezas (tarifa global, 3 días)</option>
     <option value="cor">Remolcador a Corn Island (tarifa global, 2 días)</option></select></div>
    <div style="grid-column:1/-1"><label class="chk"><input type="checkbox" data-k="plana"> Incluye alquiler de plana (US$ 400 por día o fracción)</label></div>
+   <div style="grid-column:1/-1" id="chrEmb"></div>
   </div>
  </div>
 
  <div class="card" data-t="chr">
   <h2><span class="n">2</span>Itinerario del viaje</h2>
-  <p class="sm" style="margin-top:0">Se cuenta desde la salida del puerto de origen hasta el atraque en el destino final. El tiempo entre la llegada a un puerto y la siguiente salida se cobra como tiempo muerto (carga y descarga).</p>
+  <p class="sm" style="margin-top:0">Se cobran las horas de navegación (de la salida hasta el atraque) y las horas de carga y descarga en cada puerto. La espera entre tramos (por ejemplo, la noche en puerto) no se cobra.</p>
   <div id="itin"></div>
   <button class="btn2" id="btnTramo" style="width:100%;margin-top:4px">+ Agregar tramo</button>
-  <div class="grid" style="margin-top:10px"><div><label>Horas de carga/descarga en el destino final</label><input type="number" step="any" min="0" inputmode="decimal" data-k="desc" placeholder="0"></div></div>
   <div id="tiempos" style="margin-top:12px"></div>
  </div>
 
@@ -819,11 +822,12 @@ const fCorta=d=>DIAS[d.getDay()].slice(0,3)+' '+String(d.getDate()).padStart(2,'
 /* ===== Viaje chárter por itinerario ===== */
 const CHR_M={rem:{dia:'ch1',h1:'ch2',hx:'ch3',tm:'ch4'},mot:{dia:'ch5',h1:'ch6',hx:'ch7',tm:'ch8'},pcz:{glob:'ch9',inc:3,tm:'ch4'},cor:{glob:'ch10',inc:2,tm:'ch4'}};
 let CHRINFO={dias:[],avisos:[],nav:0,tm:0};
-function chrRecalc(){const m=CHR_M[P.medio]||CHR_M.rem,L=[],av=[];const map={};let nav=0,gap=0,okLegs=0,first=null,last=null;
+function chrRecalc(){const m=CHR_M[P.medio]||CHR_M.rem,L=[],av=[];const map={};let nav=0,okLegs=0,first=null,last=null,lastLle=null,tmSum=0;const tmDet=[];
   (P.itin||[]).forEach((g,i)=>{if(!g.sal||!g.lle)return;const a=new Date(g.sal),b=new Date(g.lle);if(!(b>a)){av.push('Tramo '+(i+1)+': la llegada debe ser después de la salida.');return}
-    if(last&&a<last)av.push('Tramo '+(i+1)+': sale antes de la llegada del tramo anterior.');else if(last)gap+=(a-last)/6e4;
-    repartir(a,b,map);nav+=(b-a)/6e4;okLegs++;if(!first)first=a;last=b});
-  const desc=Math.max(0,+P.desc||0)*60;const tmMin=gap+desc;
+    if(last&&a<last)av.push('Tramo '+(i+1)+': sale antes de terminar la carga/descarga del tramo anterior.');
+    const cdm=Math.max(0,+g.cd||0)*60;if(cdm)tmDet.push((g.a||'Tramo '+(i+1))+' '+hm(cdm));tmSum+=cdm;
+    repartir(a,b,map);nav+=(b-a)/6e4;okLegs++;if(!first)first=a;last=new Date(b.getTime()+cdm*6e4);lastLle=b});
+  const tmMin=tmSum;const desc=last&&lastLle?(last-lastLle)/6e4:0;
   const dias=Object.values(map).sort((x,y)=>x.d-y.d);
   if(m.dia){dias.forEach(r=>{const lb=fCorta(r.d);const H=Math.ceil(r.ord/60-1e-9),E=Math.ceil(r.ext/60-1e-9);
      if(H>=5)L.push({tid:m.dia,q1:1,nota:lb+': '+hm(r.ord)+' en horario ordinario (5 h o más: cobro por día)'});
@@ -831,21 +835,22 @@ function chrRecalc(){const m=CHR_M[P.medio]||CHR_M.rem,L=[],av=[];const map={};l
      if(E>0)L.push({tid:m.h1,q1:1,nota:lb+': primera hora extraordinaria del día'+(r.fer?' ('+r.fer+')':!r.lab?' ('+DIAS[r.d.getDay()]+')':'')});
      if(E>1)L.push({tid:m.hx,q1:E-1,nota:lb+': '+(E-1)+' h extraordinarias adicionales (total del día '+hm(r.ext)+')'})})}
   else if(m.glob&&okLegs){L.push({tid:m.glob,q1:1,nota:'Tarifa global: '+m.inc+' días calendario desde la salida hasta el retorno a su puerto base'});
-    const dc=Math.round((new Date(last.getFullYear(),last.getMonth(),last.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
+    const dc=Math.round((new Date(lastLle.getFullYear(),lastLle.getMonth(),lastLle.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
     if(dc>m.inc)av.push('El itinerario abarca '+dc+' días calendario y la tarifa global cubre '+m.inc+'. La propuesta no define el cobro de los días adicionales.')}
-  if(tmMin>0)L.push({tid:m.tm,q1:Math.ceil(tmMin/60-1e-9),nota:'Tiempo muerto (carga y descarga): '+hm(tmMin)+(gap&&desc?' ('+hm(gap)+' en puertos intermedios + '+hm(desc)+' en destino)':gap?' en puertos intermedios':' en destino')});
-  if(P.plana&&okLegs){const fin=new Date(last.getTime()+desc*6e4);const dd=Math.round((new Date(fin.getFullYear(),fin.getMonth(),fin.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
+  if(tmMin>0)L.push({tid:m.tm,q1:Math.ceil(tmMin/60-1e-9),nota:'Tiempo muerto (carga y descarga): '+hm(tmMin)+' ('+tmDet.join(' + ')+')'});
+  if(P.plana&&okLegs){const fin=last;const dd=Math.round((new Date(fin.getFullYear(),fin.getMonth(),fin.getDate())-new Date(first.getFullYear(),first.getMonth(),first.getDate()))/864e5)+1;
     L.push({tid:'ch11',q1:dd,nota:'Plana: '+dd+' día(s) calendario o fracción ('+fCorta(first)+' a '+fCorta(fin)+')'})}
   P.lines=L.map(l=>({...l,q2:'',auto:false}));CHRINFO={dias,avisos:av,nav,tm:tmMin};renderTiempos();renderLines();if(typeof renderRent==='function')renderRent()}
 function renderItin(){const b=$('#itin');if(!b)return;
   b.innerHTML=(P.itin||[]).map((g,i)=>`<div class="leg" data-li="${i}"><div class="leg-h"><b>Tramo ${i+1}</b>${P.itin.length>1?`<button class="x" data-ldel="${i}" aria-label="Quitar tramo">✕</button>`:''}</div>
    <div class="grid"><div><label>Desde</label><input list="lugares" data-lk="de" value="${esc(g.de)}" placeholder="Ej.: El Bluff"></div><div><label>Hasta</label><input list="lugares" data-lk="a" value="${esc(g.a)}" placeholder="Ej.: Bluefields"></div>
-   <div><label>Salida</label><input type="datetime-local" data-lk="sal" value="${g.sal||''}"></div><div><label>Llegada (atraque)</label><input type="datetime-local" data-lk="lle" value="${g.lle||''}"></div></div></div>`).join('')+
+   <div><label>Salida</label><input type="datetime-local" data-lk="sal" value="${g.sal||''}"></div><div><label>Llegada (atraque)</label><input type="datetime-local" data-lk="lle" value="${g.lle||''}"></div>
+   <div><label>Horas de carga/descarga al llegar</label><input type="number" step="any" min="0" inputmode="decimal" data-lk="cd" value="${g.cd||''}" placeholder="0"></div></div></div>`).join('')+
    `<datalist id="lugares">${['El Bluff','Bluefields','Corn Island','Little Corn Island','Laguna de Perlas','Puerto Cabezas','El Rama','Puerto Arlen Siu','San Juan de Nicaragua','Kukra Hill'].map(x=>`<option value="${x}">`).join('')}</datalist>`}
 $('#itin').addEventListener('input',e=>{const el=e.target.closest('[data-lk]');if(!el)return;const i=+el.closest('[data-li]').dataset.li;P.itin[i][el.dataset.lk]=el.value;chrRecalc()});
 $('#itin').addEventListener('change',e=>{const el=e.target.closest('[data-lk]');if(!el)return;const i=+el.closest('[data-li]').dataset.li;P.itin[i][el.dataset.lk]=el.value;chrRecalc()});
 $('#itin').addEventListener('click',e=>{const b=e.target.closest('[data-ldel]');if(!b)return;P.itin.splice(+b.dataset.ldel,1);renderItin();chrRecalc()});
-$('#btnTramo').onclick=()=>{const p=P.itin[P.itin.length-1]||{};P.itin.push({de:p.a||'',a:'',sal:p.lle||'',lle:''});renderItin();chrRecalc();setTimeout(()=>{const l=$$('#itin .leg');l[l.length-1].scrollIntoView({behavior:'smooth',block:'center'})},50)};
+$('#btnTramo').onclick=()=>{const p=P.itin[P.itin.length-1]||{};let sal='';if(p.lle){const t=new Date(new Date(p.lle).getTime()+(+p.cd||0)*36e5);t.setMinutes(t.getMinutes()-t.getTimezoneOffset());sal=t.toISOString().slice(0,16)}P.itin.push({de:p.a||'',a:'',sal,lle:'',cd:''});renderItin();chrRecalc();setTimeout(()=>{const l=$$('#itin .leg');l[l.length-1].scrollIntoView({behavior:'smooth',block:'center'})},50)};
 function renderTiempos(){const b=$('#tiempos');if(!b)return;const {dias,avisos,nav,tm}=CHRINFO;
   if(!dias.length){b.innerHTML=avisos.map(a=>`<div class="notice">${esc(a)}</div>`).join('')||'<p class="sm">Indique salida y llegada de cada tramo para separar el tiempo ordinario y el extraordinario.</p>';return}
   const to=dias.reduce((s,r)=>s+r.ord,0),te=dias.reduce((s,r)=>s+r.ext,0);
@@ -868,6 +873,7 @@ document.addEventListener('click',e=>{const d=e.target.closest('[data-hd]');if(d
 
 /* ===== Abrir un cálculo ===== */
 function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(!Array.isArray(P.itin)||!P.itin.length)P.itin=[{de:'El Bluff',a:'',sal:'',lle:''}];
+  if(+P.desc&&!P.itin[P.itin.length-1].cd){P.itin[P.itin.length-1].cd=P.desc;P.desc=''}
   applyTipo();bindMeta();renderItin();if(P.tipo==='chr')chrRecalc();else{syncCoc();renderLines()}}
 
 /* ===== Navegación ===== */
@@ -908,7 +914,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-13';
+const APP_VER='2026.10.31-14';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1222,14 +1228,14 @@ function memPdf(){const t=totals();const d=PDFW();d.page();const tp=P.tipo||'buq
   const MED={rem:'Remolcador (P. Araúz Palacios / J. Boppel)',mot:'Motonave (H. Sánchez / Río Escondido)',pcz:'Remolcador a Puerto Cabezas (global)',cor:'Remolcador a Corn Island (global)'};
   const datos=tp==='buq'?[[cliL,P.cliente],['RUC/ID',P.ruc],['Buque',P.buque],['TAB',P.tab?fq(P.tab):''],['Eslora',P.eslora?fq(P.eslora)+' m':''],['Estadía',estadiaH()?estadiaH()+' h':''],['Atraque',fdt(P.atr)],['Desatraque',fdt(P.des)],['Bandera','Internacional']]
    :tp==='car'?[[cliL,P.cliente],['RUC/ID',P.ruc],['Buque',P.buque],['Operación',P.oper==='exp'?'Exportación':'Importación'],['Carga',(P.ccarga==='pel'?'Peligrosa':'General')+(P.desc_carga?' · '+P.desc_carga:'')],['Cantidad',P.tm?fq(P.tm)+' TM/m³':''],['Días en recinto',P.dias||''],['COCATRAM',P.exCoc?'No aplica (petróleo/banano)':'Aplica']]
-   :[[cliL,P.cliente],['RUC/ID',P.ruc],['Medio',MED[P.medio]||''],['Plana',P.plana?'Sí':'No']];
+   :[[cliL,P.cliente],['RUC/ID',P.ruc],['Embarcación',(typeof embDe==='function'&&COSTOS&&embDe()&&P.rent&&P.rent.emb)?embDe().n:(MED[P.medio]||'')],['Plana',P.plana?'Sí':'No']];
   datos.forEach(([k,v],i)=>{const cx=40+(i%3)*178,cy=y+Math.floor(i/3)*15;d.text(cx,cy,k+':',{size:8.5,color:GRY});const w=d.width(k+': ',8.5)+2;d.text(cx+w,cy,d.wrap(String(v||'—'),8.5,true,172-w)[0],{size:8.5,bold:true,color:'#1a1a1a'})});
   y+=Math.ceil(datos.length/3)*15+6;
   const nueva=()=>{d.page();y=pdfHeader(d,TIT+' (continuación)','')};
   if(tp==='chr'){
     d.rect(40,y,532,16,NAVY);d.text(46,y+11,'Itinerario',{size:8.5,bold:true,color:'#ffffff'});y+=16;
-    const IC=[['#',22],['Desde',120],['Hasta',120],['Salida',95],['Llegada',95],['Duración',80]];let x=40;d.rect(40,y,532,14,'#e8f0f9');IC.forEach(([h,w])=>{d.text(x+5,y+10,h,{size:7.8,bold:true,color:NAVY});x+=w});y+=14;
-    (P.itin||[]).forEach((g,i)=>{if(!g.sal||!g.lle)return;const dur=(new Date(g.lle)-new Date(g.sal))/6e4;x=40;[String(i+1),g.de||'—',g.a||'—',fdt(g.sal),fdt(g.lle),dur>0?hm(dur):'—'].forEach((s,j)=>{d.text(x+5,y+10,d.wrap(s,8,false,IC[j][1]-8)[0],{size:8,color:'#1a1a1a'});x+=IC[j][1]});d.line(40,y+14,572,y+14,'#e3e8ef',.5);y+=14});
+    const IC=[['#',20],['Desde',95],['Hasta',95],['Salida',92],['Llegada',92],['Navegación',70],['Carga/desc.',68]];let x=40;d.rect(40,y,532,14,'#e8f0f9');IC.forEach(([h,w])=>{d.text(x+5,y+10,h,{size:7.8,bold:true,color:NAVY});x+=w});y+=14;
+    (P.itin||[]).forEach((g,i)=>{if(!g.sal||!g.lle)return;const dur=(new Date(g.lle)-new Date(g.sal))/6e4;x=40;[String(i+1),g.de||'—',g.a||'—',fdt(g.sal),fdt(g.lle),dur>0?hm(dur):'—',+g.cd?hm(+g.cd*60):'—'].forEach((s,j)=>{d.text(x+5,y+10,d.wrap(s,8,false,IC[j][1]-8)[0],{size:8,color:'#1a1a1a'});x+=IC[j][1]});d.line(40,y+14,572,y+14,'#e3e8ef',.5);y+=14});
     y+=6;const {dias,tm}=CHRINFO;
     if(dias.length){d.rect(40,y,532,14,'#e8f0f9');[['Día',40],['Ordinario',260],['Extraordinario',400]].forEach(([h,xx])=>d.text(xx+5,y+10,h,{size:7.8,bold:true,color:NAVY}));y+=14;
       dias.forEach(r=>{if(y>700)nueva();d.text(45,y+10,fCorta(r.d)+(r.fer?' · '+r.fer:!r.lab?' · no laboral':''),{size:8,color:'#1a1a1a'});d.text(305,y+10,r.ord?hm(r.ord):'—',{size:8,color:'#1a1a1a'});d.text(445,y+10,r.ext?hm(r.ext):'—',{size:8,color:'#1a1a1a'});d.line(40,y+14,572,y+14,'#e3e8ef',.5);y+=14});
@@ -1376,10 +1382,10 @@ const medioDia=d=>{const x=MEDIO_DIAS.find(m=>m[0]===kd(d).slice(5));return x?x[
 
 /* --- Cálculo --- */
 function rentAuto(){const it=(P.itin||[]).filter(g=>g.sal&&g.lle&&new Date(g.lle)>new Date(g.sal));if(!it.length)return null;
-  const first=new Date(it[0].sal),last=new Date(it[it.length-1].lle),fin=new Date(last.getTime()+Math.max(0,+P.desc||0)*36e5);
+  const first=new Date(it[0].sal),last=new Date(it[it.length-1].lle),fin=new Date(last.getTime()+Math.max(0,+it[it.length-1].cd||0)*36e5);
   const d0=new Date(first.getFullYear(),first.getMonth(),first.getDate()),d1=new Date(fin.getFullYear(),fin.getMonth(),fin.getDate());
   const dias=Math.round((d1-d0)/864e5)+1;let dh=0;for(let d=new Date(d0);d<=d1;d.setDate(d.getDate()+1)){if(HOR.dias.includes(d.getDay())&&!ferNombre(d))dh++}
-  const m={};it.forEach(g=>repartir(new Date(g.sal),new Date(g.lle),m));if(fin>last)repartir(last,fin,m);const ext=Object.values(m).reduce((s,r)=>s+r.ext,0);
+  const m={};it.forEach(g=>{const b=new Date(g.lle);repartir(new Date(g.sal),b,m);if(+g.cd>0)repartir(b,new Date(b.getTime()+(+g.cd)*36e5),m)});const ext=Object.values(m).reduce((s,r)=>s+r.ext,0);
   return{dias,dh,hn:Math.round(CHRINFO.nav/60*100)/100,hx:Math.ceil(ext/60-1e-9),first,fin}}
 function embDe(){if(!COSTOS)return null;const tipo=P.medio==='mot'?'mot':'rem';const r=P.rent||{};return COSTOS.emb.find(e=>e.id===r.emb&&e.tipo===tipo)||COSTOS.emb.find(e=>e.tipo===tipo)||null}
 function crewDe(){const r=P.rent||{},e=embDe();const base=Array.isArray(r.crew)?r.crew:(e?e.crew:[]);return (base||[]).map(c=>({...c,p:COSTOS.personal.find(x=>x.id===c.pid)})).filter(c=>c.p)}
@@ -1406,7 +1412,7 @@ function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=emb
   return{R,ing,gas,ut,mg,tc:t.tc,dias,dh,hn,hx,auto:a,emb:e,crew,n}}
 
 /* --- Interfaz en Cálculo --- */
-function renderRent(){const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
+function renderRent(){renderEmbCrew();const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
   if(P.tipo!=='chr'||!puedeCostos()){card.hidden=true;return}card.hidden=false;cargarCostos();
   if(!COSTOS){box.innerHTML=`<div class="notice" style="margin:0">${LIC&&!LIC.k?'Su código de acceso no incluye la llave de costos. Pida al administrador un código actualizado.':'El administrador aún no ha publicado la estructura de costos. Abra la app con señal para recibirla.'}</div>`;return}
   if(!COSTOS.personal.length){box.innerHTML=`<div class="notice" style="margin:0">${OWNER?'Cargue el personal en <b>Ajustes → Estructura de costos</b> (pegando desde Excel).':'El administrador aún no ha cargado el personal.'}</div>`;return}
@@ -1415,13 +1421,12 @@ function renderRent(){const box=$('#rentBox'),card=$('#cRent');if(!box||!card)re
   const sem=c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
   const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
   box.innerHTML=`<div class="grid">
-    <div style="grid-column:1/-1"><label>Embarcación</label><select data-r="emb">${COSTOS.emb.filter(x=>x.tipo===tipo).map(x=>`<option value="${x.id}" ${e&&e.id===x.id?'selected':''}>${esc(x.n)}</option>`).join('')}</select></div>
+    <div style="grid-column:1/-1"><p class="sm" style="margin:0">${e?'<b>'+esc(e.n)+'</b>':'Sin embarcación'} · ${c.n} tripulante(s): ${c.crew.map(x=>esc(x.p.n.split(' ')[0]+' '+(x.p.n.split(' ')[2]||x.p.n.split(' ')[1]||''))).join(', ')||'—'}. <a href="#" data-goemb>Cambiar en Datos</a></p></div>
     <div><label>Días del viaje</label><input type="number" min="0" step="1" data-r="dias" value="${r.dias}" placeholder="${ph('dias',a&&a.dias)}"></div>
     <div><label>Días hábiles (viáticos)</label><input type="number" min="0" step="1" data-r="dh" value="${r.dh}" placeholder="${ph('dh',a&&a.dh)}"></div>
     <div><label>Horas de navegación</label><input type="number" min="0" step="any" data-r="hn" value="${r.hn}" placeholder="${ph('hn',a&&fq(a.hn))}"></div>
     <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-r="hx" value="${r.hx}" placeholder="${ph('hx',a&&a.hx)}"></div></div>
-   <details class="crew" style="margin-top:10px"><summary><b>Tripulación (${c.n})</b> <span class="sm">· toque para cambiar</span></summary>
-    <div class="crew-l">${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>{const cc=c.crew.find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-crew="${p.id}" ${crewIds.has(p.id)?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo||'')}</small></span><select data-rol="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')}</div></details>
+
    <div style="margin-top:10px"><label>Otros gastos del viaje (C$)</label>${(r.otros||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-ro="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Muellaje Corn Island" style="flex:2"><input data-ro="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="x btnd" data-rodel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}<button class="btn2" data-roadd style="width:100%">+ Agregar gasto</button></div>
    <div class="rent-res">
     <div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
@@ -1440,6 +1445,29 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-roadd],[da
   if(b.hasAttribute('data-roadd')){rentSet('otros',[...((P.rent&&P.rent.otros)||[]),{d:'',m:''}]);renderRent()}
   else if(b.dataset.rodel!=null){P.rent.otros.splice(+b.dataset.rodel,1);renderRent()}
   else if(b.id==='btnRentPdf'){try{abrirVisor(rentPdf(),'Rentabilidad-chárter-'+slug(P.cliente||P.ref||'viaje')+'-'+today()+'.pdf','Análisis de rentabilidad · uso interno')}catch(err){console.error(err);toast('No se pudo generar el PDF')}}});
+
+/* --- Embarcación y tripulación del viaje (en Datos) --- */
+function renderEmbCrew(){const b=$('#chrEmb');if(!b)return;if(P.tipo!=='chr'||!puedeCostos()||!cargarCostos()||!COSTOS.emb.length){b.innerHTML='';return}
+  const tipo=P.medio==='mot'?'mot':'rem';const ops=COSTOS.emb.filter(x=>x.tipo===tipo);const r=P.rent||(P.rent={emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]});
+  if(r.emb&&!ops.some(x=>x.id===r.emb)){r.emb='';r.crew=null}
+  const e=embDe();const crew=crewDe();const hasCap=crew.some(c=>c.rol==='cap'),hasMaq=crew.some(c=>c.rol==='maq');
+  b.innerHTML=`<div class="embbox"><label>Embarcación que realizará el viaje</label><select id="selEmb">${r.emb?'':'<option value="">— Seleccione —</option>'}${ops.map(x=>`<option value="${x.id}" ${r.emb===x.id?'selected':''}>${esc(x.n)}</option>`).join('')}</select>
+   ${r.emb?`<div class="crewsum"><div class="cs-h"><b>Tripulación (${crew.length})</b><button class="btn2" data-crewed style="padding:7px 12px">Cambiar</button></div>
+    ${crew.length?crew.map(c=>`<div class="cs-i"><span>${esc(c.p.n)}</span><small>${ROLES[c.rol]}</small></div>`).join(''):'<p class="sm" style="margin:6px 0">Sin tripulación seleccionada.</p>'}
+    ${crew.length&&(!hasCap||!hasMaq)?`<div class="notice" style="margin:8px 0 0">Falta ${!hasCap?'capitán / patrón':''}${!hasCap&&!hasMaq?' y ':''}${!hasMaq?'maquinista':''} en la tripulación.</div>`:''}</div>`:'<p class="sm" style="margin:6px 0 0">Elija la embarcación para cargar su tripulación habitual.</p>'}</div>`}
+document.addEventListener('change',e=>{if(e.target.id!=='selEmb')return;const em=COSTOS.emb.find(x=>x.id===e.target.value);rentSet('emb',e.target.value);rentSet('crew',em?(em.crew||[]).map(c=>({...c})):[]);renderRent()});
+function abrirCrew(){cerrarSheet();const e=embDe();const sel=new Map(crewDe().map(c=>[c.pid,c.rol]));const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
+  const pinta=()=>{$('#crL').innerHTML=COSTOS.personal.slice().sort((x,y)=>(sel.has(y.id)-sel.has(x.id))||x.n.localeCompare(y.n)).map(p=>`<label class="chk crew-i"><input type="checkbox" data-cr="${p.id}" ${sel.has(p.id)?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo||'')}</small></span><select data-crr="${p.id}" ${sel.has(p.id)?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(sel.get(p.id)||rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`).join('');$('#crN').textContent=sel.size};
+  v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>Tripulación · ${esc(e?e.n:'')}</b><button class="pv-x" data-sh="close">✕</button></div>
+   <p class="sm" style="margin-top:0">Marque quiénes van en este viaje (por ejemplo, si alguien está de vacaciones o de subsidio). Seleccionados: <b id="crN"></b></p>
+   <input type="search" id="crQ" placeholder="Buscar persona…" style="margin-bottom:6px"><div class="crew-l" id="crL" style="max-height:50vh"></div>
+   <div class="row" style="flex-wrap:nowrap;margin-top:10px"><button class="btn2" id="crHab" style="flex:1">Tripulación habitual</button><button class="btn" id="crOk" style="flex:1">Listo</button></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();
+  $('#crQ').oninput=()=>{const q=norm($('#crQ').value);$$('#crL .crew-i').forEach(l=>{l.hidden=q&&!norm(l.textContent).includes(q)})};
+  $('#crL').addEventListener('change',ev=>{const t=ev.target;if(t.dataset.cr){const p=COSTOS.personal.find(x=>x.id===t.dataset.cr);if(t.checked)sel.set(t.dataset.cr,rolDe(p&&p.cargo));else sel.delete(t.dataset.cr);const sc=$('#crL').scrollTop;pinta();$('#crL').scrollTop=sc}else if(t.dataset.crr){sel.set(t.dataset.crr,t.value)}});
+  $('#crHab').onclick=()=>{sel.clear();(e&&e.crew||[]).forEach(c=>sel.set(c.pid,c.rol));pinta()};
+  $('#crOk').onclick=()=>{rentSet('crew',[...sel].map(([pid,rol])=>({pid,rol})));cerrarSheet();renderRent();toast('Tripulación del viaje actualizada')}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-crewed],[data-goemb]');if(!b)return;e.preventDefault();if(b.hasAttribute('data-crewed'))abrirCrew();else{const x=$('#chrEmb');if(x)x.scrollIntoView({behavior:'smooth',block:'center'})}});
 
 /* --- PDF interno --- */
 function rentPdf(){const c=rentCalc();const d=PDFW();d.page();
