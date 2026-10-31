@@ -915,7 +915,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-18';
+const APP_VER='2026.10.31-19';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -954,7 +954,10 @@ function activar(p){const prev=leerLic()||{};ls.set(LIC_KEY,{n:p.n,e:p.e,i:p.i,p
 const fLarga=s=>s?new Date(s+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'long',year:'numeric'}):'—';
 const diasA=s=>Math.round((new Date(s+'T12:00')-new Date(fechaRef()+'T12:00'))/864e5);
 const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
-function copiar(t,ok){try{navigator.clipboard.writeText(t).then(()=>toast(ok),()=>toast('Seleccione el texto y cópielo'))}catch(e){toast('Seleccione el texto y cópielo')}}
+function copiarSync(t){const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';document.body.appendChild(a);
+  let ok=false;try{a.contentEditable=true;a.readOnly=false;const r=document.createRange();r.selectNodeContents(a);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);a.focus();a.select();a.setSelectionRange(0,t.length);ok=document.execCommand('copy')}catch(e){}
+  a.remove();try{getSelection().removeAllRanges()}catch(e){}return ok}
+function copiar(t,ok){if(copiarSync(t)){toast(ok);return}try{navigator.clipboard.writeText(t).then(()=>toast(ok),()=>toast('Seleccione el texto y cópielo'))}catch(e){toast('Seleccione el texto y cópielo')}}
 
 function applyGate(){
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
@@ -1399,10 +1402,18 @@ async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publ
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
   v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>Publicar costos</b><button class="pv-x" data-sh="close">✕</button></div>
    <p class="sm" style="margin-top:0">Los datos van <b>cifrados</b>: en GitHub nadie puede leer los salarios. Solo los teléfonos con acceso completo tienen la llave.</p>
-   <ol class="sm" style="padding-left:18px"><li>Toque <b>Copiar texto</b>.</li><li>Toque <b>Abrir costos.json</b>, luego el lápiz (Editar).</li><li>Borre todo, pegue el texto y toque <b>Commit changes</b>.</li></ol>
-   <div class="codebox" style="max-height:120px;overflow:auto">${esc(txt.slice(0,400))}${txt.length>400?'…':''}</div>
-   <div class="row" style="flex-wrap:nowrap"><button class="btn" id="pcCopy" style="flex:1">Copiar texto</button><a class="btn2" style="flex:1;text-align:center;text-decoration:none;padding:10px;border-radius:10px" target="_blank" rel="noopener" href="https://github.com/jesiahm2324-gif/memoria-calculo-apbb/edit/main/costos.json">Abrir costos.json</a></div></div>`;
-  document.body.appendChild(v);document.body.classList.add('pv-on');$('#pcCopy').onclick=()=>{copiar(txt,'Texto copiado');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()}}
+   <ol class="sm" style="padding-left:18px"><li>Toque <b>Copiar texto</b> (debe salir «Texto copiado»).</li><li>Toque <b>Abrir costos.json</b>, luego el lápiz (Editar).</li><li>Borre todo, pegue el texto y toque <b>Commit changes</b>.</li></ol>
+   <textarea id="pcTxt" readonly style="width:100%;height:110px;font-family:ui-monospace,Menlo,monospace;font-size:16px;line-height:1.25;border-radius:8px;padding:8px;border:1px solid var(--line);background:var(--soft);color:inherit;word-break:break-all">${esc(txt)}</textarea>
+   <div class="row" style="flex-wrap:nowrap"><button class="btn" id="pcCopy" style="flex:1">Copiar texto</button><a class="btn2" style="flex:1;text-align:center;text-decoration:none;padding:10px;border-radius:10px" target="_blank" rel="noopener" href="https://github.com/jesiahm2324-gif/memoria-calculo-apbb/edit/main/costos.json">Abrir costos.json</a></div>
+   <p class="sm" style="margin:10px 0 4px">¿No copia? Use el archivo: guárdelo en <b>Archivos</b> y en GitHub toque <b>Add file → Upload files</b>, elija <b>costos.json</b> y <b>Commit changes</b> (reemplaza el anterior).</p>
+   <button class="btn2" id="pcFile" style="width:100%">Guardar archivo costos.json</button></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');const marcar=()=>{ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()};
+  $('#pcTxt').onfocus=e=>{setTimeout(()=>{try{e.target.setSelectionRange(0,txt.length)}catch(x){}},50)};
+  $('#pcFile').onclick=async()=>{const b=new Blob([txt],{type:'application/json'});const f=new File([b],'costos.json',{type:'application/json'});
+    try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});marcar();return}}catch(e){if(e&&e.name==='AbortError')return}
+    try{if(DL){await DL.save({filename:'costos.json',data:b});marcar();return}}catch(e){if(e&&e.code==='declined')return}
+    const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='costos.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);marcar();toast('Archivo guardado')};
+  $('#pcCopy').onclick=()=>{copiar(txt,'Texto copiado');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()}}
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
