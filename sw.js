@@ -1,6 +1,6 @@
 /* Memoria de Cálculo APBB — funciona sin internet.
    Al publicar una versión nueva, cambie VERSION para que todos los teléfonos la reciban. */
-const VERSION='2026.10.31-25';
+const VERSION='2026.10.31-26';
 const CACHE='calculo-apbb-'+VERSION;
 const ARCHIVOS=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-180.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ARCHIVOS)).then(()=>self.skipWaiting()))});
@@ -8,7 +8,7 @@ self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.
 self.addEventListener('fetch',e=>{
   const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==location.origin)return;
   /* Lista de accesos retirados: siempre la más reciente si hay señal */
-  if(u.pathname.endsWith('/revocados.json')||u.pathname.endsWith('/costos.json')){e.respondWith(fetch(r,{cache:'no-store'}).then(res=>{const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));return res}).catch(()=>caches.match(r)));return}
+  if(u.pathname.endsWith('/revocados.json')||u.pathname.endsWith('/costos.json')||u.pathname.endsWith('/viajes.json')){e.respondWith(fetch(r,{cache:'no-store'}).then(res=>{const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));return res}).catch(()=>caches.match(r)));return}
   /* Resto: abre al instante desde el teléfono y, si hay señal, trae la versión nueva para la próxima vez */
   const key=r.mode==='navigate'?'index.html':r;
   e.respondWith(caches.open(CACHE).then(async c=>{const hit=await c.match(key,{ignoreSearch:true});

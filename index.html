@@ -212,6 +212,10 @@ input::-webkit-date-and-time-value{text-align:left}
 details.rg{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 details.rg>summary{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;font-weight:600;list-style:none}
 details.rg>summary::-webkit-details-marker{display:none}
+body:not(.con-viajes) nav button[data-v="via"]{display:none}
+.via-dias{display:grid;grid-template-columns:1fr 1fr;gap:8px}.via-dias>div{border:1px solid var(--line);border-radius:12px;padding:8px 10px}.via-dias span{display:block;font-size:12px;color:var(--mut);font-weight:600}.via-dias b{display:block;font-size:15px}.via-dias small{display:block;font-size:11.5px;color:var(--mut)}.via-dias .ok{border-color:color-mix(in srgb,var(--ok,#1e8e3e) 45%,var(--line))}.via-dias .bad{border-color:color-mix(in srgb,#d93025 45%,var(--line))}
+.via-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}.via-it small{display:block;font-size:12px;color:var(--mut);margin-top:2px}.via-it b{font-size:15px;white-space:nowrap}.via-it>div:first-child{min-width:0}.via-it .neg{color:#c5221f}
+.via-tr{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
 details.rg .chev{font-size:20px;color:var(--mut);transition:transform .2s;line-height:1}details.rg[open]>summary .chev{transform:rotate(90deg);color:var(--pri)}details.colx{background:var(--card)}details.colx>summary{font-weight:600}details.colw>summary{font-size:14px;color:var(--pri)}
 .rl{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-top:1px solid var(--line);font-size:13.5px}
 .rl small{display:block;color:var(--mut);font-size:11.5px}.rl b{white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -306,6 +310,7 @@ body.pv-on{overflow:hidden}
  <button data-v="pf" class="on"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h4M16 14v4"/></svg>Cálculo</button>
  <button data-v="tar"><svg viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Tarifas</button>
  <button data-v="his"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial</button>
+ <button data-v="via"><svg viewBox="0 0 24 24"><path d="M3 17h18l-2 4H5z"/><path d="M5 17V11h11l3 6M8 11V7h5v4M12 3v4"/></svg>Viajes</button>
  <button data-v="acc"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.7c1.6.9 2.7 2.7 3 5.3"/></svg><span id="navAcc">Mi acceso</span></button>
 </nav>
 <section id="gate"><p class="mut">Verificando acceso…</p></section>
@@ -400,6 +405,7 @@ body.pv-on{overflow:hidden}
 </section>
 
 <!-- ACCESO -->
+<section class="view" id="v-via"><div class="card"><h2>Viajes regulares · Bluefields ⇄ Corn Island</h2><p class="sm" style="margin-top:0">Rentabilidad real de cada viaje del Hilario Sánchez y el Río Escondido (no es proforma). Uso interno.</p><div id="viaBox"></div></div></section>
 <section class="view" id="v-acc"><div class="card"><div id="accBox"></div></div></section>
 
 <!-- HISTORIAL -->
@@ -884,7 +890,7 @@ function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(
   applyTipo();bindMeta();renderItin();if(P.tipo==='chr')chrRecalc();else{syncCoc();renderLines()}}
 
 /* ===== Navegación ===== */
-function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();window.scrollTo(0,0)}
+function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
 $('#btnPrev').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-'+(P.tipo||'buq')+'-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo · '+TIPOS[P.tipo||'buq'])}catch(e){console.error(e);toast('No se pudo generar la vista')}};
 
@@ -921,7 +927,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-25';
+const APP_VER='2026.10.31-26';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -969,7 +975,7 @@ function copiar(t,ok,el){let done=false;const fb=()=>{if(done)return;done=true;i
 
 function applyGate(){
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
-  $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';
+  $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';document.body.classList.toggle('con-viajes',!!(ok&&puedeVia()));if(!puedeVia()&&document.querySelector('#v-via.on'))show('pf');
   {const dd=document.querySelector('details.acc[data-acc=cos]');if(dd)dd.hidden=!OWNER}
   const st=!!(ok&&soloTar());document.body.classList.toggle('solo-tar',st);if(st)pintarMarca();
   if(st&&!document.querySelector('#v-tar.on,#v-acc.on'))show('tar');
@@ -1056,10 +1062,11 @@ const ghErr=e=>({'401':'La llave de GitHub no es válida o venció. Cree una nue
 let _ghT=null,_ghBusy=false;
 function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=setTimeout(()=>ghSync(true),6000)}
 async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
-  const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false);if(!pc&&!pr)return true;
+  const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false),pv=ls.get('epn_viajes_pend',false)&&MK;if(!pc&&!pr&&!pv)return true;
   _ghBusy=true;let err=null,hecho=[];
   try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
-    if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}}catch(e){err=e.message}
+    if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}
+    if(pv){const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await ghPut('viajes.json',JSON.stringify(pub),'Actualizar viajes regulares (app)');ls.set('epn_viajes_pend',false);hecho.push('viajes')}}catch(e){err=e.message}
   _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
   if(!silent)toast(err?ghErr(err):'Publicado en GitHub: '+hecho.join(' y '));
   if(document.querySelector('#v-acc.on'))renderAcc();return !err}
@@ -1077,7 +1084,7 @@ function ghPanel(){if(DB)return'';const tok=ghTok(),st=ls.get('epn_gh_est',null)
    <button class="btn" data-ghsave style="width:100%;margin-top:8px">Guardar llave y publicar</button>`}</div></details>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ghnow],[data-ghdel],[data-ghsave]');if(!b)return;
   if(b.hasAttribute('data-ghsave'))return ghGuardar(($('#ghIn')||{}).value);
-  if(b.hasAttribute('data-ghnow')){ls.set('epn_costos_pend',true);ls.set('epn_rev_pend',true);return ghSync(false)}
+  if(b.hasAttribute('data-ghnow')){ls.set('epn_costos_pend',true);ls.set('epn_rev_pend',true);if((ls.get('epn_viajes',[])||[]).length)ls.set('epn_viajes_pend',true);return ghSync(false)}
   if(confirm('¿Quitar la llave de GitHub de este teléfono? Tendrá que volver a copiar y pegar para publicar.')){ls.set('epn_ghtok','');ls.set('epn_gh_est',null);renderAcc()}});
 window.addEventListener('online',()=>ghSync(true));
 async function publicarAccesos(okMsg){if(!DB&&ghTok()){ls.set('epn_rev_pend',true);if(await ghSync(true)){toast(okMsg);renderAcc();return true}}if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND});toast(okMsg);renderAcc();return true}catch(e){toast('Guardado en este teléfono; no se pudo publicar')}}
@@ -1181,11 +1188,11 @@ document.addEventListener('focusin',e=>{if(e.target.id!=='gN')return;const a=ls.
 
 /* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
 const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
-async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS}:{}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
   const fn='respaldo-calculos-apbb-'+today()+'.json';
   try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
-async function restaurar(file){try{const o=JSON.parse(await file.text());const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
+async function restaurar(file){try{const o=JSON.parse(await file.text());if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
   const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
   ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(OWNER&&o.costos&&!(COSTOS&&COSTOS.personal.length)){COSTOS=o.costos;ls.set('epn_costos',COSTOS)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}if(o.condiciones){COND={...o.condiciones,...COND};ls.set('epn_cond_cache',COND)}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
 
@@ -1198,7 +1205,7 @@ async function initAcceso(){
   if(l&&l.code){const p=await verificar(l.code);if(p&&p.rev)local='retirado';else if(p&&!p.dev){LIC=p;local=vigente(p)?'ok':'vencido'}}
   GATE=local;if(OWNER||local==='ok')applyGate();
   cargarCostos();
-  if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos()}
+  if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
   renderRent();
   const cl=window.claude;
@@ -1476,6 +1483,197 @@ async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publ
     try{if(DL){await DL.save({filename:'costos.json',data:b});marcar();return}}catch(e){if(e&&e.code==='declined')return}
     const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='costos.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);marcar();toast('Archivo guardado')};
   $('#pcCopy').onclick=()=>{copiar(txt,'Texto copiado',$('#pcTxt'));ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()}}
+
+/* ===== Viajes regulares Bluefields ⇄ Corn Island (análisis de rentabilidad real) =====
+   Ingresos: total de boletería + total cobrado por carga. Gastos variables por viaje (diésel, generador,
+   lubricantes, horas extras, viáticos, muellaje, otros). Costos fijos del mes (salarios, prestaciones,
+   cargas sociales, convenio, seguro, depreciación) repartidos entre los viajes del mes de cada embarcación. */
+const VIA_DIAS_PROG=[0,3,4,6];// dom, mié, jue, sáb
+const VIA_DIR={ida:'Bluefields → Corn Island',vue:'Corn Island → Bluefields'};
+let VIA_MES=today().slice(0,7),VIA_EDIT=null;
+const puedeVia=()=>OWNER||!!(LIC&&LIC.k&&!LIC.p);
+const viaNuevoId=()=>'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function viaPlantilla(f,dir){const vu=dir==='vue';
+  return vu?[{de:'Muelle municipal Corn Island',a:'Muelle municipal Bluefields',sal:'09:00',lle:'',cd:0.5},{de:'Muelle municipal Bluefields',a:'Muelle EPN',sal:'',lle:'',cd:0,auto:true}]
+           :[{de:'Muelle EPN',a:'Muelle municipal Bluefields',sal:'07:00',lle:'07:15',cd:0},{de:'Muelle municipal Bluefields',a:'Muelle Corn Island',sal:'09:00',lle:'',cd:2}]}
+function viaDirDe(f){const d=new Date(f+'T12:00').getDay();return d===4||d===0?'vue':'ida'}
+function viaNuevo(){const f=today(),dir=viaDirDe(f);const embs=(COSTOS&&COSTOS.emb||[]).filter(e=>e.tipo==='mot');const eid=ls.get('epn_via_emb','')||(embs[0]&&embs[0].id)||'';
+  return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',car:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:OWNER?'Administrador':(LIC&&LIC.n)||'',nuevo:true}}
+const addMin=(hhmm,m)=>{if(!hhmm)return'';const t=hm2m(hhmm)+m;const x=((t%1440)+1440)%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')};
+function viaAuto(v){const t=v.tr;if(v.dir==='vue'&&t[1]&&t[1].auto&&t[0].lle){t[1].sal=addMin(t[0].lle,Math.round((+t[0].cd||0)*60));t[1].lle=addMin(t[1].sal,15)}}
+/* Convierte los tramos en fechas reales (si una hora es menor que la anterior, pasa al día siguiente) */
+function viaTiempos(v){let base=new Date(v.f+'T00:00');let prev=null;const out=[];
+  for(const g of v.tr){if(!g.sal||!g.lle)continue;let a=new Date(base.getTime()+hm2m(g.sal)*6e4);if(prev&&a<prev)a=new Date(a.getTime()+864e5);
+    let b=new Date(base.getTime()+hm2m(g.lle)*6e4);while(b<=a)b=new Date(b.getTime()+864e5);
+    out.push({a,b,cd:Math.max(0,+g.cd||0),g});prev=new Date(b.getTime()+Math.max(0,+g.cd||0)*36e5)}return out}
+function viaLista(){if(OWNER)return ls.get('epn_viajes',[])||[];const rx=ls.get('epn_viajes_rx',{l:[],del:[]})||{l:[],del:[]};const m={};(rx.l||[]).forEach(x=>m[x.id]=x);
+  (ls.get('epn_viajes_mios',[])||[]).forEach(x=>{if(!m[x.id]||String(x.u)>String(m[x.id].u))m[x.id]={...x,local:true}});return Object.values(m)}
+function viaGuardarLista(l){if(OWNER){ls.set('epn_viajes',l);ls.set('epn_viajes_pend',true);viaPublicar()}}
+function viaProgMes(ym){const [y,m]=ym.split('-').map(Number);let n=0;const d=new Date(y,m-1,1);while(d.getMonth()===m-1){if(VIA_DIAS_PROG.includes(d.getDay()))n++;d.setDate(d.getDate()+1)}return n}
+function viaDivisor(v,lista){const ym=v.f.slice(0,7);const reg=lista.filter(x=>x.emb===v.emb&&x.f.slice(0,7)===ym&&x.id!==v.id).length+1;
+  const cerrado=ym<today().slice(0,7);return{d:cerrado?reg:Math.max(reg,viaProgMes(ym)),reg,cerrado}}
+function viaCrew(v){const e=COSTOS.emb.find(x=>x.id===v.emb);const base=Array.isArray(v.crew)?v.crew:(e?e.crew:[]);return (base||[]).map(c=>({...c,p:COSTOS.personal.find(x=>x.id===c.pid)})).filter(c=>c.p)}
+function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.emb.find(x=>x.id===v.emb)||null,crew=viaCrew(v),n=crew.length;
+  const T=viaTiempos(v);const hn=Math.round(T.reduce((s,t)=>s+(t.b-t.a)/36e5,0)*100)/100;
+  const gh=e&&e.genH!=null?+e.genH:2;let hg=0;T.forEach((t,i)=>{hg+=(t.b-t.a)/36e5;const nx=T[i+1]?T[i+1].a:null;hg+=Math.max(0,nx?Math.min(gh,(nx-t.b)/36e5):gh)});hg=Math.round(hg*100)/100;
+  let hxA=0;if(T.length){const m={};const ini=T[0].a,fin=new Date(Math.max(...T.map(t=>t.b.getTime()+t.cd*36e5)));repartir(ini,fin,m);hxA=Math.ceil(Object.values(m).reduce((s,r)=>s+r.ext,0)/60-1e-9)}
+  const hx=v.hx!==''&&v.hx!=null&&!isNaN(+v.hx)?+v.hx:hxA;
+  const R=[];const add=(g,c,d,m,fx)=>R.push({g,c,d,m:Math.round(m*100)/100,fx:!!fx});
+  const gal=e?(+e.gal||0):0,mot=e?Math.max(1,+e.mot||1):1,gen=e?(+e.gen||0):0;
+  add('Combustible y lubricantes','Diésel motores'+(mot>1?' ('+mot+')':''),(mot>1?mot+' motores × ':'')+gal+' gal/h × '+fq(hn)+' h navegación × C$ '+fmt(par.diesel)+' = '+fq(Math.round(mot*gal*hn*100)/100)+' gal',mot*gal*hn*par.diesel);
+  if(gen>0)add('Combustible y lubricantes','Diésel generador',gen+' gal/h × '+fq(hg)+' h (navegación + '+gh+' h tras cada atraque) = '+fq(Math.round(gen*hg*100)/100)+' gal',gen*hg*par.diesel);
+  (par.lub||[]).forEach(l=>{if(+l.p)add('Combustible y lubricantes',l.n,'C$ '+fmt(l.p)+' ÷ '+l.h+' h × '+fq(hn)+' h'+(mot>1?' × '+mot+' motores':''),(+l.p)/(+l.h||250)*hn*mot)});
+  crew.forEach(c=>add('Horas extras',c.p.n,hx+' h × 2 × C$ '+fmt(salTot(c.p)/30/8)+' (valor hora)',salTot(c.p)/30/8*2*hx));
+  const hxm=crew.reduce((s,c)=>s+salTot(c.p)/30/8*2*hx,0);if(hxm){add('Horas extras','INSS patronal y INATEC sobre horas extras',fq(par.inss)+' % + '+fq(par.inatec)+' %',hxm*(par.inss+par.inatec)/100)}
+  const hosp=v.dir==='ida';const dv=par.desay+par.alm+par.cena+(hosp?par.hosp:0);
+  add('Viáticos','Alimentación'+(hosp?' y hospedaje':''),n+' persona(s) × C$ '+fmt(dv)+(hosp?' (incluye hospedaje en Corn Island)':' (sin hospedaje: regresan a casa)'),n*dv);
+  if(par.bonoReg){const nc=crew.filter(c=>c.rol==='cap').length;add('Viáticos','Bono por viaje',nc+' capitán × C$ '+fmt(par.bonoCap)+' + '+(n-nc)+' × C$ '+fmt(par.bonoOtro),nc*par.bonoCap+(n-nc)*par.bonoOtro)}
+  const muB=v.muB!==''&&v.muB!=null?+v.muB:(+par.muBF||0),muC=v.dir==='ida'?(v.muC!==''&&v.muC!=null?+v.muC:(+par.muCI||0)):0;
+  if(muB)add('Muellaje','Muelle municipal Bluefields','Estadía',muB);if(muC)add('Muellaje','Muelle Corn Island','Estadía',muC);
+  (v.og||[]).forEach(o=>{if(+o.m)add('Otros gastos',o.d||'Otro gasto','',+o.m)});
+  const dv2=viaDivisor(v,lista||viaLista());const D=Math.max(1,dv2.d);const sm=crew.reduce((s,c)=>s+salTot(c.p),0);
+  const nota=' ÷ '+D+' viajes del mes';
+  add('Costos fijos del mes (asignados)','Salarios ('+n+')','C$ '+fmt(sm)+' mensual'+nota,sm/D,1);
+  add('Costos fijos del mes (asignados)','Vacaciones y aguinaldo','Salarios ÷ 12 × 2'+nota,sm/12*2/D,1);
+  add('Costos fijos del mes (asignados)','INSS patronal e INATEC','Sobre salarios y vacaciones'+nota,(sm+sm/12)*(par.inss+par.inatec)/100/D,1);
+  add('Costos fijos del mes (asignados)','Uniformes y botas',n+' × C$ '+fmt(par.unif+par.botas)+' anual ÷ 12'+nota,n*(par.unif+par.botas)/12/D,1);
+  if(e){if(+e.seg)add('Costos fijos del mes (asignados)','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12'+nota,(+e.seg)/12/D,1);if(+e.dep)add('Costos fijos del mes (asignados)','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12'+nota,(+e.dep)/12/D,1)}
+  const ing=(+v.bol||0)+(+v.car||0)+(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0);
+  const gv=R.filter(x=>!x.fx).reduce((s,x)=>s+x.m,0),gf=R.filter(x=>x.fx).reduce((s,x)=>s+x.m,0),gas=gv+gf,ut=ing-gas,mg=ing?ut/ing*100:(gas?-100:0);
+  const pas=(+v.np>0&&+v.bol>0)?(+v.bol)/(+v.np):310;const faltan=ut<0?Math.ceil(-ut/pas):0;const faltanV=ing-gv<0?Math.ceil(-(ing-gv)/pas):0;
+  return{R,ing,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
+const viaSem=c=>c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
+const viaFecha=f=>{const d=new Date(f+'T12:00');return DIAS[d.getDay()]+' '+d.toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'})};
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const mesTxt=ym=>{const [y,m]=ym.split('-').map(Number);return MESES[m-1].replace(/^./,c=>c.toUpperCase())+' '+y};
+function viaResumen(ym){const lista=viaLista();const l=lista.filter(x=>x.f.slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f)||(a.dir==='ida'?-1:1));
+  const cs=l.map(v=>({v,c:viaCalc(v,lista)}));const S=k=>cs.reduce((s,x)=>s+x.c[k],0);
+  const tot={n:cs.length,ing:S('ing'),gv:S('gv'),gf:S('gf'),gas:S('gas'),ut:S('ut')};tot.mg=tot.ing?tot.ut/tot.ing*100:0;
+  const porDia={};cs.forEach(({v,c})=>{const k=new Date(v.f+'T12:00').getDay();const r=porDia[k]||(porDia[k]={n:0,ing:0,ut:0,np:0});r.n++;r.ing+=c.ing;r.ut+=c.ut;r.np+=(+v.np||0)});
+  const porEmb={};cs.forEach(({v,c})=>{const k=c.emb?c.emb.n:'—';const r=porEmb[k]||(porEmb[k]={n:0,ing:0,ut:0});r.n++;r.ing+=c.ing;r.ut+=c.ut});
+  return{cs,tot,porDia,porEmb,prov:ym>=today().slice(0,7)}}
+
+/* ---------- Pantalla ---------- */
+function renderVia(){const box=$('#viaBox');if(!box)return;
+  if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
+  if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
+  if(VIA_EDIT)return renderViaForm();
+  const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const mios=OWNER?[]:(ls.get('epn_viajes_mios',[])||[]).filter(x=>!x.env);
+  const DN=[3,4,6,0];
+  box.innerHTML=`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
+   ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
+    <div class="bar2"><i style="width:${Math.max(0,Math.min(100,t.ing?t.gas/t.ing*100:100))}%"></i></div>
+    ${R.prov?'<p class="sm" style="margin:6px 0 0">Mes en curso: los costos fijos se reparten entre los viajes programados del mes (miércoles, jueves, sábado y domingo). El resultado queda definitivo al cerrar el mes.</p>':''}
+    <h3 class="sub">Por día de salida</h3><div class="via-dias">${DN.map(k=>{const r=R.porDia[k];return `<div class="${r?(r.ut>=0?'ok':'bad'):''}"><span>${DIAS[k]}</span><b>${r?money(r.ut,'NIO'):'—'}</b><small>${r?r.n+' viaje(s) · '+(r.np?r.np+' pasajeros':money(r.ing,'NIO')):'sin viajes'}</small></div>`}).join('')}</div>
+    ${Object.keys(R.porEmb).length>1?`<h3 class="sub">Por embarcación</h3>${Object.entries(R.porEmb).map(([k,r])=>`<div class="rl"><div>${esc(k)}<small>${r.n} viaje(s) · ingresos ${money(r.ing,'NIO')}</small></div><b>${money(r.ut,'NIO')}</b></div>`).join('')}`:''}
+    <button class="btn2" data-vpdf style="width:100%;margin-top:12px">Ver informe del mes (PDF)</button></div>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay viajes registrados en este mes.</p>'}
+   <button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>
+   ${!OWNER?`<div class="notice" style="margin-top:12px"><b>${mios.length?mios.length+' viaje(s) sin enviar al administrador.':'Todos sus viajes fueron enviados.'}</b> Los viajes que usted registra se suman al informe cuando el administrador los recibe.${mios.length?'<button class="btn" data-vsend style="width:100%;margin-top:8px">Enviar mis viajes al administrador</button>':''}</div>`:''}
+   ${OWNER?`<details class="rg" data-ok="vimp" style="margin-top:12px"${ACC_OPEN.has('vimp')?' open':''}><summary><span>Recibir viajes de un colega</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><p class="sm" style="margin-top:0">Cuando Osman le envíe sus viajes por WhatsApp, copie el mensaje completo y péguelo aquí.</p><div class="row" style="flex-wrap:nowrap"><textarea id="vImp" rows="2" spellcheck="false" style="flex:1"></textarea><button type="button" class="btn2" data-pegar="vImp" style="padding:6px 12px">Pegar</button></div><button class="btn" data-vimp style="width:100%;margin-top:8px">Agregar viajes recibidos</button></div></details>
+    <details class="rg" data-ok="vaj"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Muellaje Bluefields por escala (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muBF" value="${COSTOS.par.muBF||''}" placeholder="0.00"></div><div><label>Muellaje Corn Island por estadía (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muCI" value="${COSTOS.par.muCI||''}" placeholder="0.00"></div></div>
+     <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">El muellaje de Bluefields se carga en cada viaje; el de Corn Island solo en la ida (la nave pernocta allí). En cada viaje se puede cambiar el monto.</p></div></details>`:''}
+   ${R.cs.length?`<h3 class="sub">Viajes de ${mesTxt(VIA_MES).toLowerCase()}</h3>${R.cs.map(({v,c})=>{const s=viaSem(c);return `<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(c.emb?c.emb.n.replace(/^Motonave /,''):'—')}${+v.np?' · '+v.np+' pasajeros':''}${v.local&&!v.env?' · <span class="chip warnc">sin enviar</span>':''}${OWNER&&v.autor&&v.autor!=='Administrador'?' · '+esc(v.autor):''}</small></div><div style="text-align:right"><b class="${c.ut<0?'neg':''}">${money(c.ut,'NIO')}</b><small>${fq(c.mg)} %</small></div></button>`}).join('')}`:''}`}
+function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const lista=viaLista().filter(x=>x.id!==v.id);const c=viaCalc(v,lista.concat([v]));
+  const embs=COSTOS.emb.filter(e=>e.tipo==='mot');const crewIds=new Set(c.crew.map(x=>x.pid));const sem=viaSem(c);
+  const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
+  const falta=v.tr.some((g,i)=>!g.lle&&!(v.dir==='vue'&&i===1));
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${v.nuevo?'Registrar viaje':'Editar viaje'}</b><button class="btn2" data-vcancel style="padding:8px 14px">Cancelar</button></div>
+   <div class="grid" style="margin-top:8px"><div><label>Fecha de salida</label><input type="date" data-vf="f" value="${v.f}"></div>
+    <div><label>Sentido</label><select data-vf="dir"><option value="ida" ${v.dir==='ida'?'selected':''}>Ida: ${VIA_DIR.ida} (mié / sáb)</option><option value="vue" ${v.dir==='vue'?'selected':''}>Regreso: ${VIA_DIR.vue} (jue / dom)</option></select></div>
+    <div style="grid-column:1/-1"><label>Embarcación</label><select data-vf="emb">${embs.map(e=>`<option value="${e.id}" ${v.emb===e.id?'selected':''}>${esc(e.n)}</option>`).join('')}</select></div></div>
+   ${c.n?'':'<p class="msg-bad" style="margin:10px 0 0">Seleccione la tripulación de este viaje (o defina la tripulación habitual de la nave en Ajustes → Estructura de costos).</p>'}<details class="rg" style="margin-top:10px"${c.n?'':' open'}><summary><span>Tripulación (${c.n})</span><span class="chev">›</span></summary><div class="crew-l" style="padding:0 8px 8px">${COSTOS.personal.slice().sort((a,b)=>(crewIds.has(b.id)-crewIds.has(a.id))||a.n.localeCompare(b.n)).map(p=>{const cc=c.crew.find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-vcrew="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-vrol="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')}</div></details>
+   <h3 class="sub">Horas reales de navegación</h3>
+   ${v.tr.map((g,i)=>`<div class="via-tr"><div class="sm"><b>${i+1}.</b> ${esc(g.de)} → ${esc(g.a)}</div><div class="grid"><div><label>Salida</label><input type="time" data-vt="${i}" data-k="sal" value="${g.sal||''}"></div><div><label>Llegada${!g.lle&&!(v.dir==='vue'&&i===1)?' <span class="chip warnc">anotar</span>':''}</label><input type="time" data-vt="${i}" data-k="lle" value="${g.lle||''}"></div>${+g.cd||i===(v.dir==='ida'?1:0)?`<div><label>Descarga al llegar (h)</label><input type="number" min="0" step="0.25" data-vt="${i}" data-k="cd" value="${g.cd}"></div>`:''}</div></div>`).join('')}
+   <p class="sm" style="margin:4px 0 0">Navegación: <b>${hm(c.hn*60)}</b> · Generador: ${hm(c.hg*60)} · Horas extra por tripulante: <b>${c.hx}</b>${v.hx!==''&&v.hx!=null?' (ajustadas a mano)':''}. La espera en el muelle y la noche en Corn Island no consumen combustible.</p>
+   <h3 class="sub">Ingresos reales del viaje (C$)</h3>
+   <div class="grid"><div><label>Total de boletería</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="bol" value="${v.bol}" placeholder="0.00"></div><div><label>Pasajeros (opcional)</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="np" value="${v.np}" placeholder="Cantidad"></div>
+    <div style="grid-column:1/-1"><label>Total cobrado por carga</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="car" value="${v.car}" placeholder="0.00"></div></div>
+   ${(v.oi||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-voi="${i}" data-f="d" value="${esc(o.d)}" placeholder="Otro ingreso" style="flex:2"><input data-voi="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="btnd" data-voidel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}
+   <button class="btn2" data-voiadd style="width:100%;margin-top:6px">+ Otro ingreso</button>
+   <h3 class="sub">Otros gastos del viaje (C$)</h3>
+   <div class="grid"><div><label>Muellaje Bluefields</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muB" value="${v.muB}" placeholder="${COSTOS.par.muBF?'auto: '+fmt(COSTOS.par.muBF):'0.00'}"></div>${v.dir==='ida'?`<div><label>Muellaje Corn Island</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muC" value="${v.muC}" placeholder="${COSTOS.par.muCI?'auto: '+fmt(COSTOS.par.muCI):'0.00'}"></div>`:''}
+    <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-vf="hx" value="${v.hx}" placeholder="auto: ${c.hxA}"></div></div>
+   ${(v.og||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-vog="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Hielo, reparación…" style="flex:2"><input data-vog="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="btnd" data-vogdel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}
+   <button class="btn2" data-vogadd style="width:100%;margin-top:6px">+ Otro gasto</button>
+   <div><label style="margin-top:10px">Observaciones</label><textarea data-vf="obs" rows="2" placeholder="Clima, incidentes, carga especial…">${esc(v.obs||'')}</textarea></div>
+   <div class="rent-res"><div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b><small>variables ${money(c.gv,'NIO')} · fijos ${money(c.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
+    <p class="sm" style="margin:6px 0">Aporte del viaje (ingresos − gastos variables): <b>${money(c.cont,'NIO')}</b>.${c.faltan?` Para cubrir todos los costos faltaron <b>${money(-c.ut,'NIO')}</b> ≈ <b>${c.faltan} pasajeros</b> más (a C$ ${fmt(c.pas)}).`:''}${c.faltanV?` <b>No cubre ni sus gastos variables</b> (faltaron ≈ ${c.faltanV} pasajeros).`:''} Costos fijos: 1/${c.D} del mes${c.div.cerrado?'':' (provisional)'}.</p>
+    ${Object.entries(grupos).map(([g,xs])=>`<details class="rg"><summary><span>${esc(g)}</span><b>${money(xs.reduce((s,x)=>s+x.m,0),'NIO')}</b></summary>${xs.map(x=>`<div class="rl"><div>${esc(x.c)}${x.d?`<small>${esc(x.d)}</small>`:''}</div><b>${money(x.m,'NIO')}</b></div>`).join('')}</details>`).join('')}</div>
+   ${falta?'<p class="msg-bad" style="margin-top:8px">Anote la hora de llegada para calcular el combustible.</p>':''}
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-vsave style="flex:2;padding:13px">Guardar viaje</button>${v.nuevo?'':'<button class="btnd" data-vdel style="flex:1">Eliminar</button>'}</div>`}
+function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;
+  if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d)}}
+  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC=''}
+  if(k==='emb'){v.crew=null;ls.set('epn_via_emb',val)}
+  renderViaForm()}
+function viaGuardar(){const v=VIA_EDIT;if(v.tr.some((g,i)=>!g.lle&&!(v.dir==='vue'&&i===1))&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
+  const x={...v};delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
+  if(OWNER){const l=(ls.get('epn_viajes',[])||[]).filter(y=>y.id!==x.id);l.push(x);viaGuardarLista(l)}
+  else{x.env=false;const l=(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==x.id);l.push(x);ls.set('epn_viajes_mios',l)}
+  VIA_MES=x.f.slice(0,7);VIA_EDIT=null;toast('Viaje guardado');renderVia();window.scrollTo(0,0)}
+function viaEliminar(){const v=VIA_EDIT;if(!confirm('¿Eliminar este viaje?'))return;
+  if(OWNER){viaGuardarLista((ls.get('epn_viajes',[])||[]).filter(y=>y.id!==v.id));const d=ls.get('epn_viajes_del',[])||[];if(!d.includes(v.id)){d.push(v.id);ls.set('epn_viajes_del',d)}}
+  else{ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==v.id));if(!v.local)toast('Pida al administrador que lo elimine del informe')}
+  VIA_EDIT=null;renderVia()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vmes],[data-vnew],[data-vedit],[data-vcancel],[data-vsave],[data-vdel],[data-voiadd],[data-voidel],[data-vogadd],[data-vogdel],[data-vpdf],[data-vsend],[data-vimp]');if(!b||!b.closest('#viaBox'))return;
+  if(b.dataset.vmes){const [y,m]=VIA_MES.split('-').map(Number);const d=new Date(y,m-1+(+b.dataset.vmes),1);VIA_MES=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return renderVia()}
+  if(b.hasAttribute('data-vnew')){VIA_EDIT=viaNuevo();renderVia();window.scrollTo(0,0);return}
+  if(b.dataset.vedit){const x=viaLista().find(y=>y.id===b.dataset.vedit);if(x){VIA_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-vcancel')){VIA_EDIT=null;return renderVia()}
+  if(b.hasAttribute('data-vsave'))return viaGuardar();
+  if(b.hasAttribute('data-vdel'))return viaEliminar();
+  if(b.hasAttribute('data-voiadd')){(VIA_EDIT.oi=VIA_EDIT.oi||[]).push({d:'',m:''});return renderViaForm()}
+  if(b.dataset.voidel!=null){VIA_EDIT.oi.splice(+b.dataset.voidel,1);return renderViaForm()}
+  if(b.hasAttribute('data-vogadd')){(VIA_EDIT.og=VIA_EDIT.og||[]).push({d:'',m:''});return renderViaForm()}
+  if(b.dataset.vogdel!=null){VIA_EDIT.og.splice(+b.dataset.vogdel,1);return renderViaForm()}
+  if(b.hasAttribute('data-vpdf'))return viaPdf();
+  if(b.hasAttribute('data-vsend'))return viaEnviar();
+  if(b.hasAttribute('data-vimp'))return viaImportar(($('#vImp')||{}).value)});
+document.addEventListener('change',e=>{const el=e.target;if(!el.closest||!el.closest('#viaBox'))return;
+  if(el.dataset.vpar){const k=el.dataset.vpar;COSTOS.par[k]=el.type==='checkbox'?el.checked:(+el.value||0);guardarCostos();return renderVia()}
+  if(!VIA_EDIT)return;const v=VIA_EDIT;
+  if(el.dataset.vf)return viaSetCampo(el.dataset.vf,el.value);
+  if(el.dataset.vt!=null){const g=v.tr[+el.dataset.vt];const k=el.dataset.k;g[k]=k==='cd'?el.value:el.value;if(v.dir==='vue'&&+el.dataset.vt===1&&k!=='cd')g.auto=false;return renderViaForm()}
+  if(el.dataset.vcrew){const base=viaCrew(v).map(c=>({pid:c.pid,rol:c.rol}));const p=COSTOS.personal.find(x=>x.id===el.dataset.vcrew);v.crew=el.checked?base.concat([{pid:p.id,rol:rolDe(p.cargo)}]):base.filter(c=>c.pid!==p.id);return renderViaForm()}
+  if(el.dataset.vrol){const base=viaCrew(v).map(c=>({pid:c.pid,rol:c.rol}));const c=base.find(x=>x.pid===el.dataset.vrol);if(c)c.rol=el.value;v.crew=base;return renderViaForm()}
+  if(el.dataset.voi!=null){v.oi[+el.dataset.voi][el.dataset.f]=el.value;return renderViaForm()}
+  if(el.dataset.vog!=null){v.og[+el.dataset.vog][el.dataset.f]=el.value;return renderViaForm()}});
+
+/* ---------- Compartir entre el administrador y los colegas ---------- */
+async function cifrarCon(raw,obj){const k=await aesKey(raw);const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(obj)));return{v:1,f:today(),iv:b64u(iv),data:b64u(new Uint8Array(ct))}}
+async function viaPublicar(){if(!OWNER||!MK)return;if(DB){try{const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await DB.doc('config/viajes').set(pub);ls.set('epn_viajes_pend',false)}catch(e){}return}ghProgramar()}
+async function viaRecibir(){if(OWNER||!LIC||!LIC.k||LIC.p)return;let pub=null;
+  try{if(DB){const s=await DB.doc('config/viajes').get();pub=s.exists?s.data():null}else{const r=await fetch('viajes.json?t='+Date.now(),{cache:'no-store'});if(r.ok)pub=await r.json()}}catch(e){return}
+  if(!pub||!pub.data)return;try{const o=await descifrarCostos(pub,LIC.k);ls.set('epn_viajes_rx',o);const ids={};(o.l||[]).forEach(x=>ids[x.id]=x.u);const del=new Set(o.del||[]);
+    ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(x=>!del.has(x.id)&&!(ids[x.id]&&String(ids[x.id])>=String(x.u))));if(document.querySelector('#v-via.on'))renderVia()}catch(e){}}
+async function viaEnviar(){const mios=(ls.get('epn_viajes_mios',[])||[]).filter(x=>!x.env);if(!mios.length){toast('No hay viajes pendientes');return}
+  const pub=await cifrarCon(b64uToBytes(LIC.k),{de:LIC.n||'',l:mios});const txt='Viajes regulares APBB de '+(LIC.n||'colega')+' ('+mios.length+'). Copie todo este mensaje y péguelo en la app, Viajes → Recibir viajes de un colega:\nVIAJES-APBB:'+JSON.stringify(pub);
+  let ok=false;try{if(navigator.share){await navigator.share({text:txt});ok=true}}catch(e){if(e&&e.name==='AbortError')return}
+  if(!ok){copiar(txt,'Mensaje copiado: péguelo en WhatsApp al administrador');ok=true}
+  const env=new Set(mios.map(x=>x.id));ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).map(x=>env.has(x.id)?{...x,env:true}:x));renderVia()}
+async function viaImportar(t){t=(t||'').trim();const i=t.indexOf('VIAJES-APBB:');if(i<0){toast('No se encontró el texto de viajes');return}
+  let o;try{o=await descifrarCostos(JSON.parse(t.slice(i+12).trim()),b64u(await llaveOwner()))}catch(e){toast('El texto está incompleto o no es de esta app');return}
+  const l=ls.get('epn_viajes',[])||[];const m={};l.forEach(x=>m[x.id]=x);let n=0;(o.l||[]).forEach(x=>{const y={...x};delete y.env;delete y.local;if(!m[y.id]||String(y.u)>String(m[y.id].u)){m[y.id]=y;n++}});
+  viaGuardarLista(Object.values(m));toast(n?n+' viaje(s) de '+(o.de||'colega')+' agregados':'Esos viajes ya estaban registrados');renderVia()}
+
+/* ---------- Informe PDF del mes ---------- */
+function viaPdf(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay viajes en este mes');return}
+  const d=PDFW();d.page();let y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES · BLUEFIELDS – CORN ISLAND',mesTxt(VIA_MES)+(R.prov?' (mes en curso, cifras provisionales)':''));
+  const K=[['Viajes',String(t.n)],['Ingresos',money(t.ing,'NIO')],['Gastos variables',money(t.gv,'NIO')],['Costos fijos asignados',money(t.gf,'NIO')],['Utilidad',money(t.ut,'NIO')],['Margen',fq(t.mg)+' %']];
+  K.forEach(([a,b],i)=>{const x=40+(i%3)*178,yy=y+Math.floor(i/3)*34;d.rect(x,yy,170,30,i===4?(t.ut>=0?'#e6f4ea':'#fdecea'):'#f2f6fb');d.text(x+8,yy+11,a,{size:7.5,color:GRY});d.text(x+8,yy+24,b,{size:10.5,bold:true,color:'#1a1a1a'})});y+=76;
+  const C=[['Fecha',88],['Sentido',96],['Nave',70],['Pas.',34],['Ingresos',72],['Gastos',72],['Utilidad',70],['%',30]];
+  const head=()=>{d.rect(40,y,532,16,NAVY);let x=40;C.forEach(([h,w],i)=>{d.text(i>=3?x+w-4:x+4,y+11,h,{size:7.8,bold:true,color:'#ffffff',align:i>=3?'r':undefined});x+=w});y+=16};head();
+  R.cs.forEach(({v,c},ix)=>{if(y>720){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES));head()}
+    if(ix%2)d.rect(40,y,532,15,'#f6f8fb');const dd=new Date(v.f+'T12:00');const cells=[DIAS[dd.getDay()].slice(0,3)+' '+dd.toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'}),v.dir==='ida'?'Bluefields – C. Island':'C. Island – Bluefields',c.emb?c.emb.n.replace(/^Motonave /,''):'—',+v.np?String(v.np):'—',fmt(c.ing),fmt(c.gas),fmt(c.ut),fq(Math.round(c.mg))];
+    let x=40;cells.forEach((s,i)=>{d.text(i>=3?x+C[i][1]-4:x+4,y+10.5,d.wrap(s,7.8,i===6,C[i][1]-6)[0],{size:7.8,bold:i===6,color:i===6&&c.ut<0?'#b42318':'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=15});
+  d.line(40,y,572,y,'#333333',.6);let x=40;['Total','','','',fmt(t.ing),fmt(t.gas),fmt(t.ut),fq(Math.round(t.mg))].forEach((s,i)=>{if(s)d.text(i>=3?x+C[i][1]-4:x+4,y+11,s,{size:8,bold:true,color:'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=24;
+  if(y>650){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES))}
+  d.text(40,y+8,'Resultado por día de salida',{size:9.5,bold:true,color:NAVY});y+=16;
+  [3,4,6,0].forEach(k=>{const r=R.porDia[k];d.text(46,y+8,DIAS[k],{size:8.5,color:'#1a1a1a'});d.text(200,y+8,r?r.n+' viaje(s)'+(r.np?' · '+r.np+' pasajeros':''):'sin viajes',{size:8.5,color:GRY});d.text(566,y+8,r?money(r.ut,'NIO'):'—',{size:8.5,bold:true,color:r&&r.ut<0?'#b42318':'#1a1a1a',align:'r'});y+=13});y+=10;
+  const notas=['Ingresos reales: total de boletería y total cobrado por carga de cada viaje.','Gastos variables por viaje: diésel por horas reales de navegación (2 motores) y generador, lubricantes y filtros, horas extras con INSS/INATEC, viáticos (hospedaje solo en la ida), muellaje y otros gastos.','Costos fijos del mes (salarios, vacaciones, aguinaldo, cargas sociales, uniformes, botas, seguro y depreciación) repartidos entre los viajes del mes de cada embarcación'+(R.prov?'; en el mes en curso se usan los viajes programados.':'.')];
+  notas.forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(l=>{if(y>740){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)','')}d.text(40,y+8,l,{size:7.8,color:GRY});y+=10}));
+  pdfFooters(d,'Documento interno · Análisis de rentabilidad de viajes regulares · Empresa Portuaria Nacional · APBB');
+  abrirVisor(d,'Viajes-regulares-'+VIA_MES+'.pdf','Viajes regulares · '+mesTxt(VIA_MES))}
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
