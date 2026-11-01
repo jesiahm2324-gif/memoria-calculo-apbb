@@ -921,7 +921,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-24';
+const APP_VER='2026.10.31-25';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -963,7 +963,9 @@ const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return 
 function copiarSync(t){const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';document.body.appendChild(a);
   let ok=false;try{a.contentEditable=true;a.readOnly=false;const r=document.createRange();r.selectNodeContents(a);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);a.focus();a.select();a.setSelectionRange(0,t.length);ok=document.execCommand('copy')}catch(e){}
   a.remove();try{getSelection().removeAllRanges()}catch(e){}return ok}
-function copiar(t,ok){if(copiarSync(t)){toast(ok);return}try{navigator.clipboard.writeText(t).then(()=>toast(ok),()=>toast('Seleccione el texto y cópielo'))}catch(e){toast('Seleccione el texto y cópielo')}}
+function copiar(t,ok,el){let done=false;const fb=()=>{if(done)return;done=true;if(copiarSync(t)){toast(ok);return}
+  if(el){try{el.focus();el.select();el.setSelectionRange(0,t.length)}catch(e){}}toast('Mantenga presionado el texto marcado y elija Copiar')};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>{done=true;toast(ok)},fb);return}}catch(e){}fb()}
 
 function applyGate(){
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
@@ -1033,13 +1035,52 @@ async function generar(f){const box=f.querySelector('.msg-bad');
   let retAnt=false;if(prev&&prev.i!==i){REV.add(prev.i);delete COND[prev.i];ls.set(REV_KEY,[...REV]);ls.set('epn_cond_cache',COND);delete COL[prev.i];retAnt=true}
   const inv=(ls.get('epn_inv',[])||[]).find(x=>norm(x.n)===norm(n));COL[i]={i,n,d,e,p:pr,code,creado:today(),tel:(inv&&inv.tel)||(prev&&prev.tel)||''};if(inv)ls.set('epn_inv',ls.get('epn_inv',[]).filter(x=>x!==inv&&norm(x.n)!==norm(n)));guardarCol();f.reset();$('#gFwrap').hidden=true;renderAcc();
   const c=COL[i];$('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Código para ${esc(n)}</b> · ${e?'vence '+fLarga(e):'indefinido'} · ${PERFILES[pr]}<div class="codebox">${esc(code)}</div><div class="row"><button class="btn" data-wa="${i}">Enviar código por WhatsApp</button><button class="btn2" data-cm="${i}">Copiar mensaje</button><button class="btn2" data-cc="${i}">Copiar solo el código</button></div></div>`;
-  if(retAnt){if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND})}catch(x){}}else $('#genOut').insertAdjacentHTML('beforeend',`<div class="card"><b>El código anterior de ${esc(n)} quedó retirado.</b><p class="sm">Actualice revocados.json en GitHub con este texto para que deje de funcionar:</p><div class="codebox">${esc(accesosJSON())}</div><button class="btn2" data-copyrev>Copiar texto</button></div>`)}
+  if(retAnt){if(!DB&&ghTok()){ls.set('epn_rev_pend',true);ghSync(true)}else if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND})}catch(x){}}else $('#genOut').insertAdjacentHTML('beforeend',`<div class="card"><b>El código anterior de ${esc(n)} quedó retirado.</b><p class="sm">Actualice revocados.json en GitHub con este texto para que deje de funcionar:</p><div class="codebox">${esc(accesosJSON())}</div><button class="btn2" data-copyrev>Copiar texto</button></div>`)}
   $('#genOut').scrollIntoView({behavior:'smooth',block:'center'})}
 function prefill(c){$('#gN').value=c.n;$('#gD').value=devFmt(c.d);$('#gR').value=c.p||'';$('#gN').scrollIntoView({behavior:'smooth',block:'center'});toast('Elija el plazo y genere el código renovado')}
 async function toggleRev(i){if(REV.has(i))REV.delete(i);else REV.add(i);ls.set(REV_KEY,[...REV]);await publicarAccesos(REV.has(i)?'Acceso retirado':'Acceso restituido')}
 const accesosJSON=()=>JSON.stringify({ids:[...REV],cond:COND});
 function aplicarAccesos(o){const ids=Array.isArray(o&&o.ids)?o.ids:[];REV=new Set(ids);ls.set(REV_KEY,ids);COND=(o&&o.cond&&typeof o.cond==='object')?o.cond:{};ls.set('epn_cond_cache',COND)}
-async function publicarAccesos(okMsg){if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND});toast(okMsg);renderAcc();return true}catch(e){toast('Guardado en este teléfono; no se pudo publicar')}}
+/* ===== Publicación automática en GitHub (solo el dueño; la llave queda solo en su teléfono) ===== */
+const GH={own:'jesiahm2324-gif',repo:'memoria-calculo-apbb',br:'main'};
+const ghTok=()=>ls.get('epn_ghtok','')||'';
+const b64utf=x=>{const b=new TextEncoder().encode(x);let o='';for(let i=0;i<b.length;i+=0x8000)o+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(o)};
+const ghH=tok=>({Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'});
+async function ghPut(path,txt,msg){const tok=ghTok();if(!tok)throw new Error('sin llave');
+  const u=`https://api.github.com/repos/${GH.own}/${GH.repo}/contents/${path}`;let sha;
+  const g=await fetch(u+'?ref='+GH.br,{headers:ghH(tok),cache:'no-store'});
+  if(g.ok){sha=(await g.json()).sha}else if(g.status!==404)throw new Error(String(g.status));
+  const r=await fetch(u,{method:'PUT',headers:ghH(tok),body:JSON.stringify({message:msg,content:b64utf(txt),branch:GH.br,...(sha?{sha}:{})})});
+  if(!r.ok)throw new Error(String(r.status));return true}
+const ghErr=e=>({'401':'La llave de GitHub no es válida o venció. Cree una nueva.','403':'La llave no tiene permiso de escritura (Contents: Read and write).','404':'La llave no tiene acceso al repositorio memoria-calculo-apbb.','409':'GitHub estaba ocupado; se reintentará.','sin llave':'No hay llave guardada.'}[e]||'Sin conexión con GitHub; se reintentará al tener señal.');
+let _ghT=null,_ghBusy=false;
+function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=setTimeout(()=>ghSync(true),6000)}
+async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
+  const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false);if(!pc&&!pr)return true;
+  _ghBusy=true;let err=null,hecho=[];
+  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
+    if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}}catch(e){err=e.message}
+  _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
+  if(!silent)toast(err?ghErr(err):'Publicado en GitHub: '+hecho.join(' y '));
+  if(document.querySelector('#v-acc.on'))renderAcc();return !err}
+async function ghGuardar(tok){tok=(tok||'').trim();if(!tok){toast('Pegue la llave');return}
+  try{const r=await fetch(`https://api.github.com/repos/${GH.own}/${GH.repo}`,{headers:ghH(tok),cache:'no-store'});if(!r.ok){toast(ghErr(String(r.status)));return}}catch(e){toast('Sin conexión; intente con señal');return}
+  ls.set('epn_ghtok',tok);ls.set('epn_costos_pend',true);ls.set('epn_rev_pend',true);toast('Llave guardada; publicando…');const ok=await ghSync(false);renderAcc()}
+function ghPanel(){if(DB)return'';const tok=ghTok(),st=ls.get('epn_gh_est',null),pend=ls.get('epn_costos_pend',false)||ls.get('epn_rev_pend',false);
+  const est=!tok?'<span class="chip warnc">Sin configurar</span>':st&&!st.ok?'<span class="chip bad">Con error</span>':pend?'<span class="chip warnc">Pendiente</span>':'<span class="chip ok">Activa</span>';
+  return `<details class="rg" data-ok="gh" style="margin-top:14px"${ACC_OPEN.has('gh')||!tok?' open':''}><summary><span>Publicación automática en GitHub</span><span style="display:flex;gap:6px;align-items:center">${est}<span class="chev">›</span></span></summary><div style="padding:0 11px 11px">
+  ${tok?`<p class="sm" style="margin-top:0">Los cambios en costos, condiciones y retiros se publican solos; sus colegas los reciben al abrir la app con señal.${st?'<br>Última publicación: '+new Date(st.t).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})+(st.ok?' ✓':' — '+esc(ghErr(st.e))):''}</p>
+   <div class="row"><button class="btn" data-ghnow>Publicar ahora</button><button class="btnd" data-ghdel>Quitar llave</button></div>`
+  :`<p class="sm" style="margin-top:0">Configure una sola vez una llave de GitHub y la app publicará sola los costos y los accesos (sin copiar ni pegar).</p>
+   <ol class="sm" style="padding-left:18px;margin:6px 0"><li>Abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener"><b>Crear llave en GitHub</b></a>.</li><li><b>Token name:</b> App Memoria APBB · <b>Expiration:</b> la mayor disponible.</li><li><b>Repository access:</b> Only select repositories → <b>memoria-calculo-apbb</b>.</li><li><b>Permissions → Repository permissions → Contents:</b> Read and write.</li><li>Toque <b>Generate token</b> y copie la llave (empieza con <b>github_pat_</b>).</li></ol>
+   <div class="row" style="flex-wrap:nowrap"><input id="ghIn" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1"><button type="button" class="btn2" data-pegar="ghIn" style="padding:6px 12px">Pegar</button></div>
+   <button class="btn" data-ghsave style="width:100%;margin-top:8px">Guardar llave y publicar</button>`}</div></details>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ghnow],[data-ghdel],[data-ghsave]');if(!b)return;
+  if(b.hasAttribute('data-ghsave'))return ghGuardar(($('#ghIn')||{}).value);
+  if(b.hasAttribute('data-ghnow')){ls.set('epn_costos_pend',true);ls.set('epn_rev_pend',true);return ghSync(false)}
+  if(confirm('¿Quitar la llave de GitHub de este teléfono? Tendrá que volver a copiar y pegar para publicar.')){ls.set('epn_ghtok','');ls.set('epn_gh_est',null);renderAcc()}});
+window.addEventListener('online',()=>ghSync(true));
+async function publicarAccesos(okMsg){if(!DB&&ghTok()){ls.set('epn_rev_pend',true);if(await ghSync(true)){toast(okMsg);renderAcc();return true}}if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND});toast(okMsg);renderAcc();return true}catch(e){toast('Guardado en este teléfono; no se pudo publicar')}}
   renderAcc();mostrarListaRev();return false}
 async function revalidarLic(){if(OWNER||!LIC||!LIC.code)return;const p=await verificar(LIC.code);
   if(p&&p.rev){GATE='retirado'}else if(p&&!p.dev){LIC=p;GATE=vigente(p)?'ok':'vencido'}applyGate();if(document.querySelector('#v-acc.on'))renderAcc();if(document.querySelector('#v-tar.on'))renderTar()}
@@ -1069,8 +1110,9 @@ function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Ve
   const arr=Object.values(COL).sort((a,b)=>a.n.localeCompare(b.n));
   $('#accBox').innerHTML=`<div class="pasos"><div><i>1</i><span>Invite al colega</span></div><div><i>2</i><span>Él le responde con su ID</span></div><div><i>3</i><span>Usted genera y envía el código</span></div></div>
   <button class="btn" data-inv style="width:100%;margin:10px 0 4px;padding:13px">Invitar a un colega</button>
-  ${(!ls.get('epn_costos_pubf',null)||ls.get('epn_costos_pend',false))&&Object.values(COL).some(c=>!c.p&&!REV.has(c.i))?`<div class="notice" style="margin:10px 0 0"><b>${ls.get('epn_costos_pubf',null)?'Hay cambios en los costos sin publicar.':'Sus colegas con acceso completo aún no ven la rentabilidad.'}</b> Publique la estructura de costos para que la reciban.<button class="btn" data-pubcost style="width:100%;margin-top:8px">Publicar costos ahora</button></div>`:''}
+  ${!ghTok()&&(!ls.get('epn_costos_pubf',null)||ls.get('epn_costos_pend',false))&&Object.values(COL).some(c=>!c.p&&!REV.has(c.i))?`<div class="notice" style="margin:10px 0 0"><b>${ls.get('epn_costos_pubf',null)?'Hay cambios en los costos sin publicar.':'Sus colegas con acceso completo aún no ven la rentabilidad.'}</b> Publique la estructura de costos para que la reciban.<button class="btn" data-pubcost style="width:100%;margin-top:8px">Publicar costos ahora</button></div>`:''}
   <p class="sm" style="margin:6px 0 0">Lo que cada colega calcula queda solo en su teléfono.</p>
+  ${ghPanel()}
   ${(()=>{const inv=(ls.get('epn_inv',[])||[]).filter(x=>x&&(x.n||x.tel));if(!inv.length)return'';return `<h2 style="font-size:14px;margin:16px 0 8px">Invitaciones pendientes (${inv.length})</h2>
    <p class="sm" style="margin-top:0">Esperando que el colega le envíe el ID de su teléfono. Cuando lo reciba, cópielo y toque <b>Pegar ID</b>.</p>
    ${inv.map((x,k)=>{const dd=Math.max(0,Math.round((new Date(today()+'T12:00')-new Date((x.f||today())+'T12:00'))/864e5));return `<div class="hi pend"><div><b>${esc(x.n||'Sin nombre')}</b> <span class="chip warnc">Esperando ID</span><div class="sm">${x.tel?esc(x.tel)+' · ':''}invitado ${dd===0?'hoy':dd===1?'ayer':'hace '+dd+' días'}</div></div>
@@ -1150,13 +1192,14 @@ async function restaurar(file){try{const o=JSON.parse(await file.text());const a
 async function initAcceso(){
   let h='';try{h=(location.hash||'').slice(1)}catch(e){}
   if(h&&h.includes('.')){const p=await verificar(h);if(p&&!p.dev&&!p.rev&&(!p.e||p.e>=fechaRef()))activar(p);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
-  if(PROPIA){try{const r=await fetch('revocados.json',{cache:'no-store'});if(r.ok){aplicarAccesos(await r.json())}}catch(e){}}
+  if(PROPIA&&!ls.get('epn_rev_pend',false)){try{const r=await fetch('revocados.json',{cache:'no-store'});if(r.ok){aplicarAccesos(await r.json())}}catch(e){}}
   const st=ls.get(MK_KEY,null);if(st&&await mkValida(st)){MK=st;OWNER=true}
   const l=leerLic();let local='sin';
   if(l&&l.code){const p=await verificar(l.code);if(p&&p.rev)local='retirado';else if(p&&!p.dev){LIC=p;local=vigente(p)?'ok':'vencido'}}
   GATE=local;if(OWNER||local==='ok')applyGate();
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos()}
+  if(OWNER)setTimeout(()=>ghSync(true),1500);
   renderRent();
   const cl=window.claude;
   if(cl){const to=ms=>new Promise(r=>setTimeout(()=>r(null),ms));
@@ -1399,7 +1442,7 @@ let COSTOS=null;
 function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||JSON.parse(JSON.stringify(COSTO_DEF))):ls.get('epn_costos_rx',null);
   if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[];COSTOS.emb.forEach(e=>{if(e.mot==null)e.mot=e.tipo==='mot'?2:1;if(e.gen==null)e.gen=e.tipo==='mot'?1:0;if(e.genH==null)e.genH=2})}
   if(OWNER&&COSTOS&&!ls.get('epn_gen_v1',false)){COSTOS.emb.forEach(e=>{if(e.tipo==='mot'&&!+e.gen)e.gen=1});ls.set('epn_gen_v1',true);ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}return COSTOS}
-const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}};
+const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true);ghProgramar()}};
 const puedeCostos=()=>OWNER||(!!LIC&&!LIC.p);
 const salTot=p=>(+p.sal||0)+(+p.ant||0);
 
@@ -1417,21 +1460,22 @@ async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=a
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
   const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par});
   if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
+  if(ghTok()){ls.set('epn_costos_pend',true);if(await ghSync(true)){toast('Costos publicados para los colegas');renderCostAdm();return}}
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
   v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>Publicar costos</b><button class="pv-x" data-sh="close">✕</button></div>
    <p class="sm" style="margin-top:0">Los datos van <b>cifrados</b>: en GitHub nadie puede leer los salarios. Solo los teléfonos con acceso completo tienen la llave.</p>
    <ol class="sm" style="padding-left:18px"><li>Toque <b>Copiar texto</b> (debe salir «Texto copiado»).</li><li>Toque <b>Abrir costos.json</b>, luego el lápiz (Editar).</li><li>Borre todo, pegue el texto y toque <b>Commit changes</b>.</li></ol>
-   <textarea id="pcTxt" readonly style="width:100%;height:110px;font-family:ui-monospace,Menlo,monospace;font-size:16px;line-height:1.25;border-radius:8px;padding:8px;border:1px solid var(--line);background:var(--soft);color:inherit;word-break:break-all">${esc(txt)}</textarea>
+   <textarea id="pcTxt" spellcheck="false" autocapitalize="off" autocorrect="off" style="width:100%;height:110px;font-family:ui-monospace,Menlo,monospace;font-size:16px;line-height:1.25;border-radius:8px;padding:8px;border:1px solid var(--line);background:var(--soft);color:inherit;word-break:break-all">${esc(txt)}</textarea>
    <div class="row" style="flex-wrap:nowrap"><button class="btn" id="pcCopy" style="flex:1">Copiar texto</button><a class="btn2" style="flex:1;text-align:center;text-decoration:none;padding:10px;border-radius:10px" target="_blank" rel="noopener" href="https://github.com/jesiahm2324-gif/memoria-calculo-apbb/edit/main/costos.json">Abrir costos.json</a></div>
    <p class="sm" style="margin:10px 0 4px">¿No copia? Use el archivo: guárdelo en <b>Archivos</b> y en GitHub toque <b>Add file → Upload files</b>, elija <b>costos.json</b> y <b>Commit changes</b> (reemplaza el anterior).</p>
    <button class="btn2" id="pcFile" style="width:100%">Guardar archivo costos.json</button></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');const marcar=()=>{ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()};
-  $('#pcTxt').onfocus=e=>{setTimeout(()=>{try{e.target.setSelectionRange(0,txt.length)}catch(x){}},50)};
+  $('#pcTxt').oninput=e=>{e.target.value=txt};$('#pcTxt').onfocus=e=>{setTimeout(()=>{try{e.target.setSelectionRange(0,txt.length)}catch(x){}},50)};
   $('#pcFile').onclick=async()=>{const b=new Blob([txt],{type:'application/json'});const f=new File([b],'costos.json',{type:'application/json'});
     try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});marcar();return}}catch(e){if(e&&e.name==='AbortError')return}
     try{if(DL){await DL.save({filename:'costos.json',data:b});marcar();return}}catch(e){if(e&&e.code==='declined')return}
     const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='costos.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);marcar();toast('Archivo guardado')};
-  $('#pcCopy').onclick=()=>{copiar(txt,'Texto copiado');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()}}
+  $('#pcCopy').onclick=()=>{copiar(txt,'Texto copiado',$('#pcTxt'));ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());renderCostAdm()}}
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
