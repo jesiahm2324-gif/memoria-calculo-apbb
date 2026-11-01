@@ -215,6 +215,8 @@ details.rg>summary::-webkit-details-marker{display:none}
 body:not(.con-viajes) nav button[data-v="via"]{display:none}
 .via-dias{display:grid;grid-template-columns:1fr 1fr;gap:8px}.via-dias>div{border:1px solid var(--line);border-radius:12px;padding:8px 10px}.via-dias span{display:block;font-size:12px;color:var(--mut);font-weight:600}.via-dias b{display:block;font-size:15px}.via-dias small{display:block;font-size:11.5px;color:var(--mut)}.via-dias .ok{border-color:color-mix(in srgb,var(--ok,#1e8e3e) 45%,var(--line))}.via-dias .bad{border-color:color-mix(in srgb,#d93025 45%,var(--line))}
 .via-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}.via-it small{display:block;font-size:12px;color:var(--mut);margin-top:2px}.via-it b{font-size:15px;white-space:nowrap}.via-it>div:first-child{min-width:0}.via-it .neg{color:#c5221f}
+.pie{margin:12px 0 4px;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.pie-t{display:block;font-size:13.5px;margin-bottom:8px}.pie-w{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pie-w svg{flex:none}.pie-l{flex:1;min-width:170px;display:grid;gap:5px}.pie-l>div{display:grid;grid-template-columns:12px 1fr auto;column-gap:7px;align-items:center;font-size:13px}.pie-l i{width:12px;height:12px;border-radius:3px}.pie-l b{font-size:13px}.pie-l small{grid-column:2/4;color:var(--mut);font-size:11.5px;margin-top:-3px}
+.via-bol{display:flex;justify-content:space-between;align-items:center;background:var(--soft);border-radius:10px;padding:10px 12px}.via-bol span{font-size:13px;color:var(--mut);font-weight:600}.via-bol b{font-size:16px}
 .via-tr{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
 details.rg .chev{font-size:20px;color:var(--mut);transition:transform .2s;line-height:1}details.rg[open]>summary .chev{transform:rotate(90deg);color:var(--pri)}details.colx{background:var(--card)}details.colx>summary{font-weight:600}details.colw>summary{font-size:14px;color:var(--pri)}
 .rl{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-top:1px solid var(--line);font-size:13.5px}
@@ -319,7 +321,7 @@ body.pv-on{overflow:hidden}
 <div id="aviso"></div>
 <!-- CÁLCULO -->
 <section class="view on" id="v-pf">
- <div class="tipos" id="tipos">
+ <div class="tipos" id="tipos" hidden>
   <button class="tipo" data-tipo="buq" style="--cc:#0e6bb8"><svg viewBox="0 0 24 24"><path d="M3 17l2 3h14l2-3M5 17V11h14v6M8 11V7h8v4M12 3v4"/><path d="M2 21c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"/></svg><b>Buque mercante</b><small>Atención al buque</small></button>
   <button class="tipo" data-tipo="car" style="--cc:#c8326f"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="1.5"/><path d="M7 8v10M11 8v10M15 8v10M3 5h18"/></svg><b>Servicio a la carga</b><small>Importación / exportación</small></button>
   <button class="tipo" data-tipo="chr" style="--cc:#f2a900"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><b>Viaje chárter</b><small>Remolcador · motonave</small></button>
@@ -682,7 +684,7 @@ function calc(l){const t=TT[l.tid];const ce=Math.ceil;const q1=Math.max(0,+l.q1|
 const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const TIPOS={buq:'Atención a buque mercante',car:'Servicio a la carga',chr:'Viaje chárter'};
-function newPF(tipo){tipo=tipo||ls.get('epn_tipo','buq');return{id:newId(),tipo,ref:'',fecha:today(),cliId:'',cliente:'',ruc:'',
+function newPF(tipo){tipo=tipo||'chr';return{id:newId(),tipo,ref:'',fecha:today(),cliId:'',cliente:'',ruc:'',
   buque:'',tab:'',eslora:'',atr:'',des:'',oper:'imp',ccarga:'gen',desc_carga:'',tm:'',dias:'',exCoc:false,
   medio:'rem',plana:false,itin:[{de:'El Bluff',a:'',sal:'',lle:''}],desc:'',rent:{emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]},
   obs:'',elab:ls.get('epn_elab',''),tc:ls.get('epn_tc',36.6243),iva:tipo!=='chr',mon:tipo==='chr'?'NIO':'USD',lines:[]}}
@@ -900,13 +902,13 @@ $('#btnSave').onclick=()=>{if(!P.lines.length){toast(P.tipo==='chr'?'Complete el
  const arr=ls.get('epn_pf',[]);if(!P.id)P.id=newId();const i=arr.findIndex(x=>x.id===P.id);const t=totals();P.saved=new Date().toISOString();P._tot=money(t.total,t.mon);
  const copy=JSON.parse(JSON.stringify(P));if(i>=0)arr[i]=copy;else arr.unshift(copy);if(arr.length>300)arr.length=300;
  if(!ls.set('epn_pf',arr)){toast('No se pudo guardar en este navegador');return}
- const nom=P.cliente||P.buque||'Cálculo';cargarP(newPF(P.tipo));window.scrollTo({top:0,behavior:'smooth'});
+ const nom=P.cliente||P.buque||'Cálculo';cargarP(newPF('chr'));window.scrollTo({top:0,behavior:'smooth'});
  toast('“'+nom+'” guardado en Historial. Listo para un nuevo cálculo.')};
 /* PDF de un cálculo guardado, sin cargarlo en el formulario */
 function pdfGuardado(o){const prev=JSON.parse(JSON.stringify(P));let doc=null;
  try{P={...newPF(o.tipo||'buq'),...o};if(P.tipo==='chr')chrRecalc();doc=memPdf()}finally{cargarP(prev)}
  return doc}
-$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar un cálculo nuevo? Lo no guardado se perderá.'))return;cargarP(newPF(P.tipo));show('pf')};
+$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar un cálculo nuevo? Lo no guardado se perderá.'))return;cargarP(newPF('chr'));show('pf')};
 function renderHis(){const ub=$('#ultBk');if(ub){const u=ls.get('epn_ultbk',null);ub.textContent=u?'Último respaldo: '+new Date(u+'T12:00').toLocaleDateString('es-NI'):'Todavía no ha descargado un respaldo.'}
 const arr=ls.get('epn_pf',[]);arr.forEach(x=>{if(!x.id)x.id=newId()});$('#hlist').innerHTML=arr.length?arr.map((p,i)=>`<div class="hi"><div><b>${esc(p.cliente||p.buque||'Sin nombre')}</b> <span class="chip ${p.tipo==='chr'?'warnc':p.tipo==='car'?'bad':'ok'}">${TIPOS[p.tipo||'buq']}</span>${p.ref?' · '+esc(p.ref):''}<div class="sm">${esc(p.buque||'')} · ${p.fecha} · ${esc(p._tot||'')}</div></div><div class="row"><button class="btn" data-pdf="${i}">PDF</button><button class="btn2" data-open="${i}">Abrir</button><button class="btn2" data-dup="${i}">Duplicar</button><button class="btnd" data-rm="${i}">Eliminar</button></div></div>`).join(''):'<p class="mut">No hay cálculos guardados.</p>'}
 $('#hlist').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const arr=ls.get('epn_pf',[]);
@@ -927,7 +929,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-26';
+const APP_VER='2026.10.31-27';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1235,6 +1237,7 @@ function PDFW(){const W=612,H=792;const pages=[];let cur=null;
   rect(x,y,w,h,fill){cur.push({k:'r',x,y,w,h,fill})},
   line(x1,y1,x2,y2,col,lw){cur.push({k:'l',x1,y1,x2,y2,col:col||'#999999',lw:lw||.6})},
   image(x,y,w,h){cur.push({k:'i',x,y,w,h})},
+  poly(pts,fill){cur.push({k:'p',pts,fill})},
   wrap(s,size,bold,maxW){const out=[];String(s??'').split('\n').forEach(par=>{let ln='';par.split(/\s+/).forEach(wd=>{const tr=ln?ln+' '+wd:wd;if(width(tr,size,bold)<=maxW||!ln)ln=tr;else{out.push(ln);ln=wd}});out.push(ln)});return out},
   get count(){return pages.length},
   setPage(i){cur=pages[i]},
@@ -1246,6 +1249,7 @@ function PDFW(){const W=612,H=792;const pages=[];let cur=null;
       pg.forEach(o=>{if(o.k==='r'){g.fillStyle=o.fill;g.fillRect(o.x,o.y,o.w,o.h)}
         else if(o.k==='l'){g.strokeStyle=o.col;g.lineWidth=o.lw;g.beginPath();g.moveTo(o.x1,o.y1);g.lineTo(o.x2,o.y2);g.stroke()}
         else if(o.k==='i'){try{g.drawImage(img,o.x,o.y,o.w,o.h)}catch(e){}}
+        else if(o.k==='p'){g.fillStyle=o.fill;g.beginPath();o.pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill()}
         else{g.fillStyle=o.color;g.font=(o.bold?'bold ':'')+o.size+'px Helvetica, Arial, sans-serif';g.textBaseline='alphabetic';
           const s=o.s.replace(/≤/g,'<=').replace(/≥/g,'>=');
           const natural=g.measureText(s).width,target=width(o.s,o.size,o.bold);
@@ -1255,6 +1259,7 @@ function PDFW(){const W=612,H=792;const pages=[];let cur=null;
     const esc=t=>t.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
     const ops=pg=>pg.map(o=>o.k==='r'?rgb(o.fill)+' rg '+o.x.toFixed(2)+' '+(H-o.y-o.h).toFixed(2)+' '+o.w.toFixed(2)+' '+o.h.toFixed(2)+' re f'
       :o.k==='l'?rgb(o.col)+' RG '+o.lw+' w '+o.x1.toFixed(2)+' '+(H-o.y1).toFixed(2)+' m '+o.x2.toFixed(2)+' '+(H-o.y2).toFixed(2)+' l S'
+      :o.k==='p'?rgb(o.fill)+' rg '+o.pts.map(([x,y],i)=>x.toFixed(2)+' '+(H-y).toFixed(2)+(i?' l':' m')).join(' ')+' h f'
       :o.k==='i'?'q '+o.w.toFixed(2)+' 0 0 '+o.h.toFixed(2)+' '+o.x.toFixed(2)+' '+(H-o.y-o.h).toFixed(2)+' cm /Im1 Do Q'
       :'BT /'+(o.bold?'F2':'F1')+' '+o.size+' Tf '+rgb(o.color)+' rg '+o.x.toFixed(2)+' '+(H-o.y).toFixed(2)+' Td ('+esc(pdfTxt(o.s))+') Tj ET').join('\n');
     const cat=add(''),pgs=add(''),f1=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'),f2=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
@@ -1375,7 +1380,7 @@ function renderTar(){const st=soloTar();
     const tier=t.c==='tier'?`<div class="tier">${t.tiers.map(([a,b,r])=>`<span>días ${a}${b>=INF?'+':'–'+b}: ${S} ${fmt(r)}</span>`).join('')}</div>`:'';
     return `<div class="tc"><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span></div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
 $('#tq').oninput=renderTar;
-function tipoDe(id){return ['buq','car'].find(k=>(SRV[k]||[]).includes(id))||''}
+function tipoDe(id){return ''}
 $('#tlist').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(!b)return;const id=b.dataset.add,tp=tipoDe(id);if(!tp)return;
   if(P.tipo!==tp){if(P.lines.length&&!confirm('Este servicio corresponde a '+TIPOS[tp]+'. Se iniciará ese tipo de cálculo y se quitarán los servicios actuales. ¿Continuar?'))return;setTipo(tp,true)}
   addLine(id,null,true);toast('Agregado a '+TIPOS[tp]+': '+TT[id].n)});
@@ -1498,7 +1503,7 @@ function viaPlantilla(f,dir){const vu=dir==='vue';
            :[{de:'Muelle EPN',a:'Muelle municipal Bluefields',sal:'07:00',lle:'07:15',cd:0},{de:'Muelle municipal Bluefields',a:'Muelle Corn Island',sal:'09:00',lle:'',cd:2}]}
 function viaDirDe(f){const d=new Date(f+'T12:00').getDay();return d===4||d===0?'vue':'ida'}
 function viaNuevo(){const f=today(),dir=viaDirDe(f);const embs=(COSTOS&&COSTOS.emb||[]).filter(e=>e.tipo==='mot');const eid=ls.get('epn_via_emb','')||(embs[0]&&embs[0].id)||'';
-  return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',car:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:OWNER?'Administrador':(LIC&&LIC.n)||'',nuevo:true}}
+  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',oi:[],muB:par.muBF?String(par.muBF):'',muC:dir==='ida'&&par.muCI?String(par.muCI):'',og:[],hx:'',obs:'',autor:'Administrador',nuevo:true}}
 const addMin=(hhmm,m)=>{if(!hhmm)return'';const t=hm2m(hhmm)+m;const x=((t%1440)+1440)%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')};
 function viaAuto(v){const t=v.tr;if(v.dir==='vue'&&t[1]&&t[1].auto&&t[0].lle){t[1].sal=addMin(t[0].lle,Math.round((+t[0].cd||0)*60));t[1].lle=addMin(t[1].sal,15)}}
 /* Convierte los tramos en fechas reales (si una hora es menor que la anterior, pasa al día siguiente) */
@@ -1538,10 +1543,11 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
   add('Costos fijos del mes (asignados)','INSS patronal e INATEC','Sobre salarios y vacaciones'+nota,(sm+sm/12)*(par.inss+par.inatec)/100/D,1);
   add('Costos fijos del mes (asignados)','Uniformes y botas',n+' × C$ '+fmt(par.unif+par.botas)+' anual ÷ 12'+nota,n*(par.unif+par.botas)/12/D,1);
   if(e){if(+e.seg)add('Costos fijos del mes (asignados)','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12'+nota,(+e.seg)/12/D,1);if(+e.dep)add('Costos fijos del mes (asignados)','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12'+nota,(+e.dep)/12/D,1)}
-  const ing=(+v.bol||0)+(+v.car||0)+(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0);
+  const tb=+v.tb>0?+v.tb:(+par.pasaje||310);const bolC=+v.np>0?(+v.np)*tb:(+v.bol||0);
+  const ing=bolC+(+v.car||0)+(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0);
   const gv=R.filter(x=>!x.fx).reduce((s,x)=>s+x.m,0),gf=R.filter(x=>x.fx).reduce((s,x)=>s+x.m,0),gas=gv+gf,ut=ing-gas,mg=ing?ut/ing*100:(gas?-100:0);
-  const pas=(+v.np>0&&+v.bol>0)?(+v.bol)/(+v.np):310;const faltan=ut<0?Math.ceil(-ut/pas):0;const faltanV=ing-gv<0?Math.ceil(-(ing-gv)/pas):0;
-  return{R,ing,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
+  const pas=tb;const faltan=ut<0?Math.ceil(-ut/pas):0;const faltanV=ing-gv<0?Math.ceil(-(ing-gv)/pas):0;
+  return{R,ing,bolC,tb,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
 const viaSem=c=>c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
 const viaFecha=f=>{const d=new Date(f+'T12:00');return DIAS[d.getDay()]+' '+d.toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'})};
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -1553,73 +1559,96 @@ function viaResumen(ym){const lista=viaLista();const l=lista.filter(x=>x.f.slice
   const porEmb={};cs.forEach(({v,c})=>{const k=c.emb?c.emb.n:'—';const r=porEmb[k]||(porEmb[k]={n:0,ing:0,ut:0});r.n++;r.ing+=c.ing;r.ut+=c.ut});
   return{cs,tot,porDia,porEmb,prov:ym>=today().slice(0,7)}}
 
+/* ---------- Gráfica de pastel ---------- */
+const PIE_COL={'Combustible y lubricantes':'#0e6bb8','Horas extras':'#7048e8','Viáticos':'#e8590c','Muellaje':'#0b9dad','Otros gastos':'#868e96','Costos fijos del mes (asignados)':'#c8326f','Utilidad':'#2f9e44'};
+const PIE_NOM={'Costos fijos del mes (asignados)':'Costos fijos'};
+function pieDatos(R,ut){const g={};R.forEach(x=>{g[x.g]=(g[x.g]||0)+x.m});const it=Object.keys(PIE_COL).filter(k=>k!=='Utilidad'&&g[k]>0).map(k=>({n:PIE_NOM[k]||k,v:g[k],col:PIE_COL[k]}));if(ut>0)it.push({n:'Utilidad',v:ut,col:PIE_COL.Utilidad});return it}
+function pieSVG(it,sz){const T=it.reduce((s,x)=>s+x.v,0);if(!T)return'';const r=sz/2,c=r;let a0=-Math.PI/2;
+  const sl=it.map(x=>{const f=x.v/T;if(f>=0.9999)return `<circle cx="${c}" cy="${c}" r="${r}" fill="${x.col}"/>`;const a1=a0+f*2*Math.PI;const p=`M${c},${c} L${(c+r*Math.cos(a0)).toFixed(2)},${(c+r*Math.sin(a0)).toFixed(2)} A${r},${r} 0 ${f>0.5?1:0} 1 ${(c+r*Math.cos(a1)).toFixed(2)},${(c+r*Math.sin(a1)).toFixed(2)} Z`;a0=a1;return `<path d="${p}" fill="${x.col}" stroke="var(--card)" stroke-width="1.5"/>`}).join('');
+  return `<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}" role="img" aria-label="Gráfica de pastel">${sl}<circle cx="${c}" cy="${c}" r="${r*0.52}" fill="var(--card)"/></svg>`}
+function pieBloque(R,ing,gas,ut){const it=pieDatos(R,ut);if(!it.length)return'';const T=it.reduce((s,x)=>s+x.v,0);
+  const tit=ut>=0?'¿En qué se va cada córdoba de ingreso?':'Composición de los gastos (pérdida de '+money(-ut,'NIO')+')';
+  return `<div class="pie"><b class="pie-t">${tit}</b><div class="pie-w">${pieSVG(it,150)}<div class="pie-l">${it.map(x=>`<div><i style="background:${x.col}"></i><span>${esc(x.n)}</span><b>${fq(Math.round(x.v/T*1000)/10)} %</b><small>${money(x.v,'NIO')}</small></div>`).join('')}</div></div></div>`}
+
 /* ---------- Pantalla ---------- */
 function renderVia(){const box=$('#viaBox');if(!box)return;
   if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
   if(VIA_EDIT)return renderViaForm();
-  const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const mios=OWNER?[]:(ls.get('epn_viajes_mios',[])||[]).filter(x=>!x.env);
-  const DN=[3,4,6,0];
+  const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
   box.innerHTML=`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
    ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
-    <div class="bar2"><i style="width:${Math.max(0,Math.min(100,t.ing?t.gas/t.ing*100:100))}%"></i></div>
     ${R.prov?'<p class="sm" style="margin:6px 0 0">Mes en curso: los costos fijos se reparten entre los viajes programados del mes (miércoles, jueves, sábado y domingo). El resultado queda definitivo al cerrar el mes.</p>':''}
-    <h3 class="sub">Por día de salida</h3><div class="via-dias">${DN.map(k=>{const r=R.porDia[k];return `<div class="${r?(r.ut>=0?'ok':'bad'):''}"><span>${DIAS[k]}</span><b>${r?money(r.ut,'NIO'):'—'}</b><small>${r?r.n+' viaje(s) · '+(r.np?r.np+' pasajeros':money(r.ing,'NIO')):'sin viajes'}</small></div>`}).join('')}</div>
+    ${pieBloque(allR,t.ing,t.gas,t.ut)}
+    <h3 class="sub">Por día de salida</h3><div class="via-dias">${DN.map(k=>{const r=R.porDia[k];return `<div class="${r?(r.ut>=0?'ok':'bad'):''}"><span>${DIAS[k]}</span><b>${r?money(r.ut,'NIO'):'—'}</b><small>${r?r.n+' viaje(s) · '+(r.np?r.np+' boletos':money(r.ing,'NIO')):'sin viajes'}</small></div>`}).join('')}</div>
     ${Object.keys(R.porEmb).length>1?`<h3 class="sub">Por embarcación</h3>${Object.entries(R.porEmb).map(([k,r])=>`<div class="rl"><div>${esc(k)}<small>${r.n} viaje(s) · ingresos ${money(r.ing,'NIO')}</small></div><b>${money(r.ut,'NIO')}</b></div>`).join('')}`:''}
-    <button class="btn2" data-vpdf style="width:100%;margin-top:12px">Ver informe del mes (PDF)</button></div>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay viajes registrados en este mes.</p>'}
-   <button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>
-   ${!OWNER?`<div class="notice" style="margin-top:12px"><b>${mios.length?mios.length+' viaje(s) sin enviar al administrador.':'Todos sus viajes fueron enviados.'}</b> Los viajes que usted registra se suman al informe cuando el administrador los recibe.${mios.length?'<button class="btn" data-vsend style="width:100%;margin-top:8px">Enviar mis viajes al administrador</button>':''}</div>`:''}
-   ${OWNER?`<details class="rg" data-ok="vimp" style="margin-top:12px"${ACC_OPEN.has('vimp')?' open':''}><summary><span>Recibir viajes de un colega</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><p class="sm" style="margin-top:0">Cuando Osman le envíe sus viajes por WhatsApp, copie el mensaje completo y péguelo aquí.</p><div class="row" style="flex-wrap:nowrap"><textarea id="vImp" rows="2" spellcheck="false" style="flex:1"></textarea><button type="button" class="btn2" data-pegar="vImp" style="padding:6px 12px">Pegar</button></div><button class="btn" data-vimp style="width:100%;margin-top:8px">Agregar viajes recibidos</button></div></details>
-    <details class="rg" data-ok="vaj"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Muellaje Bluefields por escala (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muBF" value="${COSTOS.par.muBF||''}" placeholder="0.00"></div><div><label>Muellaje Corn Island por estadía (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muCI" value="${COSTOS.par.muCI||''}" placeholder="0.00"></div></div>
-     <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">El muellaje de Bluefields se carga en cada viaje; el de Corn Island solo en la ida (la nave pernocta allí). En cada viaje se puede cambiar el monto.</p></div></details>`:''}
-   ${R.cs.length?`<h3 class="sub">Viajes de ${mesTxt(VIA_MES).toLowerCase()}</h3>${R.cs.map(({v,c})=>{const s=viaSem(c);return `<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(c.emb?c.emb.n.replace(/^Motonave /,''):'—')}${+v.np?' · '+v.np+' pasajeros':''}${v.local&&!v.env?' · <span class="chip warnc">sin enviar</span>':''}${OWNER&&v.autor&&v.autor!=='Administrador'?' · '+esc(v.autor):''}</small></div><div style="text-align:right"><b class="${c.ut<0?'neg':''}">${money(c.ut,'NIO')}</b><small>${fq(c.mg)} %</small></div></button>`}).join('')}`:''}`}
-function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const lista=viaLista().filter(x=>x.id!==v.id);const c=viaCalc(v,lista.concat([v]));
-  const embs=COSTOS.emb.filter(e=>e.tipo==='mot');const crewIds=new Set(c.crew.map(x=>x.pid));const sem=viaSem(c);
-  const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
-  const falta=v.tr.some((g,i)=>!g.lle&&!(v.dir==='vue'&&i===1));
-  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${v.nuevo?'Registrar viaje':'Editar viaje'}</b><button class="btn2" data-vcancel style="padding:8px 14px">Cancelar</button></div>
+    <div class="row" style="flex-wrap:nowrap;margin-top:12px"><button class="btn2" data-vpdf style="flex:1">Informe PDF</button><button class="btn2" data-vxls style="flex:1">Excel</button></div></div>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay viajes registrados en este mes.</p>'}
+   ${OWNER?'<button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>':'<p class="sm" style="margin-top:10px">Los viajes los registra el administrador; aquí puede consultarlos y descargar los informes.</p>'}
+   ${OWNER?`<details class="rg" data-ok="vaj" style="margin-top:12px"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Muellaje Bluefields por escala (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muBF" value="${COSTOS.par.muBF||''}" placeholder="0.00"></div><div><label>Muellaje Corn Island por estadía (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muCI" value="${COSTOS.par.muCI||''}" placeholder="0.00"></div><div><label>Precio del boleto (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="pasaje" value="${COSTOS.par.pasaje||310}"></div></div>
+     <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">Estos valores se ponen solos en cada viaje nuevo y se pueden cambiar en el viaje. El muellaje de Corn Island va solo en la ida (la nave pernocta allí).</p></div></details>`:''}
+   ${R.cs.length?`<h3 class="sub">Viajes de ${mesTxt(VIA_MES).toLowerCase()}</h3>${R.cs.map(({v,c})=>`<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(c.emb?c.emb.n.replace(/^Motonave /,''):'—')}${+v.np?' · '+v.np+' boletos':''}</small></div><div style="text-align:right"><b class="${c.ut<0?'neg':''}">${money(c.ut,'NIO')}</b><small>${fq(c.mg)} %</small></div></button>`).join('')}`:''}`}
+function viaResHTML(c){const sem=viaSem(c);const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
+  return `<div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b><small>variables ${money(c.gv,'NIO')} · fijos ${money(c.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
+    <p class="sm" style="margin:6px 0">Aporte del viaje (ingresos − gastos variables): <b>${money(c.cont,'NIO')}</b>.${c.faltan?` Para cubrir todos los costos faltaron <b>${money(-c.ut,'NIO')}</b> ≈ <b>${c.faltan} boletos</b> más (a C$ ${fmt(c.pas)}).`:''}${c.faltanV?` <b>No cubre ni sus gastos variables</b> (faltaron ≈ ${c.faltanV} boletos).`:''} Costos fijos: 1/${c.D} del mes${c.div.cerrado?'':' (provisional)'}.</p>
+    ${pieBloque(c.R,c.ing,c.gas,c.ut)}
+    ${Object.entries(grupos).map(([g,xs])=>`<details class="rg"><summary><span>${esc(g)}</span><b>${money(xs.reduce((s,x)=>s+x.m,0),'NIO')}</b></summary>${xs.map(x=>`<div class="rl"><div>${esc(x.c)}${x.d?`<small>${esc(x.d)}</small>`:''}</div><b>${money(x.m,'NIO')}</b></div>`).join('')}</details>`).join('')}`}
+const viaInfoHTML=(v,c)=>`Navegación: <b>${hm(c.hn*60)}</b> · Generador: ${hm(c.hg*60)} · Horas extra por tripulante: <b>${c.hx}</b>${v.hx!==''&&v.hx!=null?' (ajustadas a mano)':''}. La espera en el muelle y la noche en Corn Island no consumen combustible.`;
+const viaFalta=v=>v.tr.some((g,i)=>!g.lle&&!(v.dir==='vue'&&i===1));
+function viaCalcEdit(){const v=VIA_EDIT;const lista=viaLista().filter(x=>x.id!==v.id);return viaCalc(v,lista.concat([v]))}
+/* Actualiza solo resultados y campos calculados (no redibuja los campos: el selector de hora no se cierra) */
+function viaRefrescar(){const v=VIA_EDIT;if(!v)return;viaAuto(v);const c=viaCalcEdit();
+  const q=id=>document.getElementById(id);if(q('viaRes'))q('viaRes').innerHTML=viaResHTML(c);if(q('viaInfo'))q('viaInfo').innerHTML=viaInfoHTML(v,c);
+  if(q('viaBol'))q('viaBol').textContent=money(c.bolC,'NIO');if(q('viaFalta'))q('viaFalta').hidden=!viaFalta(v);
+  const hx=document.querySelector('#viaBox [data-vf=hx]');if(hx)hx.placeholder='auto: '+c.hxA;
+  if(v.dir==='vue'&&v.tr[1]){['sal','lle'].forEach(k=>{const el=document.querySelector(`#viaBox [data-vt="1"][data-k="${k}"]`);if(el&&document.activeElement!==el)el.value=v.tr[1][k]||''})}}
+function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=viaCalcEdit();const ro=!OWNER;
+  const embs=COSTOS.emb.filter(e=>e.tipo==='mot');const crewIds=new Set(c.crew.map(x=>x.pid));
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${ro?'Detalle del viaje':v.nuevo?'Registrar viaje':'Editar viaje'}</b><button class="btn2" data-vcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
+   <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">
    <div class="grid" style="margin-top:8px"><div><label>Fecha de salida</label><input type="date" data-vf="f" value="${v.f}"></div>
     <div><label>Sentido</label><select data-vf="dir"><option value="ida" ${v.dir==='ida'?'selected':''}>Ida: ${VIA_DIR.ida} (mié / sáb)</option><option value="vue" ${v.dir==='vue'?'selected':''}>Regreso: ${VIA_DIR.vue} (jue / dom)</option></select></div>
     <div style="grid-column:1/-1"><label>Embarcación</label><select data-vf="emb">${embs.map(e=>`<option value="${e.id}" ${v.emb===e.id?'selected':''}>${esc(e.n)}</option>`).join('')}</select></div></div>
-   ${c.n?'':'<p class="msg-bad" style="margin:10px 0 0">Seleccione la tripulación de este viaje (o defina la tripulación habitual de la nave en Ajustes → Estructura de costos).</p>'}<details class="rg" style="margin-top:10px"${c.n?'':' open'}><summary><span>Tripulación (${c.n})</span><span class="chev">›</span></summary><div class="crew-l" style="padding:0 8px 8px">${COSTOS.personal.slice().sort((a,b)=>(crewIds.has(b.id)-crewIds.has(a.id))||a.n.localeCompare(b.n)).map(p=>{const cc=c.crew.find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-vcrew="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-vrol="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')}</div></details>
+   ${c.n||ro?'':'<p class="msg-bad" style="margin:10px 0 0">Seleccione la tripulación de este viaje (o defina la tripulación habitual de la nave en Ajustes → Estructura de costos).</p>'}
+   <details class="rg" data-ok="vcrew" style="margin-top:10px"${ACC_OPEN.has('vcrew')||(!c.n&&!ro)?' open':''}><summary><span>Tripulación (${c.n})</span><span class="chev">›</span></summary><div class="crew-l" style="padding:0 8px 8px">${(ro?COSTOS.personal.filter(p=>crewIds.has(p.id)):COSTOS.personal.slice()).sort((a,b)=>(crewIds.has(b.id)-crewIds.has(a.id))||a.n.localeCompare(b.n)).map(p=>{const cc=c.crew.find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-vcrew="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-vrol="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')}${ro?'':'<button type="button" class="btn2" data-vcrewok style="width:100%;margin-top:6px">Listo</button>'}</div></details>
    <h3 class="sub">Horas reales de navegación</h3>
-   ${v.tr.map((g,i)=>`<div class="via-tr"><div class="sm"><b>${i+1}.</b> ${esc(g.de)} → ${esc(g.a)}</div><div class="grid"><div><label>Salida</label><input type="time" data-vt="${i}" data-k="sal" value="${g.sal||''}"></div><div><label>Llegada${!g.lle&&!(v.dir==='vue'&&i===1)?' <span class="chip warnc">anotar</span>':''}</label><input type="time" data-vt="${i}" data-k="lle" value="${g.lle||''}"></div>${+g.cd||i===(v.dir==='ida'?1:0)?`<div><label>Descarga al llegar (h)</label><input type="number" min="0" step="0.25" data-vt="${i}" data-k="cd" value="${g.cd}"></div>`:''}</div></div>`).join('')}
-   <p class="sm" style="margin:4px 0 0">Navegación: <b>${hm(c.hn*60)}</b> · Generador: ${hm(c.hg*60)} · Horas extra por tripulante: <b>${c.hx}</b>${v.hx!==''&&v.hx!=null?' (ajustadas a mano)':''}. La espera en el muelle y la noche en Corn Island no consumen combustible.</p>
-   <h3 class="sub">Ingresos reales del viaje (C$)</h3>
-   <div class="grid"><div><label>Total de boletería</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="bol" value="${v.bol}" placeholder="0.00"></div><div><label>Pasajeros (opcional)</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="np" value="${v.np}" placeholder="Cantidad"></div>
-    <div style="grid-column:1/-1"><label>Total cobrado por carga</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="car" value="${v.car}" placeholder="0.00"></div></div>
-   ${(v.oi||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-voi="${i}" data-f="d" value="${esc(o.d)}" placeholder="Otro ingreso" style="flex:2"><input data-voi="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="btnd" data-voidel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}
-   <button class="btn2" data-voiadd style="width:100%;margin-top:6px">+ Otro ingreso</button>
+   ${v.tr.map((g,i)=>`<div class="via-tr"><div class="sm"><b>${i+1}.</b> ${esc(g.de)} → ${esc(g.a)}${v.dir==='vue'&&i===1&&g.auto!==false?' <span class="sm">(se calcula solo)</span>':''}</div><div class="grid"><div><label>Salida</label><input type="time" data-vt="${i}" data-k="sal" value="${g.sal||''}"></div><div><label>Llegada</label><input type="time" data-vt="${i}" data-k="lle" value="${g.lle||''}"></div>${+g.cd||i===(v.dir==='ida'?1:0)?`<div><label>Descarga al llegar (h)</label><input type="number" min="0" step="0.25" inputmode="decimal" data-vt="${i}" data-k="cd" value="${g.cd}"></div>`:''}</div></div>`).join('')}
+   <p class="sm" id="viaInfo" style="margin:4px 0 0">${viaInfoHTML(v,c)}</p>
+   <h3 class="sub">Ingresos reales del viaje</h3>
+   <div class="grid"><div><label>Boletos vendidos</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="np" value="${v.np}" placeholder="Cantidad"></div><div><label>Precio del boleto (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="tb" value="${v.tb}" placeholder="${fmt(+COSTOS.par.pasaje||310)}"></div>
+    <div style="grid-column:1/-1" class="via-bol"><span>Ingreso por boletería</span><b id="viaBol">${money(c.bolC,'NIO')}</b></div>
+    <div style="grid-column:1/-1"><label>Total cobrado por carga (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="car" value="${v.car}" placeholder="0.00"></div></div>
+   ${(v.oi||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-voi="${i}" data-f="d" value="${esc(o.d)}" placeholder="Otro ingreso" style="flex:2"><input data-voi="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1">${ro?'':`<button type="button" class="btnd" data-voidel="${i}" style="width:40px;padding:0">✕</button>`}</div>`).join('')}
+   ${ro?'':'<button type="button" class="btn2" data-voiadd style="width:100%;margin-top:6px">+ Otro ingreso</button>'}
    <h3 class="sub">Otros gastos del viaje (C$)</h3>
-   <div class="grid"><div><label>Muellaje Bluefields</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muB" value="${v.muB}" placeholder="${COSTOS.par.muBF?'auto: '+fmt(COSTOS.par.muBF):'0.00'}"></div>${v.dir==='ida'?`<div><label>Muellaje Corn Island</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muC" value="${v.muC}" placeholder="${COSTOS.par.muCI?'auto: '+fmt(COSTOS.par.muCI):'0.00'}"></div>`:''}
-    <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-vf="hx" value="${v.hx}" placeholder="auto: ${c.hxA}"></div></div>
-   ${(v.og||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-vog="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Hielo, reparación…" style="flex:2"><input data-vog="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="btnd" data-vogdel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}
-   <button class="btn2" data-vogadd style="width:100%;margin-top:6px">+ Otro gasto</button>
+   <div class="grid"><div><label>Muellaje Bluefields</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muB" value="${v.muB}" placeholder="0.00"></div>${v.dir==='ida'?`<div><label>Muellaje Corn Island</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muC" value="${v.muC}" placeholder="0.00"></div>`:''}
+    <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="hx" value="${v.hx}" placeholder="auto: ${c.hxA}"></div></div>
+   ${(v.og||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-vog="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Hielo, reparación…" style="flex:2"><input data-vog="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1">${ro?'':`<button type="button" class="btnd" data-vogdel="${i}" style="width:40px;padding:0">✕</button>`}</div>`).join('')}
+   ${ro?'':'<button type="button" class="btn2" data-vogadd style="width:100%;margin-top:6px">+ Otro gasto</button>'}
    <div><label style="margin-top:10px">Observaciones</label><textarea data-vf="obs" rows="2" placeholder="Clima, incidentes, carga especial…">${esc(v.obs||'')}</textarea></div>
-   <div class="rent-res"><div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b><small>variables ${money(c.gv,'NIO')} · fijos ${money(c.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
-    <p class="sm" style="margin:6px 0">Aporte del viaje (ingresos − gastos variables): <b>${money(c.cont,'NIO')}</b>.${c.faltan?` Para cubrir todos los costos faltaron <b>${money(-c.ut,'NIO')}</b> ≈ <b>${c.faltan} pasajeros</b> más (a C$ ${fmt(c.pas)}).`:''}${c.faltanV?` <b>No cubre ni sus gastos variables</b> (faltaron ≈ ${c.faltanV} pasajeros).`:''} Costos fijos: 1/${c.D} del mes${c.div.cerrado?'':' (provisional)'}.</p>
-    ${Object.entries(grupos).map(([g,xs])=>`<details class="rg"><summary><span>${esc(g)}</span><b>${money(xs.reduce((s,x)=>s+x.m,0),'NIO')}</b></summary>${xs.map(x=>`<div class="rl"><div>${esc(x.c)}${x.d?`<small>${esc(x.d)}</small>`:''}</div><b>${money(x.m,'NIO')}</b></div>`).join('')}</details>`).join('')}</div>
-   ${falta?'<p class="msg-bad" style="margin-top:8px">Anote la hora de llegada para calcular el combustible.</p>':''}
-   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-vsave style="flex:2;padding:13px">Guardar viaje</button>${v.nuevo?'':'<button class="btnd" data-vdel style="flex:1">Eliminar</button>'}</div>`}
-function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;
-  if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d)}}
-  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC=''}
-  if(k==='emb'){v.crew=null;ls.set('epn_via_emb',val)}
-  renderViaForm()}
-function viaGuardar(){const v=VIA_EDIT;if(v.tr.some((g,i)=>!g.lle&&!(v.dir==='vue'&&i===1))&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
+   </fieldset>
+   <div class="rent-res" id="viaRes">${viaResHTML(c)}</div>
+   ${ro?'':`<p class="msg-bad" id="viaFalta" style="margin-top:8px"${viaFalta(v)?'':' hidden'}>Anote la hora de llegada para calcular el combustible.</p>
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-vsave style="flex:2;padding:13px">Guardar viaje</button>${v.nuevo?'':'<button class="btnd" data-vdel style="flex:1">Eliminar</button>'}</div>`}`}
+function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;let full=false;
+  if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d);v.muC=d==='ida'&&COSTOS.par.muCI?String(COSTOS.par.muCI):'';full=true}}
+  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC=val==='ida'&&COSTOS.par.muCI?String(COSTOS.par.muCI):'';full=true}
+  if(k==='emb'){v.crew=null;ls.set('epn_via_emb',val);full=true}
+  if(OWNER&&(k==='muB'||k==='muC')&&+val>0){const pk=k==='muB'?'muBF':'muCI';if(!+COSTOS.par[pk]){COSTOS.par[pk]=+val;guardarCostos()}}
+  if(full)renderViaForm();else viaRefrescar()}
+function viaGuardar(){const v=VIA_EDIT;if(viaFalta(v)&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
   const x={...v};delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
-  if(OWNER){const l=(ls.get('epn_viajes',[])||[]).filter(y=>y.id!==x.id);l.push(x);viaGuardarLista(l)}
-  else{x.env=false;const l=(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==x.id);l.push(x);ls.set('epn_viajes_mios',l)}
-  VIA_MES=x.f.slice(0,7);VIA_EDIT=null;toast('Viaje guardado');renderVia();window.scrollTo(0,0)}
+  const l=(ls.get('epn_viajes',[])||[]).filter(y=>y.id!==x.id);l.push(x);viaGuardarLista(l);
+  VIA_MES=x.f.slice(0,7);VIA_EDIT=null;ACC_OPEN.delete('vcrew');toast('Viaje guardado');renderVia();window.scrollTo(0,0)}
 function viaEliminar(){const v=VIA_EDIT;if(!confirm('¿Eliminar este viaje?'))return;
-  if(OWNER){viaGuardarLista((ls.get('epn_viajes',[])||[]).filter(y=>y.id!==v.id));const d=ls.get('epn_viajes_del',[])||[];if(!d.includes(v.id)){d.push(v.id);ls.set('epn_viajes_del',d)}}
-  else{ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==v.id));if(!v.local)toast('Pida al administrador que lo elimine del informe')}
+  viaGuardarLista((ls.get('epn_viajes',[])||[]).filter(y=>y.id!==v.id));const d=ls.get('epn_viajes_del',[])||[];if(!d.includes(v.id)){d.push(v.id);ls.set('epn_viajes_del',d)}
   VIA_EDIT=null;renderVia()}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-vmes],[data-vnew],[data-vedit],[data-vcancel],[data-vsave],[data-vdel],[data-voiadd],[data-voidel],[data-vogadd],[data-vogdel],[data-vpdf],[data-vsend],[data-vimp]');if(!b||!b.closest('#viaBox'))return;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vmes],[data-vnew],[data-vedit],[data-vcancel],[data-vsave],[data-vdel],[data-voiadd],[data-voidel],[data-vogadd],[data-vogdel],[data-vpdf],[data-vxls],[data-vcrewok]');if(!b||!b.closest('#viaBox'))return;
   if(b.dataset.vmes){const [y,m]=VIA_MES.split('-').map(Number);const d=new Date(y,m-1+(+b.dataset.vmes),1);VIA_MES=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return renderVia()}
-  if(b.hasAttribute('data-vnew')){VIA_EDIT=viaNuevo();renderVia();window.scrollTo(0,0);return}
-  if(b.dataset.vedit){const x=viaLista().find(y=>y.id===b.dataset.vedit);if(x){VIA_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-vnew')){if(!OWNER)return;VIA_EDIT=viaNuevo();ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0);return}
+  if(b.dataset.vedit){const x=viaLista().find(y=>y.id===b.dataset.vedit);if(x){VIA_EDIT=JSON.parse(JSON.stringify(x));ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0)}return}
   if(b.hasAttribute('data-vcancel')){VIA_EDIT=null;return renderVia()}
+  if(b.hasAttribute('data-vcrewok')){ACC_OPEN.delete('vcrew');const d=b.closest('details');if(d)d.open=false;return}
+  if(!OWNER&&!b.hasAttribute('data-vpdf')&&!b.hasAttribute('data-vxls'))return;
   if(b.hasAttribute('data-vsave'))return viaGuardar();
   if(b.hasAttribute('data-vdel'))return viaEliminar();
   if(b.hasAttribute('data-voiadd')){(VIA_EDIT.oi=VIA_EDIT.oi||[]).push({d:'',m:''});return renderViaForm()}
@@ -1627,17 +1656,62 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-vmes],[dat
   if(b.hasAttribute('data-vogadd')){(VIA_EDIT.og=VIA_EDIT.og||[]).push({d:'',m:''});return renderViaForm()}
   if(b.dataset.vogdel!=null){VIA_EDIT.og.splice(+b.dataset.vogdel,1);return renderViaForm()}
   if(b.hasAttribute('data-vpdf'))return viaPdf();
-  if(b.hasAttribute('data-vsend'))return viaEnviar();
-  if(b.hasAttribute('data-vimp'))return viaImportar(($('#vImp')||{}).value)});
-document.addEventListener('change',e=>{const el=e.target;if(!el.closest||!el.closest('#viaBox'))return;
+  if(b.hasAttribute('data-vxls'))return viaExcel()});
+document.addEventListener('change',e=>{const el=e.target;if(!el.closest||!el.closest('#viaBox')||!OWNER)return;
   if(el.dataset.vpar){const k=el.dataset.vpar;COSTOS.par[k]=el.type==='checkbox'?el.checked:(+el.value||0);guardarCostos();return renderVia()}
   if(!VIA_EDIT)return;const v=VIA_EDIT;
   if(el.dataset.vf)return viaSetCampo(el.dataset.vf,el.value);
-  if(el.dataset.vt!=null){const g=v.tr[+el.dataset.vt];const k=el.dataset.k;g[k]=k==='cd'?el.value:el.value;if(v.dir==='vue'&&+el.dataset.vt===1&&k!=='cd')g.auto=false;return renderViaForm()}
-  if(el.dataset.vcrew){const base=viaCrew(v).map(c=>({pid:c.pid,rol:c.rol}));const p=COSTOS.personal.find(x=>x.id===el.dataset.vcrew);v.crew=el.checked?base.concat([{pid:p.id,rol:rolDe(p.cargo)}]):base.filter(c=>c.pid!==p.id);return renderViaForm()}
-  if(el.dataset.vrol){const base=viaCrew(v).map(c=>({pid:c.pid,rol:c.rol}));const c=base.find(x=>x.pid===el.dataset.vrol);if(c)c.rol=el.value;v.crew=base;return renderViaForm()}
-  if(el.dataset.voi!=null){v.oi[+el.dataset.voi][el.dataset.f]=el.value;return renderViaForm()}
-  if(el.dataset.vog!=null){v.og[+el.dataset.vog][el.dataset.f]=el.value;return renderViaForm()}});
+  if(el.dataset.vt!=null){const g=v.tr[+el.dataset.vt];const k=el.dataset.k;g[k]=el.value;if(v.dir==='vue'&&+el.dataset.vt===1&&k!=='cd')g.auto=false;return viaRefrescar()}
+  if(el.dataset.vcrew){ACC_OPEN.add('vcrew');const base=viaCrew(v).map(c=>({pid:c.pid,rol:c.rol}));const p=COSTOS.personal.find(x=>x.id===el.dataset.vcrew);v.crew=el.checked?base.concat([{pid:p.id,rol:rolDe(p.cargo)}]):base.filter(c=>c.pid!==p.id);
+    const sel=document.querySelector(`#viaBox [data-vrol="${p.id}"]`);if(sel)sel.disabled=!el.checked;const sm=el.closest('details').querySelector('summary span');if(sm)sm.textContent='Tripulación ('+v.crew.length+')';return viaRefrescar()}
+  if(el.dataset.vrol){const base=viaCrew(v).map(c=>({pid:c.pid,rol:c.rol}));const c=base.find(x=>x.pid===el.dataset.vrol);if(c)c.rol=el.value;v.crew=base;return viaRefrescar()}
+  if(el.dataset.voi!=null){v.oi[+el.dataset.voi][el.dataset.f]=el.value;return viaRefrescar()}
+  if(el.dataset.vog!=null){v.og[+el.dataset.vog][el.dataset.f]=el.value;return viaRefrescar()}});
+
+/* ---------- Excel (.xlsx) sin librerías ---------- */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=u=>{let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC_T[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+function zipStore(files){const enc=new TextEncoder();const parts=[],cen=[];let off=0;const dt=new Date(),tm=(dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()>>1),dd=((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate();
+  files.forEach(f=>{const nm=enc.encode(f.n),d=typeof f.d==='string'?enc.encode(f.d):f.d,crc=crc32(d);
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,tm,true);h.setUint16(12,dd,true);h.setUint32(14,crc,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,d);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,tm,true);c.setUint16(14,dd,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    cen.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+d.length});
+  const cs=cen.reduce((s,x)=>s+x.length,0);const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+const xEsc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const colL=i=>{let s='';i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
+/* celdas: número → formato 0.00; {v,s}: s 1=encabezado, 3=número en negrita, 4=porcentaje, 5=texto en negrita, 6=título */
+function xSheet(rows,widths){const body=rows.map((r,ri)=>`<row r="${ri+1}">${r.map((c,ci)=>{if(c==null||c==='')return'';const o=typeof c==='object'?c:{v:c};const ref=colL(ci)+(ri+1);
+    if(typeof o.v==='number'&&isFinite(o.v))return `<c r="${ref}" s="${o.s||2}"><v>${Math.round(o.v*10000)/10000}</v></c>`;return `<c r="${ref}" t="inlineStr" s="${o.s||0}"><is><t xml:space="preserve">${xEsc(o.v)}</t></is></c>`}).join('')}</row>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews>${widths?`<cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols>`:''}<sheetData>${body}</sheetData></worksheet>`}
+function xlsx(sheets){const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const wb=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${xEsc(s.n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`;
+  const wbr=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const st=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0%"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><color rgb="FF0B4F8A"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B4F8A"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="2" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  return zipStore([{n:'[Content_Types].xml',d:ct},{n:'_rels/.rels',d:rels},{n:'xl/workbook.xml',d:wb},{n:'xl/_rels/workbook.xml.rels',d:wbr},{n:'xl/styles.xml',d:st},...sheets.map((s,i)=>({n:`xl/worksheets/sheet${i+1}.xml`,d:xSheet(s.rows,s.w)}))])}
+async function compartirBlob(blob,nombre,titulo){const f=new File([blob],nombre,{type:blob.type});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:titulo});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
+  const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=nombre;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);toast('Archivo descargado')}
+function viaExcel(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay viajes en este mes');return}
+  const H=s=>({v:s,s:1}),B=n=>({v:n,s:3}),P=n=>({v:n/100,s:4}),BT=s=>({v:s,s:5});
+  const GR=['Combustible y lubricantes','Horas extras','Viáticos','Muellaje','Otros gastos','Costos fijos del mes (asignados)'];
+  const gsum=(c,g)=>c.R.filter(x=>x.g===g).reduce((s,x)=>s+x.m,0);
+  const res=[[{v:'Rentabilidad de viajes regulares · Bluefields – Corn Island',s:6}],['Empresa Portuaria Nacional · APBB · '+mesTxt(VIA_MES)+(R.prov?' (mes en curso, cifras provisionales)':'')],[],
+    [H('Indicador'),H('Monto (C$)')],['Viajes',t.n],['Ingresos',t.ing],['Gastos variables',t.gv],['Costos fijos asignados',t.gf],['Gastos totales',t.gas],[BT('Utilidad'),B(t.ut)],['Margen',P(t.mg)],[],
+    [H('Distribución'),H('Monto (C$)'),H('% del ingreso')],...GR.map(g=>{const m=R.cs.reduce((s,x)=>s+gsum(x.c,g),0);return [PIE_NOM[g]||g,m,P(t.ing?m/t.ing*100:0)]}),['Utilidad',t.ut,P(t.mg)],[],
+    [H('Día de salida'),H('Viajes'),H('Boletos'),H('Ingresos (C$)'),H('Utilidad (C$)')],...[3,4,6,0].map(k=>{const r=R.porDia[k]||{n:0,np:0,ing:0,ut:0};return [DIAS[k],r.n,r.np,r.ing,r.ut]}),[],
+    [H('Embarcación'),H('Viajes'),H('Ingresos (C$)'),H('Utilidad (C$)')],...Object.entries(R.porEmb).map(([k,r])=>[k,r.n,r.ing,r.ut])];
+  const vh=['Fecha','Día','Sentido','Embarcación','Tripulantes','Horas navegación','Galones diésel','Boletos','Precio boleto','Ingreso boletería','Ingreso carga','Otros ingresos','Total ingresos',...GR.map(g=>PIE_NOM[g]||g),'Gastos variables','Gastos totales','Utilidad','Margen','Observaciones'];
+  const vrows=R.cs.map(({v,c})=>{const d=new Date(v.f+'T12:00');const gal=c.R.filter(x=>/^Diésel/.test(x.c)).reduce((s,x)=>{const m=x.d.match(/= ([\d.,]+) gal/);return s+(m?+m[1].replace(/,/g,''):0)},0);
+    return [v.f,DIAS[d.getDay()],VIA_DIR[v.dir],c.emb?c.emb.n:'',c.n,c.hn,gal,+v.np||0,c.tb,c.bolC,+v.car||0,(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0),c.ing,...GR.map(g=>gsum(c,g)),c.gv,c.gas,B(c.ut),P(c.mg),v.obs||'']});
+  const S=k=>R.cs.reduce((s,x)=>s+x.c[k],0);
+  vrows.push(['Total','','','','','','',R.cs.reduce((s,x)=>s+(+x.v.np||0),0),'',S('bolC'),R.cs.reduce((s,x)=>s+(+x.v.car||0),0),'',B(t.ing),...GR.map(g=>B(R.cs.reduce((s,x)=>s+gsum(x.c,g),0))),B(t.gv),B(t.gas),B(t.ut),P(t.mg),'']);
+  const det=[[H('Fecha'),H('Sentido'),H('Rubro'),H('Concepto'),H('Cálculo'),H('Monto (C$)')]];R.cs.forEach(({v,c})=>c.R.forEach(x=>det.push([v.f,VIA_DIR[v.dir],PIE_NOM[x.g]||x.g,x.c,x.d,x.m])));
+  const blob=xlsx([{n:'Resumen',rows:res,w:[34,18,16,16,16]},{n:'Viajes',rows:[vh.map(H),...vrows],w:[11,11,26,26,11,11,11,9,10,14,14,12,14,14,13,12,12,12,14,14,14,14,10,30]},{n:'Detalle de gastos',rows:det,w:[11,26,26,34,60,14]}]);
+  compartirBlob(blob,'Viajes-regulares-'+VIA_MES+'.xlsx','Viajes regulares · '+mesTxt(VIA_MES))}
 
 /* ---------- Compartir entre el administrador y los colegas ---------- */
 async function cifrarCon(raw,obj){const k=await aesKey(raw);const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(obj)));return{v:1,f:today(),iv:b64u(iv),data:b64u(new Uint8Array(ct))}}
@@ -1661,7 +1735,7 @@ function viaPdf(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay via
   const d=PDFW();d.page();let y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES · BLUEFIELDS – CORN ISLAND',mesTxt(VIA_MES)+(R.prov?' (mes en curso, cifras provisionales)':''));
   const K=[['Viajes',String(t.n)],['Ingresos',money(t.ing,'NIO')],['Gastos variables',money(t.gv,'NIO')],['Costos fijos asignados',money(t.gf,'NIO')],['Utilidad',money(t.ut,'NIO')],['Margen',fq(t.mg)+' %']];
   K.forEach(([a,b],i)=>{const x=40+(i%3)*178,yy=y+Math.floor(i/3)*34;d.rect(x,yy,170,30,i===4?(t.ut>=0?'#e6f4ea':'#fdecea'):'#f2f6fb');d.text(x+8,yy+11,a,{size:7.5,color:GRY});d.text(x+8,yy+24,b,{size:10.5,bold:true,color:'#1a1a1a'})});y+=76;
-  const C=[['Fecha',88],['Sentido',96],['Nave',70],['Pas.',34],['Ingresos',72],['Gastos',72],['Utilidad',70],['%',30]];
+  const C=[['Fecha',88],['Sentido',96],['Nave',70],['Bolet.',34],['Ingresos',72],['Gastos',72],['Utilidad',70],['%',30]];
   const head=()=>{d.rect(40,y,532,16,NAVY);let x=40;C.forEach(([h,w],i)=>{d.text(i>=3?x+w-4:x+4,y+11,h,{size:7.8,bold:true,color:'#ffffff',align:i>=3?'r':undefined});x+=w});y+=16};head();
   R.cs.forEach(({v,c},ix)=>{if(y>720){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES));head()}
     if(ix%2)d.rect(40,y,532,15,'#f6f8fb');const dd=new Date(v.f+'T12:00');const cells=[DIAS[dd.getDay()].slice(0,3)+' '+dd.toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'}),v.dir==='ida'?'Bluefields – C. Island':'C. Island – Bluefields',c.emb?c.emb.n.replace(/^Motonave /,''):'—',+v.np?String(v.np):'—',fmt(c.ing),fmt(c.gas),fmt(c.ut),fq(Math.round(c.mg))];
@@ -1669,8 +1743,14 @@ function viaPdf(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay via
   d.line(40,y,572,y,'#333333',.6);let x=40;['Total','','','',fmt(t.ing),fmt(t.gas),fmt(t.ut),fq(Math.round(t.mg))].forEach((s,i)=>{if(s)d.text(i>=3?x+C[i][1]-4:x+4,y+11,s,{size:8,bold:true,color:'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=24;
   if(y>650){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES))}
   d.text(40,y+8,'Resultado por día de salida',{size:9.5,bold:true,color:NAVY});y+=16;
-  [3,4,6,0].forEach(k=>{const r=R.porDia[k];d.text(46,y+8,DIAS[k],{size:8.5,color:'#1a1a1a'});d.text(200,y+8,r?r.n+' viaje(s)'+(r.np?' · '+r.np+' pasajeros':''):'sin viajes',{size:8.5,color:GRY});d.text(566,y+8,r?money(r.ut,'NIO'):'—',{size:8.5,bold:true,color:r&&r.ut<0?'#b42318':'#1a1a1a',align:'r'});y+=13});y+=10;
-  const notas=['Ingresos reales: total de boletería y total cobrado por carga de cada viaje.','Gastos variables por viaje: diésel por horas reales de navegación (2 motores) y generador, lubricantes y filtros, horas extras con INSS/INATEC, viáticos (hospedaje solo en la ida), muellaje y otros gastos.','Costos fijos del mes (salarios, vacaciones, aguinaldo, cargas sociales, uniformes, botas, seguro y depreciación) repartidos entre los viajes del mes de cada embarcación'+(R.prov?'; en el mes en curso se usan los viajes programados.':'.')];
+  [3,4,6,0].forEach(k=>{const r=R.porDia[k];d.text(46,y+8,DIAS[k],{size:8.5,color:'#1a1a1a'});d.text(200,y+8,r?r.n+' viaje(s)'+(r.np?' · '+r.np+' boletos':''):'sin viajes',{size:8.5,color:GRY});d.text(566,y+8,r?money(r.ut,'NIO'):'—',{size:8.5,bold:true,color:r&&r.ut<0?'#b42318':'#1a1a1a',align:'r'});y+=13});y+=10;
+  {const allR=[].concat(...R.cs.map(x=>x.c.R));const it=pieDatos(allR,t.ut);const T=it.reduce((s,x)=>s+x.v,0);if(T){if(y>560){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES))}
+    d.text(40,y+8,t.ut>=0?'Distribución del ingreso del mes':'Composición de los gastos del mes',{size:9.5,bold:true,color:NAVY});y+=16;const cx=110,cy=y+70,r=66;let a0=-Math.PI/2;
+    it.forEach(x=>{const a1=a0+x.v/T*2*Math.PI;const pts=[[cx,cy]];const n=Math.max(2,Math.ceil((a1-a0)/0.05));for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}d.poly(pts,x.col);a0=a1});
+    const pc=[];for(let i=0;i<=72;i++){const a=i/72*2*Math.PI;pc.push([cx+r*0.5*Math.cos(a),cy+r*0.5*Math.sin(a)])}d.poly(pc,'#ffffff');
+    it.forEach((x,i)=>{const yy=y+14+i*17;d.rect(210,yy-8,9,9,x.col);d.text(225,yy,x.n,{size:8.5,color:'#1a1a1a'});d.text(470,yy,fq(Math.round(x.v/T*1000)/10)+' %',{size:8.5,bold:true,color:'#1a1a1a',align:'r'});d.text(566,yy,money(x.v,'NIO'),{size:8.5,color:GRY,align:'r'})});
+    y+=Math.max(150,it.length*17+20)}}
+  const notas=['Ingresos reales: boletos vendidos × precio del boleto y total cobrado por carga de cada viaje.','Gastos variables por viaje: diésel por horas reales de navegación (2 motores) y generador, lubricantes y filtros, horas extras con INSS/INATEC, viáticos (hospedaje solo en la ida), muellaje y otros gastos.','Costos fijos del mes (salarios, vacaciones, aguinaldo, cargas sociales, uniformes, botas, seguro y depreciación) repartidos entre los viajes del mes de cada embarcación'+(R.prov?'; en el mes en curso se usan los viajes programados.':'.')];
   notas.forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(l=>{if(y>740){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)','')}d.text(40,y+8,l,{size:7.8,color:GRY});y+=10}));
   pdfFooters(d,'Documento interno · Análisis de rentabilidad de viajes regulares · Empresa Portuaria Nacional · APBB');
   abrirVisor(d,'Viajes-regulares-'+VIA_MES+'.pdf','Viajes regulares · '+mesTxt(VIA_MES))}
