@@ -217,6 +217,9 @@ body:not(.con-viajes) nav button[data-v="via"]{display:none}
 .via-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}.via-it small{display:block;font-size:12px;color:var(--mut);margin-top:2px}.via-it b{font-size:15px;white-space:nowrap}.via-it>div:first-child{min-width:0}.via-it .neg{color:#c5221f}
 .pie{margin:12px 0 4px;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.pie-t{display:block;font-size:13.5px;margin-bottom:8px}.pie-w{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pie-w svg{flex:none}.pie-l{flex:1;min-width:170px;display:grid;gap:5px}.pie-l>div{display:grid;grid-template-columns:12px 1fr auto;column-gap:7px;align-items:center;font-size:13px}.pie-l i{width:12px;height:12px;border-radius:3px}.pie-l b{font-size:13px}.pie-l small{grid-column:2/4;color:var(--mut);font-size:11.5px;margin-top:-3px}
 .via-bol{display:flex;justify-content:space-between;align-items:center;background:var(--soft);border-radius:10px;padding:10px 12px}.via-bol span{font-size:13px;color:var(--mut);font-weight:600}.via-bol b{font-size:16px}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:3px;gap:3px}.seg button{flex:1;border:0;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--mut);padding:9px 6px;border-radius:10px;cursor:pointer}.seg button.on{background:var(--card);color:var(--pri);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.den{display:grid;grid-template-columns:1fr 92px 1.1fr;gap:8px;align-items:center;margin-bottom:6px}.den span{font-weight:600;font-size:14px}.den input{text-align:center;padding:8px}.den b{text-align:right;font-size:14px;white-space:nowrap}
+.arq-r{border:1px solid var(--line);border-radius:12px;overflow:hidden}.arq-r>div{display:flex;justify-content:space-between;gap:8px;padding:7px 12px;font-size:13.5px}.arq-r>div span{color:var(--mut)}.arq-r b{white-space:nowrap}.arq-r .t{border-top:1px solid var(--line);font-weight:700}.arq-r .t span{color:var(--ink)}.arq-r .d{font-size:16px;font-weight:800}.arq-r .d.ok{background:var(--okbg,#e6f4ea)}.arq-r .d.bad{background:#fdecea;color:#b42318}.arq-r .d.warnc{background:#fff4d1}.arq-r .d span{color:inherit}
 .via-tr{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
 details.rg .chev{font-size:20px;color:var(--mut);transition:transform .2s;line-height:1}details.rg[open]>summary .chev{transform:rotate(90deg);color:var(--pri)}details.colx{background:var(--card)}details.colx>summary{font-weight:600}details.colw>summary{font-size:14px;color:var(--pri)}
 .rl{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-top:1px solid var(--line);font-size:13.5px}
@@ -929,7 +932,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-27';
+const APP_VER='2026.10.31-28';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1190,11 +1193,11 @@ document.addEventListener('focusin',e=>{if(e.target.id!=='gN')return;const a=ls.
 
 /* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
 const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
-async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[]),arqueos:ls.get('epn_arqueos',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
   const fn='respaldo-calculos-apbb-'+today()+'.json';
   try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
-async function restaurar(file){try{const o=JSON.parse(await file.text());if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
+async function restaurar(file){try{const o=JSON.parse(await file.text());if(OWNER&&Array.isArray(o.arqueos)&&o.arqueos.length){const m={};(ls.get('epn_arqueos',[])||[]).forEach(x=>m[x.id]=x);o.arqueos.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set('epn_arqueos',Object.values(m))}if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
   const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
   ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(OWNER&&o.costos&&!(COSTOS&&COSTOS.personal.length)){COSTOS=o.costos;ls.set('epn_costos',COSTOS)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}if(o.condiciones){COND={...o.condiciones,...COND};ls.set('epn_cond_cache',COND)}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
 
@@ -1573,10 +1576,11 @@ function pieBloque(R,ing,gas,ut){const it=pieDatos(R,ut);if(!it.length)return'';
 /* ---------- Pantalla ---------- */
 function renderVia(){const box=$('#viaBox');if(!box)return;
   if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
+  if(OWNER&&VIA_SEC==='arq')return renderArq();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
   if(VIA_EDIT)return renderViaForm();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
-  box.innerHTML=`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
+  box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:${OWNER?10:0}px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
    ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
     ${R.prov?'<p class="sm" style="margin:6px 0 0">Mes en curso: los costos fijos se reparten entre los viajes programados del mes (miércoles, jueves, sábado y domingo). El resultado queda definitivo al cerrar el mes.</p>':''}
     ${pieBloque(allR,t.ing,t.gas,t.ut)}
@@ -1754,6 +1758,94 @@ function viaPdf(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay via
   notas.forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(l=>{if(y>740){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)','')}d.text(40,y+8,l,{size:7.8,color:GRY});y+=10}));
   pdfFooters(d,'Documento interno · Análisis de rentabilidad de viajes regulares · Empresa Portuaria Nacional · APBB');
   abrirVisor(d,'Viajes-regulares-'+VIA_MES+'.pdf','Viajes regulares · '+mesTxt(VIA_MES))}
+
+/* ===== Arqueo de caja (ida Bluefields → Corn Island, miércoles y sábado) =====
+   Constancia del dinero que entrega el encargado de la venta: ingreso reportado − fondo de cambio = total a entregar;
+   total recibido = conteo por denominación (córdobas + dólares × TC + otros). Independiente del registro de viajes. */
+const DEN_NIO_B=[1000,500,200,100,50,20,10],DEN_NIO_M=[10,5,1,0.5,0.25,0.1],DEN_USD=[100,50,20,10,5,2,1];
+let VIA_SEC='via',ARQ_EDIT=null;
+const arqLista=()=>ls.get('epn_arqueos',[])||[];
+function arqNuevo(){const d=new Date();let f=today();// propone el último miércoles o sábado
+  for(let i=0;i<7;i++){const x=new Date(d);x.setDate(d.getDate()-i);if([3,6].includes(x.getDay())){f=kd(x);break}}
+  return{id:'q'+Date.now().toString(36),f,hora:new Date().toTimeString().slice(0,5),enc:ls.get('epn_arq_enc',''),rec:ls.get('epn_arq_rec',''),ing:'',cam:ls.get('epn_arq_cam',''),tc:ls.get('epn_arq_tc',36),nio:{},mon:{},usd:{},otros:'',obs:'',just:'',nuevo:true}}
+function arqCalc(a){const s=(o,L)=>L.reduce((t,d)=>t+(+((o||{})[d])||0)*d,0);const nioB=s(a.nio,DEN_NIO_B),nioM=s(a.mon,DEN_NIO_M),usd=s(a.usd,DEN_USD),tc=+a.tc||36;
+  const usdC=usd*tc,otros=+a.otros||0,rec=nioB+nioM+usdC+otros,esp=(+a.ing||0)-(+a.cam||0),dif=Math.round((rec-esp)*100)/100;
+  return{nioB,nioM,nio:nioB+nioM,usd,tc,usdC,otros,rec,esp,dif,est:Math.abs(dif)<0.005?['ok','Cuadrado']:dif<0?['bad','Faltante']:['warnc','Sobrante']}}
+const r2=x=>Math.round(x*100)/100;
+function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
+  const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort((a,b)=>a.f.localeCompare(b.f));const cs=l.map(a=>({a,c:arqCalc(a)}));
+  const tot=k=>cs.reduce((s,x)=>s+x.c[k],0);const falt=cs.filter(x=>x.c.dif<0).reduce((s,x)=>s+x.c.dif,0),sobr=cs.filter(x=>x.c.dif>0).reduce((s,x)=>s+x.c.dif,0);
+  box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:10px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
+   ${cs.length?`<div class="rent-k" style="margin-top:10px"><div><span>Recibido (${cs.length} arqueo${cs.length===1?'':'s'})</span><b>${money(tot('rec'),'NIO')}</b><small>córdobas ${money(tot('nio'),'NIO')} · dólares US$ ${fmt(tot('usd'))}</small></div><div class="${falt<0?'bad':'ok'}"><span>Faltantes</span><b>${money(-falt,'NIO')}</b></div><div class="${sobr>0?'warnc':'ok'}"><span>Sobrantes</span><b>${money(sobr,'NIO')}</b></div></div>
+    <button class="btn2" data-qxls style="width:100%;margin-top:10px">Excel de arqueos del mes</button>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay arqueos en este mes.</p>'}
+   <button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>
+   ${cs.length?`<h3 class="sub">Arqueos de ${mesTxt(VIA_MES).toLowerCase()}</h3>${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>${esc(a.enc||'Sin encargado')} · ingreso ${money(+a.ing||0,'NIO')}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small><span class="chip ${c.est[0]}">${c.est[1]}${c.dif?' '+money(Math.abs(c.dif),'NIO'):''}</span></small></div></button>`).join('')}`:''}`}
+const segVia=()=>OWNER?`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button><button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo de caja</button></div>`:'';
+function denFila(grp,d,val,pre){const n=+val||0;return `<div class="den"><span>${pre} ${d<1?d.toFixed(2):fmt(d,0)}</span><input type="number" min="0" step="1" inputmode="numeric" data-qd="${grp}" data-den="${d}" value="${val||''}" placeholder="0"><b data-qm="${grp}-${d}">${pre} ${fmt(n*d)}</b></div>`}
+function arqResHTML(a,c){return `<div class="arq-r"><div><span>Ingreso reportado</span><b>${money(+a.ing||0,'NIO')}</b></div><div><span>(−) Fondo de cambio que se deja</span><b>${money(+a.cam||0,'NIO')}</b></div><div class="t"><span>Total a entregar</span><b>${money(c.esp,'NIO')}</b></div>
+   <div><span>Efectivo en córdobas</span><b>${money(c.nio,'NIO')}</b></div><div><span>Efectivo en dólares (US$ ${fmt(c.usd)} × ${fq(c.tc)})</span><b>${money(c.usdC,'NIO')}</b></div>${c.otros?`<div><span>Otros (transferencias)</span><b>${money(c.otros,'NIO')}</b></div>`:''}<div class="t"><span>Total recibido</span><b>${money(c.rec,'NIO')}</b></div>
+   <div class="d ${c.est[0]}"><span>${c.est[1]}</span><b>${c.dif?money(Math.abs(c.dif),'NIO'):'C$ 0.00'}</b></div></div>`}
+function renderArqForm(){const a=ARQ_EDIT,c=arqCalc(a),box=$('#viaBox');
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${a.nuevo?'Nuevo arqueo de caja':'Arqueo de caja'}</b><button class="btn2" data-qcancel style="padding:8px 14px">Cancelar</button></div>
+   <p class="sm" style="margin:4px 0 0">Venta del viaje de ida Bluefields → Corn Island (miércoles y sábado).</p>
+   <div class="grid" style="margin-top:8px"><div><label>Fecha</label><input type="date" data-qf="f" value="${a.f}"></div><div><label>Hora</label><input type="time" data-qf="hora" value="${a.hora||''}"></div>
+    <div><label>Entrega (encargado de la venta)</label><input data-qf="enc" value="${esc(a.enc)}" placeholder="Nombre"></div><div><label>Recibe</label><input data-qf="rec" value="${esc(a.rec)}" placeholder="Nombre"></div>
+    <div><label>Ingreso reportado (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="ing" value="${a.ing}" placeholder="0.00"></div><div><label>Fondo de cambio que se deja (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="cam" value="${a.cam}" placeholder="0.00"></div></div>
+   <div class="via-bol" style="margin-top:8px"><span>Total a entregar</span><b id="qEsp">${money(c.esp,'NIO')}</b></div>
+   <h3 class="sub">Córdobas · billetes</h3>${DEN_NIO_B.map(d=>denFila('nio',d,(a.nio||{})[d],'C$')).join('')}
+   <details class="rg" data-ok="qmon"${ACC_OPEN.has('qmon')?' open':''} style="margin-top:6px"><summary><span>Córdobas · monedas</span><b id="qMon">${money(c.nioM,'NIO')}</b></summary><div style="padding:0 10px 8px">${DEN_NIO_M.map(d=>denFila('mon',d,(a.mon||{})[d],'C$')).join('')}</div></details>
+   <div class="via-bol"><span>Total córdobas</span><b id="qNio">${money(c.nio,'NIO')}</b></div>
+   <h3 class="sub">Dólares</h3>${DEN_USD.map(d=>denFila('usd',d,(a.usd||{})[d],'US$')).join('')}
+   <div class="grid" style="margin-top:6px"><div><label>Tasa de cambio (C$ por US$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="tc" value="${a.tc}"></div></div>
+   <div class="via-bol" style="margin-top:6px"><span>Total US$ <b id="qUsd" style="font-size:inherit">${fmt(c.usd)}</b> en córdobas</span><b id="qUsdC">${money(c.usdC,'NIO')}</b></div>
+   <div><label style="margin-top:8px">Otros (transferencias o depósitos, C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="otros" value="${a.otros}" placeholder="0.00"></div>
+   <h3 class="sub">Cuadre</h3><div id="qRes">${arqResHTML(a,c)}</div>
+   <div id="qJust"${c.dif?'':' hidden'}><label style="margin-top:8px">Justificación de la diferencia</label><textarea data-qf="just" rows="2" placeholder="Explique el faltante o sobrante">${esc(a.just||'')}</textarea></div>
+   <div><label style="margin-top:8px">Observaciones</label><textarea data-qf="obs" rows="2">${esc(a.obs||'')}</textarea></div>
+   ${a.mods&&a.mods.length?`<p class="sm">Modificado: ${a.mods.map(m=>new Date(m).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})).join(', ')}</p>`:''}
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-qsave style="flex:2;padding:13px">Guardar y ver acta</button>${a.nuevo?'':'<button class="btn2" data-qpdf style="flex:1">Acta PDF</button><button class="btnd" data-qdel style="flex:1">Eliminar</button>'}</div>`}
+function arqRefrescar(){const a=ARQ_EDIT,c=arqCalc(a),q=id=>document.getElementById(id);
+  const set=(id,t)=>{if(q(id))q(id).textContent=t};set('qEsp',money(c.esp,'NIO'));set('qMon',money(c.nioM,'NIO'));set('qNio',money(c.nio,'NIO'));set('qUsd',fmt(c.usd));set('qUsdC',money(c.usdC,'NIO'));
+  if(q('qRes'))q('qRes').innerHTML=arqResHTML(a,c);if(q('qJust'))q('qJust').hidden=!c.dif}
+document.addEventListener('input',e=>{const el=e.target;if(!ARQ_EDIT||!el.closest||!el.closest('#viaBox'))return;const a=ARQ_EDIT;
+  if(el.dataset.qd){const g=el.dataset.qd,d=el.dataset.den;(a[g]=a[g]||{})[d]=el.value;const m=document.querySelector(`[data-qm="${g}-${d}"]`);if(m)m.textContent=(g==='usd'?'US$ ':'C$ ')+fmt((+el.value||0)*(+d));return arqRefrescar()}
+  if(el.dataset.qf){a[el.dataset.qf]=el.value;if(['ing','cam','tc','otros'].includes(el.dataset.qf))arqRefrescar()}});
+function arqGuardar(){const a=ARQ_EDIT,c=arqCalc(a);if(!(+a.ing>0)){toast('Anote el ingreso reportado');return}
+  if(c.dif&&!(a.just||'').trim()){toast('Escriba la justificación del '+c.est[1].toLowerCase());const j=document.querySelector('[data-qf=just]');if(j)j.focus();return}
+  const x={...a};const nuevo=x.nuevo;delete x.nuevo;x.u=new Date().toISOString();if(!nuevo)x.mods=(x.mods||[]).concat([x.u]);
+  ls.set('epn_arqueos',arqLista().filter(y=>y.id!==x.id).concat([x]));ls.set('epn_arq_enc',x.enc||'');ls.set('epn_arq_rec',x.rec||'');ls.set('epn_arq_cam',x.cam||'');ls.set('epn_arq_tc',+x.tc||36);
+  VIA_MES=x.f.slice(0,7);ARQ_EDIT=null;toast('Arqueo guardado');renderVia();arqPdf(x)}
+function arqPdf(a){const c=arqCalc(a);const d=PDFW();d.page();let y=pdfHeader(d,'ACTA DE ARQUEO DE CAJA','Venta viaje Bluefields – Corn Island · '+viaFecha(a.f)+(a.hora?' · '+a.hora:''));
+  const dat=[['Entrega',a.enc||'—'],['Recibe',a.rec||'—'],['Tasa de cambio','C$ '+fq(c.tc)+' por US$']];dat.forEach(([k,v],i)=>{const x=40+i*178;d.text(x,y,k+':',{size:8.5,color:GRY});d.text(x+d.width(k+': ',8.5)+2,y,d.wrap(v,8.5,true,170-d.width(k+': ',8.5))[0],{size:8.5,bold:true,color:'#1a1a1a'})});y+=16;
+  const tabla=(x,w,tit,L,o,pre,conv)=>{let yy=y;d.rect(x,yy,w,16,NAVY);d.text(x+6,yy+11,tit,{size:8.5,bold:true,color:'#ffffff'});yy+=16;d.rect(x,yy,w,13,'#e8f0f9');[['Denominación',x+6,''],['Cantidad',x+w*0.55,'r'],['Monto',x+w-6,'r']].forEach(([h,xx,al])=>d.text(xx,yy+9.5,h,{size:7.5,bold:true,color:NAVY,align:al||undefined}));yy+=13;
+    let tot=0;L.forEach(([g,dd])=>{const n=+((a[g]||{})[dd])||0;tot+=n*dd;d.text(x+6,yy+9.5,pre+' '+(dd<1?dd.toFixed(2):fmt(dd,0))+(g==='mon'?' (moneda)':''),{size:8,color:'#1a1a1a'});d.text(x+w*0.55,yy+9.5,n?String(n):'—',{size:8,color:'#1a1a1a',align:'r'});d.text(x+w-6,yy+9.5,n?pre+' '+fmt(n*dd):'—',{size:8,color:'#1a1a1a',align:'r'});d.line(x,yy+13,x+w,yy+13,'#e3e8ef',.5);yy+=13});
+    d.text(x+6,yy+11,'Total',{size:8.5,bold:true,color:'#1a1a1a'});d.text(x+w-6,yy+11,pre+' '+fmt(tot),{size:8.5,bold:true,color:'#1a1a1a',align:'r'});yy+=15;if(conv){d.text(x+w-6,yy+9,'× '+fq(c.tc)+' = '+money(tot*c.tc,'NIO'),{size:8.5,bold:true,color:NAVY,align:'r'});yy+=14}return yy};
+  const y1=tabla(40,258,'Córdobas',[...DEN_NIO_B.map(x=>['nio',x]),...DEN_NIO_M.map(x=>['mon',x])],a,'C$',false),y2=tabla(314,258,'Dólares',DEN_USD.map(x=>['usd',x]),a,'US$',true);y=Math.max(y1,y2)+12;
+  const R=[['Ingreso reportado',+a.ing||0],['(-) Fondo de cambio que se deja',+a.cam||0],['Total a entregar',c.esp,1],['Efectivo en córdobas',c.nio],['Efectivo en dólares (US$ '+fmt(c.usd)+' × '+fq(c.tc)+')',c.usdC],...(c.otros?[['Otros (transferencias / depósitos)',c.otros]]:[]),['Total recibido',c.rec,1]];
+  d.rect(314,y-2,258,R.length*15+30,'#f6f8fb');R.forEach(([k,v,b])=>{d.text(322,y+10,k,{size:8.5,bold:!!b,color:b?'#1a1a1a':GRY});d.text(566,y+10,money(v,'NIO'),{size:8.5,bold:!!b,color:'#1a1a1a',align:'r'});if(b)d.line(322,y-1,566,y-1,'#c9d3df',.6);y+=15});
+  const col=c.est[0]==='ok'?'#e6f4ea':c.est[0]==='bad'?'#fdecea':'#fff4d1';d.rect(314,y+2,258,22,col);d.text(322,y+16.5,c.est[1].toUpperCase(),{size:10,bold:true,color:'#1a1a1a'});d.text(566,y+16.5,money(Math.abs(c.dif),'NIO'),{size:11,bold:true,color:c.est[0]==='bad'?'#b42318':'#1a1a1a',align:'r'});
+  let yl=y-R.length*15;[['Justificación',a.just],['Observaciones',a.obs]].forEach(([k,v])=>{if(!v)return;d.text(40,yl+8,k+':',{size:8.5,bold:true,color:NAVY});yl+=12;d.wrap(v,8.5,false,260).forEach(s=>{d.text(40,yl+8,s,{size:8.5,color:'#1a1a1a'});yl+=11});yl+=6});
+  y+=40;if(a.mods&&a.mods.length){d.text(40,y,'Acta modificada el '+a.mods.map(m=>new Date(m).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})).join(', '),{size:7.5,color:GRY});y+=12}
+  y=Math.max(y+50,640);if(y>720){d.page();y=640}
+  [['Entregó',a.enc],['Recibió',a.rec],['Vo.Bo.','']].forEach(([t,n],i)=>{const x=40+i*184;d.line(x,y,x+164,y,'#333333',.7);d.text(x+82,y+11,t,{size:8,color:GRY,align:'c'});if(n)d.text(x+82,y+22,n,{size:8,bold:true,color:'#1a1a1a',align:'c'})});
+  pdfFooters(d,'Acta de arqueo de caja · Documento interno · Empresa Portuaria Nacional · APBB');abrirVisor(d,'Arqueo-'+a.f+'.pdf','Arqueo de caja · '+viaFecha(a.f))}
+function arqExcel(){const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort((a,b)=>a.f.localeCompare(b.f));if(!l.length){toast('No hay arqueos en este mes');return}
+  const H=s=>({v:s,s:1}),B=n=>({v:n,s:3});
+  const head=['Fecha','Día','Hora','Entrega','Recibe','Ingreso reportado','Fondo de cambio','Total a entregar',...DEN_NIO_B.map(d=>'C$ '+d),...DEN_NIO_M.map(d=>'C$ '+d.toFixed(2)),'Total córdobas',...DEN_USD.map(d=>'US$ '+d),'Total US$','TC','Dólares en C$','Otros','Total recibido','Diferencia','Estado','Justificación','Observaciones'];
+  const rows=l.map(a=>{const c=arqCalc(a);return [a.f,DIAS[new Date(a.f+'T12:00').getDay()],a.hora||'',a.enc||'',a.rec||'',+a.ing||0,+a.cam||0,c.esp,...DEN_NIO_B.map(d=>+((a.nio||{})[d])||0),...DEN_NIO_M.map(d=>+((a.mon||{})[d])||0),c.nio,...DEN_USD.map(d=>+((a.usd||{})[d])||0),c.usd,c.tc,c.usdC,c.otros,B(c.rec),B(c.dif),c.est[1],a.just||'',a.obs||'']});
+  const S=f=>l.reduce((s,a)=>s+f(arqCalc(a),a),0);
+  rows.push(['Total','','','','',B(S((c,a)=>+a.ing||0)),B(S((c,a)=>+a.cam||0)),B(S(c=>c.esp)),...DEN_NIO_B.map(()=>''),...DEN_NIO_M.map(()=>''),B(S(c=>c.nio)),...DEN_USD.map(()=>''),B(S(c=>c.usd)),'',B(S(c=>c.usdC)),B(S(c=>c.otros)),B(S(c=>c.rec)),B(S(c=>c.dif)),'','','']);
+  const blob=xlsx([{n:'Arqueos',rows:[[{v:'Arqueos de caja · '+mesTxt(VIA_MES),s:6}],[],head.map(H),...rows],w:head.map((h,i)=>i<5?(i===3||i===4?22:11):i>=head.length-2?30:11)}]);
+  compartirBlob(blob,'Arqueos-'+VIA_MES+'.xlsx','Arqueos de caja · '+mesTxt(VIA_MES))}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vsec],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!OWNER)return;
+  if(b.dataset.vsec){VIA_SEC=b.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;return renderVia()}
+  if(b.hasAttribute('data-qnew')){ARQ_EDIT=arqNuevo();renderVia();window.scrollTo(0,0);return}
+  if(b.dataset.qedit){const x=arqLista().find(y=>y.id===b.dataset.qedit);if(x){ARQ_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-qcancel')){ARQ_EDIT=null;return renderVia()}
+  if(b.hasAttribute('data-qsave'))return arqGuardar();
+  if(b.hasAttribute('data-qpdf'))return arqPdf(ARQ_EDIT);
+  if(b.hasAttribute('data-qxls'))return arqExcel();
+  if(b.hasAttribute('data-qdel')){if(!confirm('¿Eliminar este arqueo?'))return;ls.set('epn_arqueos',arqLista().filter(y=>y.id!==ARQ_EDIT.id));ARQ_EDIT=null;renderVia()}});
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
