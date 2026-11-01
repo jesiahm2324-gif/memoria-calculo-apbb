@@ -932,7 +932,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-29';
+const APP_VER='2026.10.31-30';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1983,7 +1983,7 @@ function renderCostAdm(){const b=$('#costBox');const dd=$('details.acc[data-acc=
   <h3 class="sub">Personal (${COSTOS.personal.length})</h3>
   <p class="sm" style="margin-top:0">En su Excel seleccione las columnas <b>Nombre, Cargo, Salario básico y Antigüedad</b>, cópielas y péguelas aquí. Si un nombre ya existe, se actualiza.</p>
   <textarea id="cpPaste" rows="3" placeholder="Pegue aquí las filas copiadas del Excel"></textarea><button class="btn2" id="cpImp" style="width:100%;margin-top:6px">Importar personal</button>
-  ${COSTOS.personal.length?`<details style="margin-top:8px"><summary class="sm">Ver lista de personal</summary>${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>`<div class="hi" style="padding:8px 10px"><div><b style="font-size:14px">${esc(p.n)}</b><div class="sm">${esc(p.cargo)} · C$ ${fmt(salTot(p))}</div></div><button class="btnd" data-pdel="${p.id}" style="padding:6px 10px">Quitar</button></div>`).join('')}</details>`:''}
+  ${COSTOS.personal.length?`<details style="margin-top:8px"><summary class="sm">Ver lista de personal y cambiar cargos</summary><datalist id="cargosDL">${[...new Set(COSTOS.personal.map(x=>x.cargo).filter(Boolean))].sort().map(c=>`<option value="${esc(c)}">`).join('')}</datalist><p class="sm" style="margin:6px 0">Toque el cargo para cambiarlo (por ejemplo, a <b>Sobrecargo</b>). El cambio se guarda y se publica solo.</p>${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>`<div class="hi" style="padding:8px 10px"><div style="flex:1;min-width:0"><b style="font-size:14px">${esc(p.n)}</b><div class="row" style="flex-wrap:nowrap;margin-top:4px;align-items:center"><input data-pcargo="${p.id}" list="cargosDL" value="${esc(p.cargo)}" aria-label="Cargo" style="flex:1;min-width:0;padding:6px 8px;font-size:14px"><span class="sm" style="white-space:nowrap">C$ ${fmt(salTot(p))}</span></div></div><button class="btnd" data-pdel="${p.id}" style="padding:6px 10px">Quitar</button></div>`).join('')}</details>`:''}
   <h3 class="sub">Embarcaciones</h3>
   ${COSTOS.emb.map((e,i)=>`<details class="embd"><summary><b>${esc(e.n)}</b> <span class="sm">· ${e.tipo==='mot'?'Motonave':'Remolcador'} · ${(e.crew||[]).length} tripulante(s)</span></summary>
    <div class="grid" style="margin-top:8px"><div style="grid-column:1/-1"><label>Nombre</label><input data-ce="${i}" data-f="n" value="${esc(e.n)}"></div>
@@ -2009,6 +2009,7 @@ document.addEventListener('change',e=>{const el=e.target;if(!el.closest('#costBo
   else if(el.dataset.erol!=null){const x=COSTOS.emb[+el.dataset.erol];const c=(x.crew||[]).find(c=>c.pid===el.dataset.pid);if(c)c.rol=el.value}
   else return;
   guardarCostos();const open=[...$$('#costBox details')].map(d=>d.open);renderCostAdm();$$('#costBox details').forEach((d,i)=>{if(open[i])d.open=true});renderRent();if(typeof subAju==='function')subAju()});
+document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.pcargo||!OWNER)return;const p=COSTOS.personal.find(x=>x.id===el.dataset.pcargo);if(!p)return;const v=el.value.trim();if(!v){el.value=p.cargo;return}p.cargo=v;guardarCostos();toast('Cargo actualizado: '+p.n.split(' ')[0]+' → '+v)});
 document.addEventListener('click',e=>{const b=e.target.closest('#cpImp,#cpPub,[data-pdel]');if(!b||!b.closest('#costBox'))return;
   if(b.id==='cpImp'){const n=importarPersonal($('#cpPaste').value);toast(n?n+' persona(s) importada(s)':'No se reconocieron filas. Copie desde Excel las columnas Nombre, Cargo, Salario y Antigüedad.');renderCostAdm();renderRent();if(typeof subAju==='function')subAju()}
   else if(b.id==='cpPub')publicarCostos();
