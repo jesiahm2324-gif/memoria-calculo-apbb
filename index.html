@@ -932,7 +932,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-30';
+const APP_VER='2026.10.31-31';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1769,7 +1769,7 @@ function arqNuevo(){const d=new Date();let f=today();// propone el último miér
   for(let i=0;i<7;i++){const x=new Date(d);x.setDate(d.getDate()-i);if([3,6].includes(x.getDay())){f=kd(x);break}}
   return{id:'q'+Date.now().toString(36),f,hora:new Date().toTimeString().slice(0,5),enc:ls.get('epn_arq_enc',''),rec:ls.get('epn_arq_rec',''),cam:ls.get('epn_arq_cam',''),tc:ls.get('epn_arq_tc',36),nio:{},mon:{},usd:{},otros:'',obs:'',just:'',nuevo:true}}
 function arqCalc(a){const s=(o,L)=>L.reduce((t,d)=>t+(+((o||{})[d])||0)*d,0);const nioB=s(a.nio,DEN_NIO_B),nioM=s(a.mon,DEN_NIO_M),usd=s(a.usd,DEN_USD),tc=+a.tc||36;
-  const usdC=usd*tc,otros=+a.otros||0,gen=nioB+nioM+usdC+otros,cam=+a.cam||0,rec=gen-cam;
+  const usdC=usd*tc,otros=0,gen=nioB+nioM+usdC+otros,cam=+a.cam||0,rec=gen-cam;
   return{nioB,nioM,nio:nioB+nioM,usd,tc,usdC,otros,gen,cam,rec}}
 const r2=x=>Math.round(x*100)/100;
 function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
@@ -1793,14 +1793,14 @@ function renderArqForm(){const a=ARQ_EDIT,c=arqCalc(a),box=$('#viaBox');
    <div class="grid" style="margin-top:8px"><div><label>Fecha</label><input type="date" data-qf="f" value="${a.f}"></div><div><label>Hora</label><input type="time" data-qf="hora" value="${a.hora||''}"></div>
     <div style="grid-column:1/-1"><label>Entrega (sobrecargo)</label><select data-qf="enc"><option value="">— Seleccione —</option>${[...new Set(sobrecargos().concat(a.enc?[a.enc]:[]))].map(n=>`<option ${n===a.enc?'selected':''}>${esc(n)}</option>`).join('')}</select>${sobrecargos().length?'':'<p class="sm" style="margin:4px 0 0">No hay personal con cargo «Sobrecargo» en la lista de personal (Ajustes → Estructura de costos).</p>'}</div>
     <div style="grid-column:1/-1"><label>Recibe</label><div class="row" style="flex-wrap:nowrap"><select data-qf="rec" style="flex:1"><option value="">— Seleccione —</option>${[...new Set(receptores().concat(a.rec?[a.rec]:[]))].map(n=>`<option ${n===a.rec?'selected':''}>${esc(n)}</option>`).join('')}</select><button type="button" class="btn2" data-qrecadd style="padding:8px 12px">+ Nombre</button></div></div>
-    <div style="grid-column:1/-1"><label>Dinero para cambio que se le deja (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="cam" value="${a.cam}" placeholder="0.00"></div></div>
+</div>
    <h3 class="sub">Córdobas · billetes</h3>${DEN_NIO_B.map(d=>denFila('nio',d,(a.nio||{})[d],'C$')).join('')}
    <details class="rg" data-ok="qmon"${ACC_OPEN.has('qmon')?' open':''} style="margin-top:6px"><summary><span>Córdobas · monedas</span><b id="qMon">${money(c.nioM,'NIO')}</b></summary><div style="padding:0 10px 8px">${DEN_NIO_M.map(d=>denFila('mon',d,(a.mon||{})[d],'C$')).join('')}</div></details>
    <div class="via-bol"><span>Total córdobas</span><b id="qNio">${money(c.nio,'NIO')}</b></div>
    <h3 class="sub">Dólares</h3>${DEN_USD.map(d=>denFila('usd',d,(a.usd||{})[d],'US$')).join('')}
    <div class="grid" style="margin-top:6px"><div><label>Tasa de cambio (C$ por US$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="tc" value="${a.tc}"></div></div>
    <div class="via-bol" style="margin-top:6px"><span>Total US$ <b id="qUsd" style="font-size:inherit">${fmt(c.usd)}</b> en córdobas</span><b id="qUsdC">${money(c.usdC,'NIO')}</b></div>
-   <div><label style="margin-top:8px">Otros (transferencias o depósitos, C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="otros" value="${a.otros}" placeholder="0.00"></div>
+   <div><label style="margin-top:8px">Dinero para cambio que se le deja (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-qf="cam" value="${a.cam}" placeholder="0.00"></div>
    <h3 class="sub">Cuadre</h3><div id="qRes">${arqResHTML(a,c)}</div>
    <div><label style="margin-top:8px">Observaciones</label><textarea data-qf="obs" rows="2">${esc(a.obs||'')}</textarea></div>
    ${a.mods&&a.mods.length?`<p class="sm">Modificado: ${a.mods.map(m=>new Date(m).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})).join(', ')}</p>`:''}
@@ -1832,10 +1832,10 @@ function arqPdf(a){const c=arqCalc(a);const d=PDFW();d.page();let y=pdfHeader(d,
   pdfFooters(d,'Acta de arqueo de caja · Documento interno · Empresa Portuaria Nacional · APBB');abrirVisor(d,'Arqueo-'+a.f+'.pdf','Arqueo de caja · '+viaFecha(a.f))}
 function arqExcel(){const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort((a,b)=>a.f.localeCompare(b.f));if(!l.length){toast('No hay arqueos en este mes');return}
   const H=s=>({v:s,s:1}),B=n=>({v:n,s:3});
-  const head=['Fecha','Día','Hora','Entrega','Recibe',...DEN_NIO_B.map(d=>'C$ '+d),...DEN_NIO_M.map(d=>'C$ '+d.toFixed(2)),'Total córdobas',...DEN_USD.map(d=>'US$ '+d),'Total US$','TC','Dólares en C$','Otros','Total general','Dinero para cambio','Dinero recibido','Observaciones'];
-  const rows=l.map(a=>{const c=arqCalc(a);return [a.f,DIAS[new Date(a.f+'T12:00').getDay()],a.hora||'',a.enc||'',a.rec||'',...DEN_NIO_B.map(d=>+((a.nio||{})[d])||0),...DEN_NIO_M.map(d=>+((a.mon||{})[d])||0),c.nio,...DEN_USD.map(d=>+((a.usd||{})[d])||0),c.usd,c.tc,c.usdC,c.otros,B(c.gen),c.cam,B(c.rec),a.obs||'']});
+  const head=['Fecha','Día','Hora','Entrega','Recibe',...DEN_NIO_B.map(d=>'C$ '+d),...DEN_NIO_M.map(d=>'Moneda C$ '+(d<1?d.toFixed(2):d)),'Total córdobas',...DEN_USD.map(d=>'US$ '+d),'Total US$','TC','Dólares en C$','Total general','Dinero para cambio','Dinero recibido','Observaciones'];
+  const rows=l.map(a=>{const c=arqCalc(a);return [a.f,DIAS[new Date(a.f+'T12:00').getDay()],a.hora||'',a.enc||'',a.rec||'',...DEN_NIO_B.map(d=>+((a.nio||{})[d])||0),...DEN_NIO_M.map(d=>+((a.mon||{})[d])||0),c.nio,...DEN_USD.map(d=>+((a.usd||{})[d])||0),c.usd,c.tc,c.usdC,B(c.gen),c.cam,B(c.rec),a.obs||'']});
   const S=f=>l.reduce((s,a)=>s+f(arqCalc(a),a),0);
-  rows.push(['Total','','','','',...DEN_NIO_B.map(()=>''),...DEN_NIO_M.map(()=>''),B(S(c=>c.nio)),...DEN_USD.map(()=>''),B(S(c=>c.usd)),'',B(S(c=>c.usdC)),B(S(c=>c.otros)),B(S(c=>c.gen)),B(S(c=>c.cam)),B(S(c=>c.rec)),'']);
+  rows.push(['Total','','','','',...DEN_NIO_B.map(()=>''),...DEN_NIO_M.map(()=>''),B(S(c=>c.nio)),...DEN_USD.map(()=>''),B(S(c=>c.usd)),'',B(S(c=>c.usdC)),B(S(c=>c.gen)),B(S(c=>c.cam)),B(S(c=>c.rec)),'']);
   const blob=xlsx([{n:'Arqueos',rows:[[{v:'Arqueos de caja · '+mesTxt(VIA_MES),s:6}],[],head.map(H),...rows],w:head.map((h,i)=>i<5?(i===3||i===4?26:11):i===head.length-1?30:12)}]);
   compartirBlob(blob,'Arqueos-'+VIA_MES+'.xlsx','Arqueos de caja · '+mesTxt(VIA_MES))}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-vsec],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!OWNER)return;
