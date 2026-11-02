@@ -159,7 +159,8 @@ body.solo-tar.oculto #velo{display:flex}
 .tema .pv i{height:18px;display:block}
 .tema .pv s{flex:1;display:flex;gap:4px;padding:6px;text-decoration:none}
 .tema .pv s u{flex:1;border-radius:4px;display:block}
-.notice.bad{background:#fdecea;border-color:#f3b3ad}.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.notice.bad{background:#fdecea;border-color:#f3b3ad}.pfc>h2[data-ftog]{cursor:pointer;margin-bottom:0;align-items:center}.pfc>h2 .ft{flex:1;min-width:0;display:flex;flex-direction:column}.pfc>h2 .ft .chip{align-self:flex-start;margin-top:2px}.fsum{display:block;font-size:12.5px;font-weight:500;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;text-transform:none}.pfc>h2 .chev{font-size:24px;color:var(--mut);transition:transform .2s;margin-left:6px}.pfc.open>h2 .chev{transform:rotate(90deg);color:var(--pri)}.pfc>.fb{display:none;margin-top:12px}.pfc.open>.fb{display:block;animation:entra .22s ease-out}#v-pf .card.pfc{padding-top:12px;padding-bottom:12px}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
 .seg button{background:transparent;color:var(--mut);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 /* Tipos de servicio */
@@ -213,7 +214,7 @@ input::-webkit-date-and-time-value{text-align:left}
 details.rg{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 details.rg>summary{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;font-weight:600;list-style:none}
 details.rg>summary::-webkit-details-marker{display:none}
-body:not(.con-viajes) nav button[data-v="via"]{display:none}
+body:not(.con-viajes) nav button[data-v="via"],body:not(.con-viajes) nav button[data-v="his"]{display:none}
 .via-dias{display:grid;grid-template-columns:1fr 1fr;gap:8px}.via-dias>div{border:1px solid var(--line);border-radius:12px;padding:8px 10px}.via-dias span{display:block;font-size:12px;color:var(--mut);font-weight:600}.via-dias b{display:block;font-size:15px}.via-dias small{display:block;font-size:11.5px;color:var(--mut)}.via-dias .ok{border-color:color-mix(in srgb,var(--ok,#1e8e3e) 45%,var(--line))}.via-dias .bad{border-color:color-mix(in srgb,#d93025 45%,var(--line))}
 .via-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}.via-it small{display:block;font-size:12px;color:var(--mut);margin-top:2px}.via-it b{font-size:15px;white-space:nowrap}.via-it>div:first-child{min-width:0}.via-it .neg{color:#c5221f}
 .pie{margin:12px 0 4px;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.pie-t{display:block;font-size:13.5px;margin-bottom:8px}.pie-w{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pie-w svg{flex:none}.pie-l{flex:1;min-width:170px;display:grid;gap:5px}.pie-l>div{display:grid;grid-template-columns:12px 1fr auto;column-gap:7px;align-items:center;font-size:13px}.pie-l i{width:12px;height:12px;border-radius:3px}.pie-l b{font-size:13px}.pie-l small{grid-column:2/4;color:var(--mut);font-size:11.5px;margin-top:-3px}
@@ -317,7 +318,7 @@ body.pv-on{overflow:hidden}
 <nav>
  <button data-v="pf" class="on"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h4M16 14v4"/></svg>Cálculo</button>
  <button data-v="tar"><svg viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Tarifas</button>
- <button data-v="his"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial</button>
+ <button data-v="his"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><circle cx="12" cy="15" r="2.5"/><path d="M10.5 17.2 10 20l2-1 2 1-.5-2.8"/></svg>Matrículas</button>
  <button data-v="via"><svg viewBox="0 0 24 24"><path d="M3 17h18l-2 4H5z"/><path d="M5 17V11h11l3 6M8 11V7h5v4M12 3v4"/></svg>Viajes</button>
  <button data-v="acc"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.7c1.6.9 2.7 2.7 3 5.3"/></svg><span id="navAcc">Mi acceso</span></button>
 </nav>
@@ -333,8 +334,8 @@ body.pv-on{overflow:hidden}
   <button class="tipo" data-tipo="chr" style="--cc:#f2a900"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><b>Viaje chárter</b><small>Remolcador · motonave</small></button>
  </div>
 
- <div class="card">
-  <h2><span class="n">1</span>Datos</h2>
+ <div class="card pfc open" data-fold="dat">
+  <h2 data-ftog><span class="n">1</span><span class="ft">Datos<small class="fsum" id="fs-dat"></small></span><span class="chev">›</span></h2><div class="fb">
   <div class="grid">
    <div style="grid-column:1/-1"><label for="cliSel" id="cliLbl">Agencia naviera / usuario</label><div class="row" style="flex-wrap:nowrap"><select id="cliSel" style="flex:1"></select><button class="btn2" data-cont="new" style="flex:none" aria-label="Nueva agencia o usuario">+ Nueva</button></div></div>
    <div><label>Referencia (opcional)</label><input data-k="ref" placeholder="Ej.: Escala MV…"></div>
@@ -366,27 +367,27 @@ body.pv-on{overflow:hidden}
    <div style="grid-column:1/-1"><label class="chk"><input type="checkbox" data-k="plana"> Incluye alquiler de plana (US$ 400 por día o fracción)</label></div>
    <div style="grid-column:1/-1" id="chrEmb"></div>
   </div>
- </div>
+ </div></div>
 
- <div class="card" data-t="chr">
-  <h2><span class="n">2</span>Itinerario del viaje</h2>
+ <div class="card pfc" data-t="chr" data-fold="iti">
+  <h2 data-ftog><span class="n">2</span><span class="ft">Itinerario y tiempos<small class="fsum" id="fs-iti"></small></span><span class="chev">›</span></h2><div class="fb">
   <p class="sm" style="margin-top:0">Se cobran las horas de navegación (de la salida hasta el atraque) y las horas de carga y descarga en cada puerto. La espera entre tramos (por ejemplo, la noche en puerto) no se cobra.</p>
   <div id="itin"></div>
   <button class="btn2" id="btnTramo" style="width:100%;margin-top:4px">+ Agregar tramo</button>
   <div id="tiempos" style="margin-top:12px"></div>
- </div>
+ </div></div>
 
- <div class="card">
-  <h2><span class="n" id="nServ">2</span><span id="tServ">Servicios</span></h2>
+ <div class="card pfc" data-fold="srv">
+  <h2 data-ftog><span class="n" id="nServ">2</span><span class="ft"><span id="tServ">Servicios</span><small class="fsum" id="fs-srv"></small></span><span class="chev">›</span></h2><div class="fb">
   <div id="lines"></div>
   <div data-t="buq car" class="row" style="margin-top:6px">
    <button class="btn" data-pick style="flex:1">+ Agregar servicio</button>
    <button class="btn2" data-tpl="buq" data-t="buq">Atraque estándar</button>
   </div>
- </div>
+ </div></div>
 
- <div class="card">
-  <h2><span class="n" id="nTot">3</span>Totales</h2>
+ <div class="card pfc" data-fold="tot">
+  <h2 data-ftog><span class="n" id="nTot">3</span><span class="ft">Totales y observaciones<small class="fsum" id="fs-tot"></small></span><span class="chev">›</span></h2><div class="fb">
   <div class="grid">
    <div><label>Tipo de cambio oficial (C$ por US$)</label><input type="number" step="any" min="0" inputmode="decimal" data-k="tc"></div>
    <div><label>Moneda del total</label><select data-k="mon"><option value="USD">Dólares (US$)</option><option value="NIO">Córdobas (C$)</option></select></div>
@@ -396,8 +397,9 @@ body.pv-on{overflow:hidden}
   <table class="tot" id="tot"></table>
   <div style="margin-top:10px"><label>Observaciones</label><textarea data-k="obs"></textarea></div>
   <div style="margin-top:10px"><label>Elaborado por</label><input data-k="elab"></div>
- </div>
- <div class="card" data-t="chr" id="cRent" hidden><h2><span class="n">5</span>Rentabilidad <span class="chip warnc" style="margin-left:auto">Uso interno</span></h2><div id="rentBox"></div></div>
+ </div></div>
+ <div class="card pfc" data-t="chr" id="cRent" data-fold="rent" hidden><h2 data-ftog><span class="n">5</span><span class="ft">Rentabilidad <span class="chip warnc">Uso interno</span><small class="fsum" id="fs-rent"></small></span><span class="chev">›</span></h2><div class="fb"><div id="rentBox"></div></div></div>
+ <div class="card pfc" data-fold="his"><h2 data-ftog><span class="n" style="background:var(--pri)">≡</span><span class="ft">Proformas elaboradas<small class="fsum" id="fs-his"></small></span><span class="chev">›</span></h2><div class="fb"><input id="hq" type="search" placeholder="Buscar por cliente o referencia…" style="margin-bottom:8px"><div id="hlist"></div></div></div>
 </section>
 
 <!-- TARIFAS -->
@@ -418,10 +420,9 @@ body.pv-on{overflow:hidden}
 
 <!-- HISTORIAL -->
 <section class="view" id="v-his">
- <div class="card"><h2>Cálculos guardados en este teléfono</h2><div id="hlist"></div></div>
- <div class="card"><h2>Respaldo</h2><p class="sm" style="margin-top:0">Sus cálculos viven solo en este teléfono. Descargue un respaldo de vez en cuando; con ese archivo los recupera en otro teléfono.</p><p class="sm" id="ultBk"></p>
-  <div class="row"><button class="btn" data-bk>Descargar respaldo</button><label class="btn2" style="display:inline-block;margin:0;font-size:14px;color:var(--pri);cursor:pointer;padding:10px 14px;border-radius:10px">Restaurar desde archivo<input type="file" id="rFile" accept=".json,application/json" hidden></label></div></div>
+ <div class="card"><h2>Matrículas y permisos</h2><div id="matBox"></div></div>
 </section>
+
 
 <!-- AJUSTES -->
 <section class="view" id="v-aju">
@@ -467,6 +468,8 @@ body.pv-on{overflow:hidden}
   <button class="btn2" id="btnFer" style="width:100%;margin-top:8px">+ Agregar feriado</button>
  </div>
  <div class="card"><h2>Estructura de costos (chárter)</h2><div id="costBox"></div></div>
+ <div class="card"><h2>Respaldo</h2><p class="sm" style="margin-top:0">Proformas, viajes, arqueos, costos y matrículas viven solo en este teléfono. Descargue un respaldo de vez en cuando; con ese archivo los recupera en otro teléfono.</p><p class="sm" id="ultBk"></p>
+  <div class="row"><button class="btn" data-bk>Descargar respaldo</button><label class="btn2" style="display:inline-block;margin:0;font-size:14px;color:var(--pri);cursor:pointer;padding:10px 14px;border-radius:10px">Restaurar desde archivo<input type="file" id="rFile" accept=".json,application/json" hidden></label></div></div>
  <div class="card"><h2>Acerca de</h2><p class="sm" id="verTxt" style="margin:0 0 10px"></p><button class="btn2" id="btnUpd2" hidden>Buscar actualización</button></div>
 </section>
 </main>
@@ -806,7 +809,16 @@ function totals(){const tc=+P.tc||0,mon=P.mon;let u=0,n=0,noIva=0;const conv=(a,
   P.lines.forEach(l=>{const t=TT[l.tid],a=calc(l).a;t.cur==='USD'?u+=a:n+=a;if(t.noIva)noIva+=conv(a,t.cur)});
   const iv=P.tipo==='chr'?0:(P.iva?0.15:0);const sub=mon==='USD'?u+(tc?n/tc:0):n+u*tc;const base=Math.max(0,sub-noIva);
   return{u,n,tc,iv,mon,sub,noIva,base,iva:base*iv,total:sub+base*iv}}
-function updTot(){const t=totals();const pt=$('#pillTot');if(pt){const nv=money(t.total,t.mon);if(pt.textContent!==nv){pt.textContent=nv;const pl=$('#pill');pl.classList.remove('bump');void pl.offsetWidth;pl.classList.add('bump')}}const other=t.mon==='USD'?t.total*t.tc:(t.tc?t.total/t.tc:0);
+/* Bloques plegables de Cálculo: uno abierto a la vez, con resumen en una línea */
+function pfOpen(k){$$('#v-pf .pfc').forEach(c=>c.classList.toggle('open',c.dataset.fold===k))}
+document.addEventListener('click',e=>{const h=e.target.closest('#v-pf [data-ftog]');if(!h||e.target.closest('input,select,button:not([data-ftog]),a'))return;const c=h.closest('.pfc');const ab=c.classList.contains('open');$$('#v-pf .pfc').forEach(x=>x.classList.remove('open'));if(!ab){c.classList.add('open');setTimeout(()=>c.scrollIntoView({behavior:'smooth',block:'start'}),60)}});
+function pfSum(){const S=(k,t)=>{const e=document.getElementById('fs-'+k);if(e)e.textContent=t};try{
+  const MEDS={rem:'Remolcador',mot:'Motonave',pcz:'Remolcador a Puerto Cabezas',cor:'Remolcador a Corn Island'};let emb='';try{const e=typeof embDe==='function'&&COSTOS?embDe():null;if(e)emb=' · '+e.n.replace(/^(MR|Motonave|Remolcador) /,'')}catch(x){}
+  S('dat',[P.cliente||'Sin cliente',P.fecha?new Date(P.fecha+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short'}):'',P.tipo==='chr'?(MEDS[P.medio]||'')+emb:''].filter(Boolean).join(' · '));
+  const it=(P.itin||[]).filter(g=>g.sal&&g.lle);S('iti',it.length?it.length+' tramo'+(it.length===1?'':'s')+' · '+new Date(it[0].sal).toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'})+' → '+new Date(it[it.length-1].lle).toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'})+(CHRINFO&&CHRINFO.nav?' · '+hm(CHRINFO.nav)+' navegación':''):'Sin tramos');
+  const t=totals();S('srv',P.lines.length?P.lines.length+' concepto'+(P.lines.length===1?'':'s')+' · '+money(t.total,t.mon):'Sin servicios');S('tot',money(t.total,t.mon));
+  const rc=!$('#cRent').hidden&&typeof rentCalc==='function'?rentCalc():null;S('rent',rc&&rc.ing?'Utilidad '+fq(Math.round(rc.mg*10)/10)+' % · '+money(rc.ut,'NIO'):'')}catch(e){}}
+function updTot(){setTimeout(pfSum,0);const t=totals();const pt=$('#pillTot');if(pt){const nv=money(t.total,t.mon);if(pt.textContent!==nv){pt.textContent=nv;const pl=$('#pill');pl.classList.remove('bump');void pl.offsetWidth;pl.classList.add('bump')}}const other=t.mon==='USD'?t.total*t.tc:(t.tc?t.total/t.tc:0);
  $('#tot').innerHTML=`${t.u?`<tr><td>Servicios en dólares</td><td>${money(t.u,'USD')}</td></tr>`:''}
  ${t.n?`<tr><td>Servicios en córdobas</td><td>${money(t.n,'NIO')}</td></tr>`:''}
  ${P.tipo==='chr'?`<tr><td>Tipo de cambio oficial</td><td>C$ ${fmt(t.tc,4)} por US$</td></tr>`:''}<tr><td>Subtotal (${t.mon==='USD'?'US$':'C$'}${P.tipo==='chr'?'':', TC '+fq(t.tc)})</td><td>${money(t.sub,t.mon)}</td></tr>
@@ -898,7 +910,7 @@ function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(
   applyTipo();bindMeta();renderItin();if(P.tipo==='chr')chrRecalc();else{syncCoc();renderLines()}}
 
 /* ===== Navegación ===== */
-function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();window.scrollTo(0,0)}
+function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his'){MAT_EDIT=null;renderMat()}if(v==='pf')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
 $('#btnPrev').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-'+(P.tipo||'buq')+'-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo · '+TIPOS[P.tipo||'buq'])}catch(e){console.error(e);toast('No se pudo generar la vista')}};
 
@@ -908,19 +920,20 @@ $('#btnSave').onclick=()=>{if(!P.lines.length){toast(P.tipo==='chr'?'Complete el
  const arr=ls.get('epn_pf',[]);if(!P.id)P.id=newId();const i=arr.findIndex(x=>x.id===P.id);const t=totals();P.saved=new Date().toISOString();P._tot=money(t.total,t.mon);
  const copy=JSON.parse(JSON.stringify(P));if(i>=0)arr[i]=copy;else arr.unshift(copy);if(arr.length>300)arr.length=300;
  if(!ls.set('epn_pf',arr)){toast('No se pudo guardar en este navegador');return}
- const nom=P.cliente||P.buque||'Cálculo';cargarP(newPF('chr'));window.scrollTo({top:0,behavior:'smooth'});
+ const nom=P.cliente||P.buque||'Cálculo';cargarP(newPF('chr'));renderHis();pfOpen('dat');window.scrollTo({top:0,behavior:'smooth'});
  toast('“'+nom+'” guardado en Historial. Listo para un nuevo cálculo.')};
 /* PDF de un cálculo guardado, sin cargarlo en el formulario */
 function pdfGuardado(o){const prev=JSON.parse(JSON.stringify(P));let doc=null;
  try{P={...newPF(o.tipo||'buq'),...o};if(P.tipo==='chr')chrRecalc();doc=memPdf()}finally{cargarP(prev)}
  return doc}
-$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar un cálculo nuevo? Lo no guardado se perderá.'))return;cargarP(newPF('chr'));show('pf')};
+$('#btnNew').onclick=()=>{if(P.lines.length&&!confirm('¿Iniciar un cálculo nuevo? Lo no guardado se perderá.'))return;cargarP(newPF('chr'));show('pf');pfOpen('dat')};
 function renderHis(){const ub=$('#ultBk');if(ub){const u=ls.get('epn_ultbk',null);ub.textContent=u?'Último respaldo: '+new Date(u+'T12:00').toLocaleDateString('es-NI'):'Todavía no ha descargado un respaldo.'}
-const arr=ls.get('epn_pf',[]);arr.forEach(x=>{if(!x.id)x.id=newId()});$('#hlist').innerHTML=arr.length?`<p class="sm" style="margin-top:0">${arr.length} cálculo${arr.length===1?'':'s'} · toque uno para ver sus opciones.</p>`+arr.map((p,i)=>[p,i]).reverse().map(([p,i])=>`<details class="rg colx" data-ok="h-${p.id}"${ACC_OPEN.has('h-'+p.id)?' open':''}><summary><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.cliente||p.buque||'Sin nombre')}<small class="sm" style="display:block;font-weight:500">${p.fecha?new Date(p.fecha+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'}):''}${p.ref?' · '+esc(p.ref):''}</small></span><span style="display:flex;gap:6px;align-items:center;flex:none"><b style="font-size:14px;white-space:nowrap">${esc(p._tot||'')}</b><span class="chev">›</span></span></summary><div style="padding:0 11px 10px"><div class="sm"><span class="chip ${p.tipo==='chr'?'warnc':p.tipo==='car'?'bad':'ok'}">${TIPOS[p.tipo||'buq']}</span>${p.buque?' · '+esc(p.buque):''}</div><div class="row" style="margin-top:8px"><button class="btn" data-pdf="${i}">PDF</button><button class="btn2" data-open="${i}">Abrir</button><button class="btn2" data-dup="${i}">Duplicar</button><button class="btnd" data-rm="${i}">Eliminar</button></div></div></details>`).join(''):'<p class="mut">No hay cálculos guardados.</p>'}
+const arr=ls.get('epn_pf',[]);arr.forEach(x=>{if(!x.id)x.id=newId()});const fsh=$('#fs-his');if(fsh)fsh.textContent=arr.length?arr.length+' guardada'+(arr.length===1?'':'s'):'ninguna todavía';const hq=norm(($('#hq')||{}).value||'');$('#hlist').innerHTML=arr.length?`<p class="sm" style="margin-top:0">${arr.length} proforma${arr.length===1?'':'s'} · toque una para ver sus opciones.</p>`+arr.map((p,i)=>[p,i]).filter(([p])=>!hq||norm((p.cliente||'')+' '+(p.ref||'')+' '+(p.buque||'')).includes(hq)).reverse().map(([p,i])=>`<details class="rg colx" data-ok="h-${p.id}"${ACC_OPEN.has('h-'+p.id)?' open':''}><summary><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.cliente||p.buque||'Sin nombre')}<small class="sm" style="display:block;font-weight:500">${p.fecha?new Date(p.fecha+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'}):''}${p.ref?' · '+esc(p.ref):''}</small></span><span style="display:flex;gap:6px;align-items:center;flex:none"><b style="font-size:14px;white-space:nowrap">${esc(p._tot||'')}</b><span class="chev">›</span></span></summary><div style="padding:0 11px 10px"><div class="sm"><span class="chip ${p.tipo==='chr'?'warnc':p.tipo==='car'?'bad':'ok'}">${TIPOS[p.tipo||'buq']}</span>${p.buque?' · '+esc(p.buque):''}</div><div class="row" style="margin-top:8px"><button class="btn" data-pdf="${i}">PDF</button><button class="btn2" data-open="${i}">Abrir</button><button class="btn2" data-dup="${i}">Duplicar</button><button class="btnd" data-rm="${i}">Eliminar</button></div></div></details>`).join(''):'<p class="mut">No hay cálculos guardados.</p>'}
+$('#hq').oninput=()=>renderHis();
 $('#hlist').addEventListener('click',e=>{const b=e.target.closest('button[data-pdf],button[data-open],button[data-dup],button[data-rm]');if(!b)return;const arr=ls.get('epn_pf',[]);
  if(b.dataset.pdf){const o=arr[+b.dataset.pdf];try{abrirVisor(pdfGuardado(o),'Memoria-'+(o.tipo||'buq')+'-APBB-'+slug(o.cliente||o.buque||o.ref||'calculo')+'-'+(o.fecha||today())+'.pdf','Memoria de cálculo · '+TIPOS[o.tipo||'buq'])}catch(err){console.error(err);toast('No se pudo generar el PDF')}return}
- if(b.dataset.open){cargarP(JSON.parse(JSON.stringify(arr[+b.dataset.open])));show('pf')}
- if(b.dataset.dup){const o=JSON.parse(JSON.stringify(arr[+b.dataset.dup]));o.id=newId();o.fecha=today();cargarP(o);show('pf');toast('Copia creada')}
+ if(b.dataset.open){cargarP(JSON.parse(JSON.stringify(arr[+b.dataset.open])));show('pf');pfOpen('dat');window.scrollTo({top:0,behavior:'smooth'});toast('Proforma abierta')}
+ if(b.dataset.dup){const o=JSON.parse(JSON.stringify(arr[+b.dataset.dup]));o.id=newId();o.fecha=today();cargarP(o);show('pf');pfOpen('dat');window.scrollTo({top:0,behavior:'smooth'});toast('Copia creada')}
  if(b.dataset.rm&&confirm('¿Eliminar este cálculo?')){arr.splice(+b.dataset.rm,1);ls.set('epn_pf',arr);renderHis()}});
 
 const LOGO_W=420,LOGO_H=188;
@@ -935,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.01-35';
+const APP_VER='2026.11.01-36';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1215,7 +1228,7 @@ async function initAcceso(){
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
-  renderAvMat();
+  renderAvMat();renderHis();pfSum();
   renderRent();
   const cl=window.claude;
   if(cl){const to=ms=>new Promise(r=>setTimeout(()=>r(null),ms));
@@ -1404,6 +1417,7 @@ const ACC_DEF={'Apariencia':['apa','#7048e8','<circle cx="12" cy="12" r="9"/><pa
  'Horario ordinario (viaje chárter)':['hor','#f2a900','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'],
  'Feriados':['fer','#c8326f','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
  'Estructura de costos (chárter)':['cos','#e8590c','<path d="M4 19h16M7 16V9M12 16V5M17 16v-4"/>'],
+ 'Respaldo':['bk','#2f9e44','<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>'],
  'Acerca de':['ace','#868e96','<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>']};
 (function armarAcordeon(){$$('#v-aju > .card').forEach(card=>{const h=card.querySelector(':scope > h2');if(!h)return;const tit=h.textContent.trim();const [k,cc,ico]=ACC_DEF[tit]||['x','#0b4f8a',''];
   const d=document.createElement('details');d.className='acc';d.dataset.acc=k;d.style.setProperty('--cc',cc);
@@ -1414,7 +1428,7 @@ function subAju(){const t=document.documentElement.dataset.theme||'claro',f=docu
   S('apa',{claro:'Claro',oscuro:'Oscuro',gris:'Gris claro'}[t]+' · texto '+(f==='g'?'grande':'normal'));
   S('val','TC '+fmt(ls.get('epn_tc',36.6243),4)+(ls.get('epn_elab','')?' · '+ls.get('epn_elab',''):' · sin “Elaborado por”'));
   S('age',CONT.length?CONT.length+' guardada'+(CONT.length===1?'':'s'):'Ninguna guardada');
-  S('hor',horTxt());
+  S('hor',horTxt());{const u=ls.get('epn_ultbk',null);S('bk',u?'Último: '+new Date(u+'T12:00').toLocaleDateString('es-NI'):'Sin respaldo')}
   S('fer','Nacionales incluidos'+(FER.length?' · '+FER.length+' local'+(FER.length===1?'':'es'):''));
   if(OWNER&&COSTOS)S('cos',COSTOS.personal.length+' persona(s) · '+COSTOS.emb.length+' embarcaciones'+(ls.get('epn_costos_pend',false)?' · sin publicar':''));
   S('ace','Versión '+APP_VER)}
@@ -1648,7 +1662,6 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
   if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
   if(OWNER&&VIA_SEC==='arq')return renderArq();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
-  if(VIA_SEC==='mat')return renderMat();
   if(VIA_EDIT)return renderViaForm();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
   box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:${OWNER?10:0}px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
@@ -1852,7 +1865,7 @@ function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
     <button class="btn2" data-qxls style="width:100%;margin-top:10px">Excel de arqueos del mes</button>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay arqueos en este mes.</p>'}
    <button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>
    ${cs.length?`<details class="rg colw" data-ok="qlist" style="margin-top:12px"${ACC_OPEN.has('qlist')?' open':''}><summary><span>Arqueos de ${mesTxt(VIA_MES).toLowerCase()} (${cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>Entregó: ${esc(a.enc||'—')}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small>recibido</small></div></button>`).join('')}</div></details>`:''}`}
-const segVia=()=>`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${OWNER?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button>`:''}<button data-vsec="mat" class="${VIA_SEC==='mat'?'on':''}">Matrículas</button></div>`;
+const segVia=()=>!OWNER?'':`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${OWNER?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button>`:''}</div>`;
 function denFila(grp,d,val,pre){const n=+val||0;return `<div class="den"><span>${pre} ${d<1?d.toFixed(2):fmt(d,0)}</span><input type="number" min="0" step="1" inputmode="numeric" data-qd="${grp}" data-den="${d}" value="${val||''}" placeholder="0"><b data-qm="${grp}-${d}">${pre} ${fmt(n*d)}</b></div>`}
 function arqResHTML(a,c){return `<div class="arq-r"><div><span>Efectivo en córdobas</span><b>${money(c.nio,'NIO')}</b></div><div><span>Efectivo en dólares (US$ ${fmt(c.usd)} × ${fq(c.tc)})</span><b>${money(c.usdC,'NIO')}</b></div>${c.otros?`<div><span>Otros (transferencias)</span><b>${money(c.otros,'NIO')}</b></div>`:''}
    <div class="t"><span>Total general</span><b>${money(c.gen,'NIO')}</b></div><div><span>(−) Dinero para cambio</span><b>${money(c.cam,'NIO')}</b></div>
@@ -1941,9 +1954,9 @@ function renderAvMat(){const el=$('#avMat');if(!el)return;const bell=$('#bell');
   if(bell){bell.hidden=!al.length;$('#bellN').textContent=al.length;bell.style.color=al.some(x=>x.e.d<0)?'#ffb4ab':'';if(al.length&&!bell._an){bell._an=1;bell.classList.add('anim')}}
   if(!al.length||ls.get('epn_avmat_oc','')===today()+':'+al.length){el.innerHTML='';return}
   el.innerHTML=`<div class="notice ${al.some(x=>x.e.d<0)?'bad':''}" style="margin-bottom:10px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:start"><b>Matrículas por vencer</b><button class="pv-x" data-avmatx aria-label="Ocultar hoy" style="width:30px;height:30px">✕</button></div>${al.map(x=>`<div class="sm" style="margin-top:3px">• <b>${esc(x.m.n)}</b> (${esc(x.m.doc)}): ${x.e.t} · ${fLarga(matUlt(x.m).v)}</div>`).join('')}<button class="btn2" data-avmatgo style="margin-top:8px;padding:6px 12px">Ver matrículas</button></div>`}
-document.addEventListener('click',e=>{if(e.target.closest('#bell')){VIA_SEC='mat';VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;show('via');return}const b=e.target.closest('[data-avmatx],[data-avmatgo]');if(!b)return;
+document.addEventListener('click',e=>{if(e.target.closest('#bell')){MAT_EDIT=null;show('his');return}const b=e.target.closest('[data-avmatx],[data-avmatgo]');if(!b)return;
   if(b.hasAttribute('data-avmatx')){const n=matLista().filter(m=>{const s=matEstado(m);return s.d!=null&&s.d<=30}).length;ls.set('epn_avmat_oc',today()+':'+n);renderAvMat();return}
-  VIA_SEC='mat';VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;show('via')});
+  MAT_EDIT=null;show('his')});
 /* Calendario (.ics) con alarma 30 días antes y el día del vencimiento */
 function icsDe(ms){const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//EPN APBB//Matriculas//ES','CALSCALE:GREGORIAN','METHOD:PUBLISH'];const st=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
   ms.forEach(m=>{const u=matUlt(m);if(!u||!u.v)return;const d=u.v.replace(/-/g,''),d2=kd(new Date(new Date(u.v+'T12:00').getTime()+864e5)).replace(/-/g,'');const t=('Vence '+m.doc+' – '+m.n).replace(/[,;]/g,' ');
@@ -1956,15 +1969,15 @@ async function matCalendario(ms){const ok=ms.filter(m=>{const u=matUlt(m);return
   try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
   const r=new FileReader();r.onload=()=>{const a=document.createElement('a');a.href=r.result;a.download=nombre;a.target='_blank';document.body.appendChild(a);a.click();a.remove()};r.readAsDataURL(blob);toast('Abra el archivo y toque «Agregar» al calendario')}
 /* Pantalla */
-function renderMat(){const box=$('#viaBox');if(MAT_EDIT)return renderMatForm();const L=matLista();
+function renderMat(){const box=$('#matBox');if(!box)return;if(MAT_EDIT)return renderMatForm();const L=matLista();
   const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];const ro=!OWNER;
   const tot=L.reduce((s,m)=>s+matPagoEn(m,today()),0);
-  box.innerHTML=`${segVia()}<p class="sm" style="margin:10px 0 6px">Aviso automático 30 días antes del vencimiento. El pago anual de la matrícula de cada embarcación se suma a sus costos fijos. La matrícula del puerto es solo para control de vencimiento.</p>
+  box.innerHTML=`<p class="sm" style="margin:0 0 6px">Aviso automático 30 días antes del vencimiento. El pago anual de la matrícula de cada embarcación se suma a sus costos fijos. La matrícula del puerto es solo para control de vencimiento.</p>
    <div class="rent-k"><div><span>Pagos anuales vigentes</span><b>${money(tot,'NIO')}</b></div><div class="${L.some(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30})?'warnc':'ok'}"><span>Por vencer o vencidas</span><b>${L.filter(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30}).length}</b><small>de ${L.length} registradas</small></div></div>
    ${grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return'';return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);return `<button class="via-it" data-medit="${m.id}"><div><b>${esc(m.n)}</b><small>${esc(m.doc)}${m.num?' · N.º '+esc(m.num):''}${u&&+u.m?' · '+money(u.m,'NIO'):''}</small></div><div style="text-align:right"><span class="chip ${e.k}">${e.t}</span><small>${u&&u.v?'vence '+new Date(u.v+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'sin fecha'}</small></div></button>`}).join('')}).join('')}
    <div class="row" style="flex-wrap:nowrap;margin-top:10px"><button class="btn2" data-mcalall style="flex:1">Todas al calendario</button><button class="btn2" data-mpdf style="flex:1">Reporte PDF</button></div>
    ${ro?'':'<button class="btn" data-mnew style="width:100%;margin-top:10px">+ Agregar embarcación, panga u otro</button>'}`}
-function renderMatForm(){const m=MAT_EDIT,box=$('#viaBox'),ro=!OWNER,e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
+function renderMatForm(){const m=MAT_EDIT,box=$('#matBox'),ro=!OWNER,e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${m.nuevo?'Nueva matrícula':esc(m.n)}</b><button class="btn2" data-mcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
    ${m.nuevo?'':`<p style="margin:6px 0"><span class="chip ${e.k}">${e.t}</span></p>`}
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0"><div class="grid" style="margin-top:6px">
@@ -1982,23 +1995,23 @@ function renderMatForm(){const m=MAT_EDIT,box=$('#viaBox'),ro=!OWNER,e=matEstado
    ${ps.length>1?`<details class="rg" style="margin-top:10px"><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${p.f?new Date(p.f+'T12:00').toLocaleDateString('es-NI'):'—'}<small>vence ${p.v?new Date(p.v+'T12:00').toLocaleDateString('es-NI'):'—'}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
    ${ps.length&&ps[0].v?`<button class="btn2" data-mcal style="width:100%;margin-top:10px">📅 Agregar al calendario (aviso 30 días antes)</button>`:''}
    ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar</button>${m.nuevo?'':'<button class="btnd" data-mdel style="flex:1">Eliminar</button>'}</div>`}`}
-document.addEventListener('input',e=>{const el=e.target;if(!MAT_EDIT||!el.closest||!el.closest('#viaBox'))return;const m=MAT_EDIT;
+document.addEventListener('input',e=>{const el=e.target;if(!MAT_EDIT||!el.closest||!el.closest('#matBox'))return;const m=MAT_EDIT;
   if(el.dataset.mf){m[el.dataset.mf]=el.value}
   if(el.dataset.mp){m.pagos=m.pagos||[];if(!m.pagos.length)m.pagos.push({f:'',m:'',v:''});const ps=m.pagos.slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));const p=m._cur||(m._cur=ps[0]);p[el.dataset.mp]=el.value;
     if(el.dataset.mp==='f'&&el.value&&!p.v){const d=new Date(el.value+'T12:00');d.setFullYear(d.getFullYear()+1);p.v=kd(d);const iv=document.querySelector('[data-mp=v]');if(iv)iv.value=p.v}}});
 document.addEventListener('change',e=>{const el=e.target;if(MAT_EDIT&&el.dataset&&el.dataset.mf==='t'){MAT_EDIT.t=el.value;if(Object.values(MAT_DOC).includes(MAT_EDIT.doc)||!MAT_EDIT.doc)MAT_EDIT.doc=MAT_DOC[el.value];if(el.value!=='emb')MAT_EDIT.e='';renderMatForm()}});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[data-mnew],[data-mcancel],[data-msave],[data-mdel],[data-mren],[data-mcal],[data-mcalall],[data-mpdf]');if(!b||!b.closest('#viaBox'))return;
-  if(b.dataset.medit){const x=matLista().find(m=>m.id===b.dataset.medit);if(x){MAT_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
-  if(b.hasAttribute('data-mcancel')){MAT_EDIT=null;return renderVia()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[data-mnew],[data-mcancel],[data-msave],[data-mdel],[data-mren],[data-mcal],[data-mcalall],[data-mpdf]');if(!b||!b.closest('#matBox'))return;
+  if(b.dataset.medit){const x=matLista().find(m=>m.id===b.dataset.medit);if(x){MAT_EDIT=JSON.parse(JSON.stringify(x));renderMat();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-mcancel')){MAT_EDIT=null;return renderMat()}
   if(b.hasAttribute('data-mcal'))return matCalendario([MAT_EDIT]);
   if(b.hasAttribute('data-mcalall'))return matCalendario(matLista());
   if(b.hasAttribute('data-mpdf'))return matPdf();
   if(!OWNER)return;
-  if(b.hasAttribute('data-mnew')){MAT_EDIT={id:'m'+Date.now().toString(36),n:'',t:'pan',e:'',doc:MAT_DOC.pan,num:'',obs:'',pagos:[],nuevo:true};renderVia();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-mnew')){MAT_EDIT={id:'m'+Date.now().toString(36),n:'',t:'pan',e:'',doc:MAT_DOC.pan,num:'',obs:'',pagos:[],nuevo:true};renderMat();window.scrollTo(0,0);return}
   if(b.hasAttribute('data-mren')){const u=matUlt(MAT_EDIT)||{};const v=u.v?new Date(u.v+'T12:00'):new Date();v.setFullYear(v.getFullYear()+1);const p={f:today(),m:u.m||'',v:kd(v)};MAT_EDIT.pagos.push(p);MAT_EDIT._cur=p;renderMatForm();toast('Revise la fecha de pago, el monto y el vencimiento, y toque Guardar');return}
   if(b.hasAttribute('data-msave')){const m=MAT_EDIT;if(!(m.n||'').trim()){toast('Escriba el nombre');return}const x={...m};delete x.nuevo;delete x._cur;x.pagos=(x.pagos||[]).filter(p=>p.f||p.v||+p.m);
-    {const L=matLista().slice();const i=L.findIndex(y=>y.id===x.id);if(i>=0)L[i]=x;else L.push(x);COSTOS.mat=L}guardarCostos();MAT_EDIT=null;toast('Matrícula guardada');renderVia();renderAvMat();return}
-  if(b.hasAttribute('data-mdel')){if(!confirm('¿Eliminar '+MAT_EDIT.n+' del control de matrículas?'))return;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderVia();renderAvMat()}});
+    {const L=matLista().slice();const i=L.findIndex(y=>y.id===x.id);if(i>=0)L[i]=x;else L.push(x);COSTOS.mat=L}guardarCostos();MAT_EDIT=null;toast('Matrícula guardada');renderMat();renderAvMat();return}
+  if(b.hasAttribute('data-mdel')){if(!confirm('¿Eliminar '+MAT_EDIT.n+' del control de matrículas?'))return;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderMat();renderAvMat()}});
 function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');return}const d=PDFW();d.page();let y=pdfHeader(d,'CONTROL DE MATRÍCULAS Y PERMISOS','Al '+fLarga(today()));
   const C=[['Nombre',150],['Documento',120],['N.º',70],['Pagado',60],['Monto C$',60],['Vence',60],['Estado',72]];const W=C.reduce((s,x)=>s+x[1],0),sc=532/W;
   const head=()=>{d.rect(40,y,532,15,NAVY);let x=40;C.forEach(([h,w])=>{d.text(x+4,y+10.5,h,{size:7.5,bold:true,color:'#ffffff'});x+=w*sc});y+=15};head();
@@ -2047,7 +2060,7 @@ function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=emb
   return{R,ing,gas,ut,mg,tc:t.tc,dias,dh,hn,hg,hx,auto:a,emb:e,crew,n}}
 
 /* --- Interfaz en Cálculo --- */
-function renderRent(){renderEmbCrew();const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
+function renderRent(){setTimeout(pfSum,0);renderEmbCrew();const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
   if(P.tipo!=='chr'||!puedeCostos()){card.hidden=true;return}card.hidden=false;cargarCostos();
   if(!COSTOS){const es=ls.get('epn_costos_est',{})||{};const cu=es.t?' (revisado '+new Date(es.t).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})+')':'';
     const msg=LIC&&!LIC.k?'Su código de acceso no incluye la llave de costos. Pida al administrador que le genere un <b>código nuevo</b> con acceso completo.'
