@@ -1,6 +1,6 @@
 /* Memoria de Cálculo APBB — funciona sin internet.
    Al publicar una versión nueva, cambie VERSION para que todos los teléfonos la reciban. */
-const VERSION='2026.10.31-31';
+const VERSION='2026.11.01-32';
 const CACHE='calculo-apbb-'+VERSION;
 const ARCHIVOS=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-180.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ARCHIVOS)).then(()=>self.skipWaiting()))});

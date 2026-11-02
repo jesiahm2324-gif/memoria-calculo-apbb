@@ -220,6 +220,7 @@ body:not(.con-viajes) nav button[data-v="via"]{display:none}
 .seg{display:flex;background:var(--soft);border-radius:12px;padding:3px;gap:3px}.seg button{flex:1;border:0;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--mut);padding:9px 6px;border-radius:10px;cursor:pointer}.seg button.on{background:var(--card);color:var(--pri);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .den{display:grid;grid-template-columns:1fr 92px 1.1fr;gap:8px;align-items:center;margin-bottom:6px}.den span{font-weight:600;font-size:14px}.den input{text-align:center;padding:8px}.den b{text-align:right;font-size:14px;white-space:nowrap}
 .arq-r{border:1px solid var(--line);border-radius:12px;overflow:hidden}.arq-r>div{display:flex;justify-content:space-between;gap:8px;padding:7px 12px;font-size:13.5px}.arq-r>div span{color:var(--mut)}.arq-r b{white-space:nowrap}.arq-r .t{border-top:1px solid var(--line);font-weight:700}.arq-r .t span{color:var(--ink)}.arq-r .d{font-size:16px;font-weight:800}.arq-r .d.ok{background:var(--okbg,#e6f4ea)}.arq-r .d.bad{background:#fdecea;color:#b42318}.arq-r .d.warnc{background:#fff4d1}.arq-r .d span{color:inherit}
+.vtw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}.vtab{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}.vtab th{background:var(--soft);color:var(--mut);font-weight:700;font-size:11.5px;padding:6px 7px;text-align:left}.vtab td{padding:6px 7px;border-bottom:1px solid var(--line)}.vtab .r{text-align:right}.vtab tfoot td{font-weight:800;border-top:2px solid var(--line);border-bottom:0}details.rg>summary b{white-space:nowrap}.vtab td b{white-space:nowrap}.dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
 .via-tr{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
 details.rg .chev{font-size:20px;color:var(--mut);transition:transform .2s;line-height:1}details.rg[open]>summary .chev{transform:rotate(90deg);color:var(--pri)}details.colx{background:var(--card)}details.colx>summary{font-weight:600}details.colw>summary{font-size:14px;color:var(--pri)}
 .rl{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-top:1px solid var(--line);font-size:13.5px}
@@ -932,7 +933,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.10.31-31';
+const APP_VER='2026.11.01-32';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1519,14 +1520,14 @@ function viaLista(){if(OWNER)return ls.get('epn_viajes',[])||[];const rx=ls.get(
 function viaGuardarLista(l){if(OWNER){ls.set('epn_viajes',l);ls.set('epn_viajes_pend',true);viaPublicar()}}
 function viaProgMes(ym){const [y,m]=ym.split('-').map(Number);let n=0;const d=new Date(y,m-1,1);while(d.getMonth()===m-1){if(VIA_DIAS_PROG.includes(d.getDay()))n++;d.setDate(d.getDate()+1)}return n}
 function viaDivisor(v,lista){const ym=v.f.slice(0,7);const reg=lista.filter(x=>x.emb===v.emb&&x.f.slice(0,7)===ym&&x.id!==v.id).length+1;
-  const cerrado=ym<today().slice(0,7);return{d:cerrado?reg:Math.max(reg,viaProgMes(ym)),reg,cerrado}}
+  const cerrado=ym<today().slice(0,7);const prog=viaProgMes(ym);return{d:Math.max(reg,prog),reg,prog,cerrado}}
 function viaCrew(v){const e=COSTOS.emb.find(x=>x.id===v.emb);const base=Array.isArray(v.crew)?v.crew:(e?e.crew:[]);return (base||[]).map(c=>({...c,p:COSTOS.personal.find(x=>x.id===c.pid)})).filter(c=>c.p)}
 function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.emb.find(x=>x.id===v.emb)||null,crew=viaCrew(v),n=crew.length;
   const T=viaTiempos(v);const hn=Math.round(T.reduce((s,t)=>s+(t.b-t.a)/36e5,0)*100)/100;
   const gh=e&&e.genH!=null?+e.genH:2;let hg=0;T.forEach((t,i)=>{hg+=(t.b-t.a)/36e5;const nx=T[i+1]?T[i+1].a:null;hg+=Math.max(0,nx?Math.min(gh,(nx-t.b)/36e5):gh)});hg=Math.round(hg*100)/100;
   let hxA=0;if(T.length){const m={};const ini=T[0].a,fin=new Date(Math.max(...T.map(t=>t.b.getTime()+t.cd*36e5)));repartir(ini,fin,m);hxA=Math.ceil(Object.values(m).reduce((s,r)=>s+r.ext,0)/60-1e-9)}
   const hx=v.hx!==''&&v.hx!=null&&!isNaN(+v.hx)?+v.hx:hxA;
-  const R=[];const add=(g,c,d,m,fx)=>R.push({g,c,d,m:Math.round(m*100)/100,fx:!!fx});
+  const R=[];const add=(g,c,d,m,fx)=>R.push({g,c,d,m:Math.round(m*100)/100,raw:m,fx:!!fx});
   const gal=e?(+e.gal||0):0,mot=e?Math.max(1,+e.mot||1):1,gen=e?(+e.gen||0):0;
   add('Combustible y lubricantes','Diésel motores'+(mot>1?' ('+mot+')':''),(mot>1?mot+' motores × ':'')+gal+' gal/h × '+fq(hn)+' h navegación × C$ '+fmt(par.diesel)+' = '+fq(Math.round(mot*gal*hn*100)/100)+' gal',mot*gal*hn*par.diesel);
   if(gen>0)add('Combustible y lubricantes','Diésel generador',gen+' gal/h × '+fq(hg)+' h (navegación + '+gh+' h tras cada atraque) = '+fq(Math.round(gen*hg*100)/100)+' gal',gen*hg*par.diesel);
@@ -1549,8 +1550,13 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
   const tb=+v.tb>0?+v.tb:(+par.pasaje||310);const bolC=+v.np>0?(+v.np)*tb:(+v.bol||0);
   const ing=bolC+(+v.car||0)+(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0);
   const gv=R.filter(x=>!x.fx).reduce((s,x)=>s+x.m,0),gf=R.filter(x=>x.fx).reduce((s,x)=>s+x.m,0),gas=gv+gf,ut=ing-gas,mg=ing?ut/ing*100:(gas?-100:0);
+  const lubC=(par.lub||[]).reduce((s,l)=>s+(+l.p?(+l.p)/(+l.h||250)*hn*mot:0),0),mAli=n*(par.desay+par.alm+par.cena),bono=R.filter(x=>x.c==='Bono por viaje').reduce((s,x)=>s+x.m,0);
+  const det={gal:{hn,hg,galM:mot*gal*hn,galG:gen*hg,cM:mot*gal*hn*par.diesel,cG:gen*hg*par.diesel,lub:lubC},
+    hx:{n,hx,hh:n*hx,monto:hxm,cs:hxm*(par.inss+par.inatec)/100,per:crew.map(c=>({n:c.p.n,h:hx,m:salTot(c.p)/30/8*2*hx}))},
+    via:{n,hosp:hosp?n:0,mAli,mHosp:hosp?n*par.hosp:0,bono},mu:{B:muB,C:muC},
+    fij:{items:R.filter(x=>x.fx).map(x=>({c:x.c.replace(/^Seguro .*/,'Seguro').replace(/^Depreciación .*/,'Depreciación').replace(/^Salarios \(\d+\)/,'Salarios'),m:x.m,mes:x.raw*D}))}};
   const pas=tb;const faltan=ut<0?Math.ceil(-ut/pas):0;const faltanV=ing-gv<0?Math.ceil(-(ing-gv)/pas):0;
-  return{R,ing,bolC,tb,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
+  return{R,det,ing,bolC,tb,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
 const viaSem=c=>c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
 const viaFecha=f=>{const d=new Date(f+'T12:00');return DIAS[d.getDay()]+' '+d.toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'})};
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -1561,6 +1567,62 @@ function viaResumen(ym){const lista=viaLista();const l=lista.filter(x=>x.f.slice
   const porDia={};cs.forEach(({v,c})=>{const k=new Date(v.f+'T12:00').getDay();const r=porDia[k]||(porDia[k]={n:0,ing:0,ut:0,np:0});r.n++;r.ing+=c.ing;r.ut+=c.ut;r.np+=(+v.np||0)});
   const porEmb={};cs.forEach(({v,c})=>{const k=c.emb?c.emb.n:'—';const r=porEmb[k]||(porEmb[k]={n:0,ing:0,ut:0});r.n++;r.ing+=c.ing;r.ut+=c.ut});
   return{cs,tot,porDia,porEmb,prov:ym>=today().slice(0,7)}}
+
+/* ---------- Detalle de la composición de cada gasto (mes) ---------- */
+const vEtq=v=>{const d=new Date(v.f+'T12:00');return DIAS[d.getDay()].slice(0,3)+' '+d.toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'})+' '+(v.dir==='ida'?'Ida':'Reg.')};
+function viaDetalle(R){const cs=R.cs;const sum=(f)=>cs.reduce((s,x)=>s+f(x),0);
+  const np=sum(x=>+x.v.np||0);
+  const comb=cs.map(({v,c})=>{const g=c.det.gal;return[vEtq(v),g.hn,g.galM,g.galG,g.galM+g.galG,g.cM+g.cG,g.lub,g.cM+g.cG+g.lub]});
+  const cT=['Total',sum(x=>x.c.det.gal.hn),sum(x=>x.c.det.gal.galM),sum(x=>x.c.det.gal.galG),sum(x=>x.c.det.gal.galM+x.c.det.gal.galG),sum(x=>x.c.det.gal.cM+x.c.det.gal.cG),sum(x=>x.c.det.gal.lub),sum(x=>x.c.det.gal.cM+x.c.det.gal.cG+x.c.det.gal.lub)];
+  const hx=cs.map(({v,c})=>{const h=c.det.hx;return[vEtq(v),h.n,h.hx,h.hh,h.monto,h.cs,h.monto+h.cs]});
+  const hT=['Total','',' ',sum(x=>x.c.det.hx.hh),sum(x=>x.c.det.hx.monto),sum(x=>x.c.det.hx.cs),sum(x=>x.c.det.hx.monto+x.c.det.hx.cs)];
+  const per={};cs.forEach(({c})=>c.det.hx.per.forEach(p=>{const r=per[p.n]||(per[p.n]={h:0,m:0,v:0});r.h+=p.h;r.m+=p.m;r.v++}));
+  const hp=Object.entries(per).sort((a,b)=>b[1].h-a[1].h).map(([n,r])=>[n,r.v,r.h,r.m]);
+  const vi=cs.map(({v,c})=>{const x=c.det.via;return[vEtq(v),x.n,x.n,x.n,x.n,x.hosp,x.mAli,x.mHosp,x.bono,x.mAli+x.mHosp+x.bono]});
+  const vT=['Total',sum(x=>x.c.det.via.n),sum(x=>x.c.det.via.n),sum(x=>x.c.det.via.n),sum(x=>x.c.det.via.n),sum(x=>x.c.det.via.hosp),sum(x=>x.c.det.via.mAli),sum(x=>x.c.det.via.mHosp),sum(x=>x.c.det.via.bono),sum(x=>x.c.det.via.mAli+x.c.det.via.mHosp+x.c.det.via.bono)];
+  const mu=cs.map(({v,c})=>[vEtq(v),c.det.mu.B,c.det.mu.C,c.det.mu.B+c.det.mu.C]);const mT=['Total',sum(x=>x.c.det.mu.B),sum(x=>x.c.det.mu.C),sum(x=>x.c.det.mu.B+x.c.det.mu.C)];
+  const fx={};cs.forEach(({c})=>c.det.fij.items.forEach(it=>{const r=fx[it.c]||(fx[it.c]={m:0,n:0,mes:0});r.m+=it.m;r.n++;r.mes=Math.max(r.mes,it.mes)}));
+  const fij=Object.entries(fx).map(([k,r])=>[k,r.mes,r.n?r.m/r.n:0,r.m]);const fT=['Total','','',sum(x=>x.c.gf)];
+  const og={};cs.forEach(({c})=>c.R.filter(x=>x.g==='Otros gastos').forEach(x=>{og[x.c]=(og[x.c]||0)+x.m}));
+  const D=cs.length?cs[0].c.div:null;const prog=viaProgMes(VIA_MES);
+  const galT=cT[4],ing=R.tot.ing,gas=R.tot.gas,bol=sum(x=>x.c.bolC),tb=cs.length?cs[0].c.tb:310;
+  const ind=[['Boletos vendidos',np,'n'],['Ingreso promedio por boleto',np?bol/np:0,'m'],['Costo total por boleto',np?gas/np:0,'m'],['Combustible por boleto (galones)',np?galT/np:0,'g'],['Combustible por boleto (C$)',np?cT[7]/np:0,'m'],['Galones por hora de navegación',cT[1]?galT/cT[1]:0,'g'],['Boletos de equilibrio por viaje (promedio)',cs.length&&tb?Math.ceil(gas/cs.length/tb):0,'n'],['Boletos promedio vendidos por viaje',cs.length?Math.round(np/cs.length*10)/10:0,'n']];
+  return{comb,cT,hx,hT,hp,vi,vT,mu,mT,fij,fT,og,ind,prog,reg:cs.length,precio:COSTOS.par.diesel,par:COSTOS.par}}
+const nf=(x,t)=>t==='n'?fq(x):t==='g'?fq(Math.round(x*100)/100):fmt(x);
+function vTab(head,rows,tot,tipos){const td=(x,i)=>`<td class="${i?'r':''}">${typeof x==='number'?nf(x,tipos[i]):esc(x)}</td>`;
+  return `<div class="vtw"><table class="vtab"><thead><tr>${head.map((h,i)=>`<th class="${i?'r':''}">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(td).join('')}</tr>`).join('')}</tbody>${tot?`<tfoot><tr>${tot.map(td).join('')}</tr></tfoot>`:''}</table></div>`}
+function viaDetHTML(R){if(!R.cs.length)return'';const X=viaDetalle(R);const sec=(k,col,tit,tot,body)=>`<details class="rg" data-ok="vd-${k}"${ACC_OPEN.has('vd-'+k)?' open':''}><summary><span><i class="dot" style="background:${col}"></i>${tit}</span><b>${tot}</b></summary><div style="padding:0 8px 10px">${body}</div></details>`;
+  return `<h3 class="sub">Detalle de cada gasto</h3>
+   ${sec('comb',PIE_COL['Combustible y lubricantes'],'Combustible y lubricantes',money(X.cT[7],'NIO'),`<p class="sm" style="margin:0 0 6px"><b>${fq(Math.round(X.cT[4]*100)/100)} galones</b> en ${fq(X.cT[1])} h de navegación · diésel a C$ ${fmt(X.precio)} el galón.</p>`+vTab(['Viaje','Horas nav.','Gal. motores','Gal. generador','Total gal.','Diésel C$','Lubric. y filtros C$','Total C$'],X.comb,X.cT,['','g','g','g','g','m','m','m']))}
+   ${sec('hx',PIE_COL['Horas extras'],'Horas extras',money(X.hT[6],'NIO'),vTab(['Viaje','Tripul.','H. extra c/u','Horas-hombre','Monto C$','INSS/INATEC C$','Total C$'],X.hx,X.hT,['','n','n','n','m','m','m'])+`<p class="sm" style="margin:8px 0 4px"><b>Por tripulante</b></p>`+vTab(['Nombre','Viajes','Horas extra','Monto C$'],X.hp,null,['','n','n','m']))}
+   ${sec('via',PIE_COL['Viáticos'],'Viáticos',money(X.vT[9],'NIO'),`<p class="sm" style="margin:0 0 6px">Desayuno C$ ${fmt(X.par.desay)} · almuerzo C$ ${fmt(X.par.alm)} · cena C$ ${fmt(X.par.cena)} · hospedaje C$ ${fmt(X.par.hosp)} (solo en la ida).</p>`+vTab(['Viaje','Personas','Desayunos','Almuerzos','Cenas','Noches hosp.','Alimentación C$','Hospedaje C$','Bono C$','Total C$'],X.vi,X.vT,['','n','n','n','n','n','m','m','m','m']))}
+   ${sec('mu',PIE_COL['Muellaje'],'Muellaje',money(X.mT[3],'NIO'),vTab(['Viaje','Bluefields C$','Corn Island C$','Total C$'],X.mu,X.mT,['','m','m','m']))}
+   ${Object.keys(X.og).length?sec('og',PIE_COL['Otros gastos'],'Otros gastos',money(Object.values(X.og).reduce((s,x)=>s+x,0),'NIO'),vTab(['Concepto','Monto C$'],Object.entries(X.og),null,['','m'])):''}
+   ${sec('fij',PIE_COL['Costos fijos del mes (asignados)'],'Costos fijos',money(X.fT[3],'NIO'),`<p class="sm" style="margin:0 0 6px">Se reparten entre los <b>${X.prog} viajes programados</b> del mes (${X.reg} registrados). Cada viaje carga 1/${Math.max(X.prog,X.reg)}.</p>`+vTab(['Concepto','Mensual C$','Por viaje C$','Asignado C$'],X.fij,X.fT,['','m','m','m']))}
+   ${sec('ind','#0b4f8a','Indicadores por boleto','',`<div class="vtw"><table class="vtab" style="white-space:normal"><tbody>${X.ind.map(([k,v,t])=>`<tr><td>${k}</td><td class="r"><b>${t==='m'?'C$ '+fmt(v):nf(v,t)}</b></td></tr>`).join('')}</tbody></table></div>`)}`}
+/* PDF: página de detalle */
+function pdfTabla(d,yRef,tit,head,ws,rows,tot,tipos,nueva){let y=yRef.y;const W=ws.reduce((s,x)=>s+x,0),X0=40,sc=532/W;const w=ws.map(x=>x*sc);
+  const hdr=()=>{d.rect(X0,y,532,15,NAVY);let x=X0;head.forEach((h,i)=>{d.text(i?x+w[i]-4:x+4,y+10.5,h,{size:7,bold:true,color:'#ffffff',align:i?'r':undefined});x+=w[i]});y+=15};
+  if(y+60>740){nueva();y=yRef.y}d.text(X0,y+8,tit,{size:9.5,bold:true,color:NAVY});y+=13;hdr();
+  const fila=(r,b,ix)=>{if(y+13>745){nueva();y=yRef.y;hdr()}if(ix%2)d.rect(X0,y,532,13,'#f6f8fb');let x=X0;r.forEach((c,i)=>{const s=typeof c==='number'?nf(c,tipos[i]):String(c??'');d.text(i?x+w[i]-4:x+4,y+9.5,d.wrap(s,7.5,b,w[i]-6)[0],{size:7.5,bold:b,color:'#1a1a1a',align:i?'r':undefined});x+=w[i]});y+=13};
+  rows.forEach((r,i)=>fila(r,false,i));if(tot){d.line(X0,y,X0+532,y,'#333333',.5);fila(tot,true,0)}y+=10;yRef.y=y}
+function viaPdfDetalle(d,R){const X=viaDetalle(R);const yR={y:0};const nueva=()=>{d.page();yR.y=pdfHeader(d,'DETALLE DE GASTOS POR RUBRO · VIAJES REGULARES',mesTxt(VIA_MES))};nueva();
+  d.text(40,yR.y+6,'Diésel a C$ '+fmt(X.precio)+' el galón · costos fijos repartidos entre '+Math.max(X.prog,X.reg)+' viajes del mes ('+X.reg+' registrados).',{size:8,color:GRY});yR.y+=16;
+  pdfTabla(d,yR,'Combustible y lubricantes · '+fq(Math.round(X.cT[4]*100)/100)+' galones',['Viaje','Horas nav.','Gal. motores','Gal. generador','Total gal.','Diésel C$','Lubric./filtros C$','Total C$'],[70,48,52,56,50,62,62,62],X.comb,X.cT,['','g','g','g','g','m','m','m'],nueva);
+  pdfTabla(d,yR,'Horas extras',['Viaje','Tripul.','H. extra c/u','Horas-hombre','Monto C$','INSS/INATEC C$','Total C$'],[70,40,50,56,62,62,62],X.hx,X.hT,['','n','n','n','m','m','m'],nueva);
+  pdfTabla(d,yR,'Horas extras por tripulante',['Nombre','Viajes','Horas extra','Monto C$'],[170,40,50,62],X.hp,null,['','n','n','m'],nueva);
+  pdfTabla(d,yR,'Viáticos (desayuno C$ '+fmt(X.par.desay)+', almuerzo C$ '+fmt(X.par.alm)+', cena C$ '+fmt(X.par.cena)+', hospedaje C$ '+fmt(X.par.hosp)+')',['Viaje','Personas','Desay.','Almuer.','Cenas','Noches','Aliment. C$','Hosped. C$','Bono C$','Total C$'],[66,44,38,40,36,40,58,56,46,58],X.vi,X.vT,['','n','n','n','n','n','m','m','m','m'],nueva);
+  pdfTabla(d,yR,'Muellaje',['Viaje','Bluefields C$','Corn Island C$','Total C$'],[120,70,70,70],X.mu,X.mT,['','m','m','m'],nueva);
+  if(Object.keys(X.og).length)pdfTabla(d,yR,'Otros gastos',['Concepto','Monto C$'],[240,80],Object.entries(X.og),null,['','m'],nueva);
+  pdfTabla(d,yR,'Costos fijos asignados',['Concepto','Mensual C$','Por viaje C$','Asignado C$'],[170,70,70,70],X.fij,X.fT,['','m','m','m'],nueva);
+  pdfTabla(d,yR,'Indicadores por boleto',['Indicador','Valor'],[260,80],X.ind.map(([k,v,t])=>[k,t==='m'?'C$ '+fmt(v):nf(v,t)]),null,['',''],nueva)}
+function viaExcelDetalle(R){const X=viaDetalle(R);const H=s=>({v:s,s:1}),B=r=>r.map((x,i)=>typeof x==='number'?{v:x,s:3}:{v:x,s:5});const T=(t,h,rows,tot,w)=>({n:t,rows:[[{v:t+' · '+mesTxt(VIA_MES),s:6}],[],h.map(H),...rows,...(tot?[B(tot)]:[])],w});
+  return [T('Combustible',['Viaje','Horas navegación','Galones motores','Galones generador','Total galones','Diésel C$','Lubricantes y filtros C$','Total C$'],X.comb,X.cT,[16,12,12,12,12,14,14,14]),
+   T('Horas extras',['Viaje','Tripulantes','Horas extra c/u','Horas-hombre','Monto C$','INSS/INATEC C$','Total C$'],X.hx.concat([[],['Por tripulante','Viajes','Horas extra','Monto C$'].map(H),...X.hp]),null,[30,12,12,12,14,14,14]),
+   T('Viáticos',['Viaje','Personas','Desayunos','Almuerzos','Cenas','Noches hospedaje','Alimentación C$','Hospedaje C$','Bono C$','Total C$'],X.vi,X.vT,[16,10,10,10,10,12,14,14,12,14]),
+   T('Muellaje',['Viaje','Bluefields C$','Corn Island C$','Total C$'],X.mu,X.mT,[16,14,14,14]),
+   T('Costos fijos',['Concepto','Mensual C$','Por viaje C$','Asignado C$'],X.fij.concat([[],['Viajes programados',X.prog],['Viajes registrados',X.reg]]),X.fT,[34,14,14,14]),
+   T('Indicadores',['Indicador','Valor'],X.ind.map(([k,v])=>[k,v]),null,[40,16])]}
 
 /* ---------- Gráfica de pastel ---------- */
 const PIE_COL={'Combustible y lubricantes':'#0e6bb8','Horas extras':'#7048e8','Viáticos':'#e8590c','Muellaje':'#0b9dad','Otros gastos':'#868e96','Costos fijos del mes (asignados)':'#c8326f','Utilidad':'#2f9e44'};
@@ -1582,8 +1644,9 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
   box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:${OWNER?10:0}px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
    ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
-    ${R.prov?'<p class="sm" style="margin:6px 0 0">Mes en curso: los costos fijos se reparten entre los viajes programados del mes (miércoles, jueves, sábado y domingo). El resultado queda definitivo al cerrar el mes.</p>':''}
+    <p class="sm" style="margin:6px 0 0">Costos fijos repartidos entre los ${Math.max(viaProgMes(VIA_MES),t.n)} viajes programados del mes (miércoles, jueves, sábado y domingo) · ${t.n} registrado${t.n===1?'':'s'}.</p>
     ${pieBloque(allR,t.ing,t.gas,t.ut)}
+    ${viaDetHTML(R)}
     <h3 class="sub">Por día de salida</h3><div class="via-dias">${DN.map(k=>{const r=R.porDia[k];return `<div class="${r?(r.ut>=0?'ok':'bad'):''}"><span>${DIAS[k]}</span><b>${r?money(r.ut,'NIO'):'—'}</b><small>${r?r.n+' viaje(s) · '+(r.np?r.np+' boletos':money(r.ing,'NIO')):'sin viajes'}</small></div>`}).join('')}</div>
     ${Object.keys(R.porEmb).length>1?`<h3 class="sub">Por embarcación</h3>${Object.entries(R.porEmb).map(([k,r])=>`<div class="rl"><div>${esc(k)}<small>${r.n} viaje(s) · ingresos ${money(r.ing,'NIO')}</small></div><b>${money(r.ut,'NIO')}</b></div>`).join('')}`:''}
     <div class="row" style="flex-wrap:nowrap;margin-top:12px"><button class="btn2" data-vpdf style="flex:1">Informe PDF</button><button class="btn2" data-vxls style="flex:1">Excel</button></div></div>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay viajes registrados en este mes.</p>'}
@@ -1703,7 +1766,7 @@ function viaExcel(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay v
   const H=s=>({v:s,s:1}),B=n=>({v:n,s:3}),P=n=>({v:n/100,s:4}),BT=s=>({v:s,s:5});
   const GR=['Combustible y lubricantes','Horas extras','Viáticos','Muellaje','Otros gastos','Costos fijos del mes (asignados)'];
   const gsum=(c,g)=>c.R.filter(x=>x.g===g).reduce((s,x)=>s+x.m,0);
-  const res=[[{v:'Rentabilidad de viajes regulares · Bluefields – Corn Island',s:6}],['Empresa Portuaria Nacional · APBB · '+mesTxt(VIA_MES)+(R.prov?' (mes en curso, cifras provisionales)':'')],[],
+  const res=[[{v:'Rentabilidad de viajes regulares · Bluefields – Corn Island',s:6}],['Empresa Portuaria Nacional · APBB · '+mesTxt(VIA_MES)+(R.prov?' (mes en curso)':'')],[],
     [H('Indicador'),H('Monto (C$)')],['Viajes',t.n],['Ingresos',t.ing],['Gastos variables',t.gv],['Costos fijos asignados',t.gf],['Gastos totales',t.gas],[BT('Utilidad'),B(t.ut)],['Margen',P(t.mg)],[],
     [H('Distribución'),H('Monto (C$)'),H('% del ingreso')],...GR.map(g=>{const m=R.cs.reduce((s,x)=>s+gsum(x.c,g),0);return [PIE_NOM[g]||g,m,P(t.ing?m/t.ing*100:0)]}),['Utilidad',t.ut,P(t.mg)],[],
     [H('Día de salida'),H('Viajes'),H('Boletos'),H('Ingresos (C$)'),H('Utilidad (C$)')],...[3,4,6,0].map(k=>{const r=R.porDia[k]||{n:0,np:0,ing:0,ut:0};return [DIAS[k],r.n,r.np,r.ing,r.ut]}),[],
@@ -1714,7 +1777,7 @@ function viaExcel(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay v
   const S=k=>R.cs.reduce((s,x)=>s+x.c[k],0);
   vrows.push(['Total','','','','','','',R.cs.reduce((s,x)=>s+(+x.v.np||0),0),'',S('bolC'),R.cs.reduce((s,x)=>s+(+x.v.car||0),0),'',B(t.ing),...GR.map(g=>B(R.cs.reduce((s,x)=>s+gsum(x.c,g),0))),B(t.gv),B(t.gas),B(t.ut),P(t.mg),'']);
   const det=[[H('Fecha'),H('Sentido'),H('Rubro'),H('Concepto'),H('Cálculo'),H('Monto (C$)')]];R.cs.forEach(({v,c})=>c.R.forEach(x=>det.push([v.f,VIA_DIR[v.dir],PIE_NOM[x.g]||x.g,x.c,x.d,x.m])));
-  const blob=xlsx([{n:'Resumen',rows:res,w:[34,18,16,16,16]},{n:'Viajes',rows:[vh.map(H),...vrows],w:[11,11,26,26,11,11,11,9,10,14,14,12,14,14,13,12,12,12,14,14,14,14,10,30]},{n:'Detalle de gastos',rows:det,w:[11,26,26,34,60,14]}]);
+  const blob=xlsx([{n:'Resumen',rows:res,w:[34,18,16,16,16]},{n:'Viajes',rows:[vh.map(H),...vrows],w:[11,11,26,26,11,11,11,9,10,14,14,12,14,14,13,12,12,12,14,14,14,14,10,30]},{n:'Detalle de gastos',rows:det,w:[11,26,26,34,60,14]},...viaExcelDetalle(R)]);
   compartirBlob(blob,'Viajes-regulares-'+VIA_MES+'.xlsx','Viajes regulares · '+mesTxt(VIA_MES))}
 
 /* ---------- Compartir entre el administrador y los colegas ---------- */
@@ -1754,8 +1817,9 @@ function viaPdf(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay via
     const pc=[];for(let i=0;i<=72;i++){const a=i/72*2*Math.PI;pc.push([cx+r*0.5*Math.cos(a),cy+r*0.5*Math.sin(a)])}d.poly(pc,'#ffffff');
     it.forEach((x,i)=>{const yy=y+14+i*17;d.rect(210,yy-8,9,9,x.col);d.text(225,yy,x.n,{size:8.5,color:'#1a1a1a'});d.text(470,yy,fq(Math.round(x.v/T*1000)/10)+' %',{size:8.5,bold:true,color:'#1a1a1a',align:'r'});d.text(566,yy,money(x.v,'NIO'),{size:8.5,color:GRY,align:'r'})});
     y+=Math.max(150,it.length*17+20)}}
-  const notas=['Ingresos reales: boletos vendidos × precio del boleto y total cobrado por carga de cada viaje.','Gastos variables por viaje: diésel por horas reales de navegación (2 motores) y generador, lubricantes y filtros, horas extras con INSS/INATEC, viáticos (hospedaje solo en la ida), muellaje y otros gastos.','Costos fijos del mes (salarios, vacaciones, aguinaldo, cargas sociales, uniformes, botas, seguro y depreciación) repartidos entre los viajes del mes de cada embarcación'+(R.prov?'; en el mes en curso se usan los viajes programados.':'.')];
+  const notas=['Ingresos reales: boletos vendidos × precio del boleto y total cobrado por carga de cada viaje.','Gastos variables por viaje: diésel por horas reales de navegación (2 motores) y generador, lubricantes y filtros, horas extras con INSS/INATEC, viáticos (hospedaje solo en la ida), muellaje y otros gastos.','Costos fijos del mes (salarios, vacaciones, aguinaldo, cargas sociales, uniformes, botas, seguro y depreciación) repartidos entre los viajes programados del mes (miércoles, jueves, sábado y domingo): '+Math.max(viaProgMes(VIA_MES),t.n)+' viajes, '+t.n+' registrados. La página siguiente detalla cada gasto.'];
   notas.forEach(s=>d.wrap('• '+s,7.8,false,532).forEach(l=>{if(y>740){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)','')}d.text(40,y+8,l,{size:7.8,color:GRY});y+=10}));
+  viaPdfDetalle(d,R);
   pdfFooters(d,'Documento interno · Análisis de rentabilidad de viajes regulares · Empresa Portuaria Nacional · APBB');
   abrirVisor(d,'Viajes-regulares-'+VIA_MES+'.pdf','Viajes regulares · '+mesTxt(VIA_MES))}
 
