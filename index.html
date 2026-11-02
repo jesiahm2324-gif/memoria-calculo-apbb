@@ -133,7 +133,8 @@ details.fu summary{cursor:pointer;font-size:12px;color:var(--mut);font-weight:60
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);background:#13233d;color:#fff;padding:10px 16px;border-radius:20px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:90%;text-align:center}
 body[data-view="pf"] .toast{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-body.locked nav,body.locked main,body.locked .actions,body.locked #gear{display:none}
+body.locked nav,body.locked main,body.locked .actions,body.locked #gear,body.locked #bell{display:none}
+#bell{position:relative;margin-right:6px}#bell i{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#d93025;color:#fff;font:700 11px/18px system-ui,sans-serif;font-style:normal;text-align:center;padding:0 4px;box-shadow:0 0 0 2px var(--hdr2)}#bell.anim svg{animation:ring 1.2s ease-in-out 2}@keyframes ring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
 body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .actions,body.solo-tar #btnTarPdf{display:none!important}
 body.solo-tar #v-tar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;position:relative}
 #marca{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;display:none}
@@ -158,7 +159,7 @@ body.solo-tar.oculto #velo{display:flex}
 .tema .pv i{height:18px;display:block}
 .tema .pv s{flex:1;display:flex;gap:4px;padding:6px;text-decoration:none}
 .tema .pv s u{flex:1;border-radius:4px;display:block}
-.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.notice.bad{background:#fdecea;border-color:#f3b3ad}.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
 .seg button{background:transparent;color:var(--mut);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 /* Tipos de servicio */
@@ -310,6 +311,7 @@ body.pv-on{overflow:hidden}
   <h1>Memoria de Cálculo · Servicios Portuarios</h1>
   <p>Empresa Portuaria Nacional · APBB</p>
  </div>
+ <button class="ico" id="bell" aria-label="Alertas de matrículas" hidden><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><i id="bellN"></i></button>
  <button class="ico" id="gear" data-go="aju" aria-label="Ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 </header>
 <nav>
@@ -322,7 +324,7 @@ body.pv-on{overflow:hidden}
 <section id="gate"><p class="mut">Verificando acceso…</p></section>
 
 <main>
-<div id="aviso"></div>
+<div id="aviso"></div><div id="avMat"></div>
 <!-- CÁLCULO -->
 <section class="view on" id="v-pf">
  <div class="tipos" id="tipos" hidden>
@@ -933,7 +935,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.01-33';
+const APP_VER='2026.11.01-35';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1213,6 +1215,7 @@ async function initAcceso(){
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
+  renderAvMat();
   renderRent();
   const cl=window.claude;
   if(cl){const to=ms=>new Promise(r=>setTimeout(()=>r(null),ms));
@@ -1458,9 +1461,9 @@ const rolDe=c=>/patr|capit/i.test(c)?'cap':/maquin/i.test(c)?'maq':/marin/i.test
 let COSTOS=null;
 function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||JSON.parse(JSON.stringify(COSTO_DEF))):ls.get('epn_costos_rx',null);
   if(COSTOS&&OWNER&&!Array.isArray((COSTOS.par||{}).mu)){COSTOS.par=COSTOS.par||{};const b=+COSTOS.par.muBF,c=+COSTOS.par.muCI;COSTOS.par.mu=(b||c)?[{f:'2026-10-01',B:b||647.43,C:c||575}]:JSON.parse(JSON.stringify(COSTO_DEF.par.mu));ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}
-  if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[];COSTOS.emb.forEach(e=>{if(e.mot==null)e.mot=e.tipo==='mot'?2:1;if(e.gen==null)e.gen=e.tipo==='mot'?1:0;if(e.genH==null)e.genH=2})}
+  if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[];matInit();COSTOS.emb.forEach(e=>{if(e.mot==null)e.mot=e.tipo==='mot'?2:1;if(e.gen==null)e.gen=e.tipo==='mot'?1:0;if(e.genH==null)e.genH=2})}
   if(OWNER&&COSTOS&&!ls.get('epn_gen_v1',false)){COSTOS.emb.forEach(e=>{if(e.tipo==='mot'&&!+e.gen)e.gen=1});ls.set('epn_gen_v1',true);ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}return COSTOS}
-const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true);ghProgramar()}};
+const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true);ghProgramar()}if(typeof renderAvMat==='function')renderAvMat()};
 const puedeCostos=()=>OWNER||(!!LIC&&!LIC.p);
 const salTot=p=>(+p.sal||0)+(+p.ant||0);
 
@@ -1472,7 +1475,7 @@ async function cifrarCostos(obj){const k=await aesKey(await llaveOwner());const 
 async function descifrarCostos(pub,kb64){const k=await aesKey(b64uToBytes(kb64));const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(pub.iv)},k,b64uToBytes(pub.data));return JSON.parse(new TextDecoder().decode(pt))}
 const estCostos=st=>ls.set('epn_costos_est',{st,t:new Date().toISOString()});
 async function recibirCostos(pub){if(OWNER||!LIC||!LIC.k)return;if(!pub||!pub.data){estCostos('vacio');renderRent();return}
-  try{const o=await descifrarCostos(pub,LIC.k);ls.set('epn_costos_rx',o);estCostos('ok');cargarCostos();renderRent()}catch(e){estCostos('llave');renderRent()}}
+  try{const o=await descifrarCostos(pub,LIC.k);ls.set('epn_costos_rx',o);estCostos('ok');cargarCostos();renderRent();renderAvMat()}catch(e){estCostos('llave');renderRent()}}
 async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=await DB.doc('config/costos').get();await recibirCostos(s.exists?s.data():null)}catch(e){estCostos('red');renderRent()}return}
   try{const r=await fetch('costos.json?t='+Date.now(),{cache:'no-store'});if(!r.ok){estCostos(r.status===404?'vacio':'red');renderRent();return}await recibirCostos(await r.json())}catch(e){estCostos('red');renderRent()}}
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
@@ -1510,7 +1513,7 @@ function viaPlantilla(f,dir){const vu=dir==='vue';
            :[{de:'Muelle EPN',a:'Muelle municipal Bluefields',sal:'07:00',lle:'07:15',cd:0},{de:'Muelle municipal Bluefields',a:'Muelle Corn Island',sal:'09:00',lle:'',cd:2}]}
 function viaDirDe(f){const d=new Date(f+'T12:00').getDay();return d===4||d===0?'vue':'ida'}
 function viaNuevo(){const f=today(),dir=viaDirDe(f);const embs=(COSTOS&&COSTOS.emb||[]).filter(e=>e.tipo==='mot');const eid=ls.get('epn_via_emb','')||(embs[0]&&embs[0].id)||'';
-  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:'Administrador',nuevo:true}}
+  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',eq:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:'Administrador',nuevo:true}}
 const addMin=(hhmm,m)=>{if(!hhmm)return'';const t=hm2m(hhmm)+m;const x=((t%1440)+1440)%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')};
 function viaAuto(v){const t=v.tr;if(v.dir==='vue'&&t[1]&&t[1].auto&&t[0].lle){t[1].sal=addMin(t[0].lle,Math.round((+t[0].cd||0)*60));t[1].lle=addMin(t[1].sal,15)}}
 /* Convierte los tramos en fechas reales (si una hora es menor que la anterior, pasa al día siguiente) */
@@ -1549,9 +1552,11 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
   add('Costos fijos del mes (asignados)','Vacaciones y aguinaldo','Salarios ÷ 12 × 2'+nota,sm/12*2/D,1);
   add('Costos fijos del mes (asignados)','INSS patronal e INATEC','Sobre salarios y vacaciones'+nota,(sm+sm/12)*(par.inss+par.inatec)/100/D,1);
   add('Costos fijos del mes (asignados)','Uniformes y botas',n+' × C$ '+fmt(par.unif+par.botas)+' anual ÷ 12'+nota,n*(par.unif+par.botas)/12/D,1);
+  {const ma=matAnualEmb(v.emb,v.f);if(ma.own)add('Costos fijos del mes (asignados)','Matrícula de la embarcación','C$ '+fmt(ma.own)+' anual ÷ 12'+nota,ma.own/12/D,1)}
   if(e){if(+e.seg)add('Costos fijos del mes (asignados)','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12'+nota,(+e.seg)/12/D,1);if(+e.dep)add('Costos fijos del mes (asignados)','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12'+nota,(+e.dep)/12/D,1)}
   const tb=+v.tb>0?+v.tb:(+par.pasaje||310);const bolC=+v.np>0?(+v.np)*tb:(+v.bol||0);
-  const ing=bolC+(+v.car||0)+(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0);
+  const esEq=o=>/equipaje/i.test(o.d||'');const eqC=v.eq!=null&&v.eq!==''?(+v.eq||0):(v.eq==null?(v.oi||[]).filter(esEq).reduce((s,o)=>s+(+o.m||0),0):0);const oiC=(v.oi||[]).filter(o=>v.eq!=null||!esEq(o)).reduce((s,o)=>s+(+o.m||0),0);
+  const ing=bolC+(+v.car||0)+eqC+oiC;
   const gv=R.filter(x=>!x.fx).reduce((s,x)=>s+x.m,0),gf=R.filter(x=>x.fx).reduce((s,x)=>s+x.m,0),gas=gv+gf,ut=ing-gas,mg=ing?ut/ing*100:(gas?-100:0);
   const lubC=(par.lub||[]).reduce((s,l)=>s+(+l.p?(+l.p)/(+l.h||250)*hn*mot:0),0),mAli=n*(par.desay+par.alm+par.cena),bono=R.filter(x=>x.c==='Bono por viaje').reduce((s,x)=>s+x.m,0);
   const det={gal:{hn,hg,galM:mot*gal*hn,galG:gen*hg,cM:mot*gal*hn*par.diesel,cG:gen*hg*par.diesel,lub:lubC},
@@ -1559,7 +1564,7 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
     via:{n,hosp:hosp?n:0,mAli,mHosp:hosp?n*par.hosp:0,bono},mu:{B:muB,C:muC},
     fij:{items:R.filter(x=>x.fx).map(x=>({c:x.c.replace(/^Seguro .*/,'Seguro').replace(/^Depreciación .*/,'Depreciación').replace(/^Salarios \(\d+\)/,'Salarios'),m:x.m,mes:x.raw*D}))}};
   const pas=tb;const faltan=ut<0?Math.ceil(-ut/pas):0;const faltanV=ing-gv<0?Math.ceil(-(ing-gv)/pas):0;
-  return{R,det,ing,bolC,tb,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
+  return{R,det,ing,bolC,eqC,oiC,tb,gv,gf,gas,ut,mg,cont:ing-gv,hn,hg,hx,hxA,emb:e,crew,n,D,div:dv2,pas,faltan,faltanV,T}}
 const viaSem=c=>c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
 const viaFecha=f=>{const d=new Date(f+'T12:00');return DIAS[d.getDay()]+' '+d.toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'})};
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -1643,6 +1648,7 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
   if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
   if(OWNER&&VIA_SEC==='arq')return renderArq();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
+  if(VIA_SEC==='mat')return renderMat();
   if(VIA_EDIT)return renderViaForm();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
   box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:${OWNER?10:0}px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
@@ -1686,7 +1692,7 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
    <h3 class="sub">Ingresos reales del viaje</h3>
    <div class="grid"><div><label>Boletos vendidos</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="np" value="${v.np}" placeholder="Cantidad"></div><div><label>Precio del boleto (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="tb" value="${v.tb}" placeholder="${fmt(+COSTOS.par.pasaje||310)}"></div>
     <div style="grid-column:1/-1" class="via-bol"><span>Ingreso por boletería</span><b id="viaBol">${money(c.bolC,'NIO')}</b></div>
-    <div style="grid-column:1/-1"><label>Total cobrado por carga (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="car" value="${v.car}" placeholder="0.00"></div></div>
+    <div><label>Total cobrado por carga (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="car" value="${v.car}" placeholder="0.00"></div><div><label>Equipaje extra (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="eq" value="${v.eq??''}" placeholder="0.00"></div></div>
    ${(v.oi||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-voi="${i}" data-f="d" value="${esc(o.d)}" placeholder="Otro ingreso" style="flex:2"><input data-voi="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1">${ro?'':`<button type="button" class="btnd" data-voidel="${i}" style="width:40px;padding:0">✕</button>`}</div>`).join('')}
    ${ro?'':'<button type="button" class="btn2" data-voiadd style="width:100%;margin-top:6px">+ Otro ingreso</button>'}
    <h3 class="sub">Otros gastos del viaje (C$)</h3>
@@ -1714,7 +1720,7 @@ function viaEliminar(){const v=VIA_EDIT;if(!confirm('¿Eliminar este viaje?'))re
 document.addEventListener('click',e=>{const b=e.target.closest('[data-vmes],[data-vnew],[data-vedit],[data-vcancel],[data-vsave],[data-vdel],[data-voiadd],[data-voidel],[data-vogadd],[data-vogdel],[data-vpdf],[data-vxls],[data-vcrewok]');if(!b||!b.closest('#viaBox'))return;
   if(b.dataset.vmes){const [y,m]=VIA_MES.split('-').map(Number);const d=new Date(y,m-1+(+b.dataset.vmes),1);VIA_MES=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return renderVia()}
   if(b.hasAttribute('data-vnew')){if(!OWNER)return;VIA_EDIT=viaNuevo();ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0);return}
-  if(b.dataset.vedit){const x=viaLista().find(y=>y.id===b.dataset.vedit);if(x){VIA_EDIT=JSON.parse(JSON.stringify(x));ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0)}return}
+  if(b.dataset.vedit){const x=viaLista().find(y=>y.id===b.dataset.vedit);if(x){VIA_EDIT=JSON.parse(JSON.stringify(x));if(VIA_EDIT.eq==null){const q=(VIA_EDIT.oi||[]).filter(o=>/equipaje/i.test(o.d||''));VIA_EDIT.eq=q.length?String(q.reduce((s,o)=>s+(+o.m||0),0)):'';VIA_EDIT.oi=(VIA_EDIT.oi||[]).filter(o=>!/equipaje/i.test(o.d||''))}ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0)}return}
   if(b.hasAttribute('data-vcancel')){VIA_EDIT=null;return renderVia()}
   if(b.hasAttribute('data-vcrewok')){ACC_OPEN.delete('vcrew');const d=b.closest('details');if(d)d.open=false;return}
   if(!OWNER&&!b.hasAttribute('data-vpdf')&&!b.hasAttribute('data-vxls'))return;
@@ -1769,17 +1775,17 @@ function viaExcel(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay v
   const GR=['Combustible y lubricantes','Horas extras','Viáticos','Muellaje','Otros gastos','Costos fijos del mes (asignados)'];
   const gsum=(c,g)=>c.R.filter(x=>x.g===g).reduce((s,x)=>s+x.m,0);
   const res=[[{v:'Rentabilidad de viajes regulares · Bluefields – Corn Island',s:6}],['Empresa Portuaria Nacional · APBB · '+mesTxt(VIA_MES)+(R.prov?' (mes en curso)':'')],[],
-    [H('Indicador'),H('Monto (C$)')],['Viajes',t.n],['Ingresos',t.ing],['Gastos variables',t.gv],['Costos fijos asignados',t.gf],['Gastos totales',t.gas],[BT('Utilidad'),B(t.ut)],['Margen',P(t.mg)],[],
+    [H('Indicador'),H('Monto (C$)')],['Viajes',t.n],['Ingresos',t.ing],['   Boletería',R.cs.reduce((s,x)=>s+x.c.bolC,0)],['   Carga',R.cs.reduce((s,x)=>s+(+x.v.car||0),0)],['   Equipaje extra',R.cs.reduce((s,x)=>s+x.c.eqC,0)],['   Otros ingresos',R.cs.reduce((s,x)=>s+x.c.oiC,0)],['Gastos variables',t.gv],['Costos fijos asignados',t.gf],['Gastos totales',t.gas],[BT('Utilidad'),B(t.ut)],['Margen',P(t.mg)],[],
     [H('Distribución'),H('Monto (C$)'),H('% del ingreso')],...GR.map(g=>{const m=R.cs.reduce((s,x)=>s+gsum(x.c,g),0);return [PIE_NOM[g]||g,m,P(t.ing?m/t.ing*100:0)]}),['Utilidad',t.ut,P(t.mg)],[],
     [H('Día de salida'),H('Viajes'),H('Boletos'),H('Ingresos (C$)'),H('Utilidad (C$)')],...[3,4,6,0].map(k=>{const r=R.porDia[k]||{n:0,np:0,ing:0,ut:0};return [DIAS[k],r.n,r.np,r.ing,r.ut]}),[],
     [H('Embarcación'),H('Viajes'),H('Ingresos (C$)'),H('Utilidad (C$)')],...Object.entries(R.porEmb).map(([k,r])=>[k,r.n,r.ing,r.ut])];
-  const vh=['Fecha','Día','Sentido','Embarcación','Tripulantes','Horas navegación','Galones diésel','Boletos','Precio boleto','Ingreso boletería','Ingreso carga','Otros ingresos','Total ingresos',...GR.map(g=>PIE_NOM[g]||g),'Gastos variables','Gastos totales','Utilidad','Margen','Observaciones'];
+  const vh=['Fecha','Día','Sentido','Embarcación','Tripulantes','Horas navegación','Galones diésel','Boletos','Precio boleto','Ingreso boletería','Ingreso carga','Equipaje extra','Otros ingresos','Total ingresos',...GR.map(g=>PIE_NOM[g]||g),'Gastos variables','Gastos totales','Utilidad','Margen','Observaciones'];
   const vrows=R.cs.map(({v,c})=>{const d=new Date(v.f+'T12:00');const gal=c.R.filter(x=>/^Diésel/.test(x.c)).reduce((s,x)=>{const m=x.d.match(/= ([\d.,]+) gal/);return s+(m?+m[1].replace(/,/g,''):0)},0);
-    return [v.f,DIAS[d.getDay()],VIA_DIR[v.dir],c.emb?c.emb.n:'',c.n,c.hn,gal,+v.np||0,c.tb,c.bolC,+v.car||0,(v.oi||[]).reduce((s,o)=>s+(+o.m||0),0),c.ing,...GR.map(g=>gsum(c,g)),c.gv,c.gas,B(c.ut),P(c.mg),v.obs||'']});
+    return [v.f,DIAS[d.getDay()],VIA_DIR[v.dir],c.emb?c.emb.n:'',c.n,c.hn,gal,+v.np||0,c.tb,c.bolC,+v.car||0,c.eqC,c.oiC,c.ing,...GR.map(g=>gsum(c,g)),c.gv,c.gas,B(c.ut),P(c.mg),v.obs||'']});
   const S=k=>R.cs.reduce((s,x)=>s+x.c[k],0);
-  vrows.push(['Total','','','','','','',R.cs.reduce((s,x)=>s+(+x.v.np||0),0),'',S('bolC'),R.cs.reduce((s,x)=>s+(+x.v.car||0),0),'',B(t.ing),...GR.map(g=>B(R.cs.reduce((s,x)=>s+gsum(x.c,g),0))),B(t.gv),B(t.gas),B(t.ut),P(t.mg),'']);
+  vrows.push(['Total','','','','','','',R.cs.reduce((s,x)=>s+(+x.v.np||0),0),'',S('bolC'),R.cs.reduce((s,x)=>s+(+x.v.car||0),0),S('eqC'),S('oiC'),B(t.ing),...GR.map(g=>B(R.cs.reduce((s,x)=>s+gsum(x.c,g),0))),B(t.gv),B(t.gas),B(t.ut),P(t.mg),'']);
   const det=[[H('Fecha'),H('Sentido'),H('Rubro'),H('Concepto'),H('Cálculo'),H('Monto (C$)')]];R.cs.forEach(({v,c})=>c.R.forEach(x=>det.push([v.f,VIA_DIR[v.dir],PIE_NOM[x.g]||x.g,x.c,x.d,x.m])));
-  const blob=xlsx([{n:'Resumen',rows:res,w:[34,18,16,16,16]},{n:'Viajes',rows:[vh.map(H),...vrows],w:[11,11,26,26,11,11,11,9,10,14,14,12,14,14,13,12,12,12,14,14,14,14,10,30]},{n:'Detalle de gastos',rows:det,w:[11,26,26,34,60,14]},...viaExcelDetalle(R)]);
+  const blob=xlsx([{n:'Resumen',rows:res,w:[34,18,16,16,16]},{n:'Viajes',rows:[vh.map(H),...vrows],w:[11,11,26,26,11,11,11,9,10,14,14,12,12,14,14,13,12,12,12,14,14,14,14,10,30]},{n:'Detalle de gastos',rows:det,w:[11,26,26,34,60,14]},...viaExcelDetalle(R)]);
   compartirBlob(blob,'Viajes-regulares-'+VIA_MES+'.xlsx','Viajes regulares · '+mesTxt(VIA_MES))}
 
 /* ---------- Compartir entre el administrador y los colegas ---------- */
@@ -1846,7 +1852,7 @@ function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
     <button class="btn2" data-qxls style="width:100%;margin-top:10px">Excel de arqueos del mes</button>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay arqueos en este mes.</p>'}
    <button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>
    ${cs.length?`<details class="rg colw" data-ok="qlist" style="margin-top:12px"${ACC_OPEN.has('qlist')?' open':''}><summary><span>Arqueos de ${mesTxt(VIA_MES).toLowerCase()} (${cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>Entregó: ${esc(a.enc||'—')}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small>recibido</small></div></button>`).join('')}</div></details>`:''}`}
-const segVia=()=>OWNER?`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button><button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo de caja</button></div>`:'';
+const segVia=()=>`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${OWNER?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button>`:''}<button data-vsec="mat" class="${VIA_SEC==='mat'?'on':''}">Matrículas</button></div>`;
 function denFila(grp,d,val,pre){const n=+val||0;return `<div class="den"><span>${pre} ${d<1?d.toFixed(2):fmt(d,0)}</span><input type="number" min="0" step="1" inputmode="numeric" data-qd="${grp}" data-den="${d}" value="${val||''}" placeholder="0"><b data-qm="${grp}-${d}">${pre} ${fmt(n*d)}</b></div>`}
 function arqResHTML(a,c){return `<div class="arq-r"><div><span>Efectivo en córdobas</span><b>${money(c.nio,'NIO')}</b></div><div><span>Efectivo en dólares (US$ ${fmt(c.usd)} × ${fq(c.tc)})</span><b>${money(c.usdC,'NIO')}</b></div>${c.otros?`<div><span>Otros (transferencias)</span><b>${money(c.otros,'NIO')}</b></div>`:''}
    <div class="t"><span>Total general</span><b>${money(c.gen,'NIO')}</b></div><div><span>(−) Dinero para cambio</span><b>${money(c.cam,'NIO')}</b></div>
@@ -1904,9 +1910,9 @@ function arqExcel(){const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort(
   rows.push(['Total','','','','',...DEN_NIO_B.map(()=>''),...DEN_NIO_M.map(()=>''),B(S(c=>c.nio)),...DEN_USD.map(()=>''),B(S(c=>c.usd)),'',B(S(c=>c.usdC)),B(S(c=>c.gen)),B(S(c=>c.cam)),B(S(c=>c.rec)),'']);
   const blob=xlsx([{n:'Arqueos',rows:[[{v:'Arqueos de caja · '+mesTxt(VIA_MES),s:6}],[],head.map(H),...rows],w:head.map((h,i)=>i<5?(i===3||i===4?26:11):i===head.length-1?30:12)}]);
   compartirBlob(blob,'Arqueos-'+VIA_MES+'.xlsx','Arqueos de caja · '+mesTxt(VIA_MES))}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-vsec],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!OWNER)return;
+document.addEventListener('click',e=>{const v=e.target.closest('[data-vsec]');if(v&&v.closest('#viaBox')){VIA_SEC=v.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;return renderVia()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!OWNER)return;
   if(b.hasAttribute('data-qrecadd')){const n=(prompt('Nombre de quien recibe el dinero:')||'').trim();if(!n)return;const l=receptores();if(!l.includes(n)){l.push(n);l.sort();ls.set('epn_arq_recs',l)}ARQ_EDIT.rec=n;return renderArqForm()}
-  if(b.dataset.vsec){VIA_SEC=b.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;return renderVia()}
   if(b.hasAttribute('data-qnew')){ARQ_EDIT=arqNuevo();renderVia();window.scrollTo(0,0);return}
   if(b.dataset.qedit){const x=arqLista().find(y=>y.id===b.dataset.qedit);if(x){ARQ_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
   if(b.hasAttribute('data-qcancel')){ARQ_EDIT=null;return renderVia()}
@@ -1914,6 +1920,94 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[
   if(b.hasAttribute('data-qpdf'))return arqPdf(ARQ_EDIT);
   if(b.hasAttribute('data-qxls'))return arqExcel();
   if(b.hasAttribute('data-qdel')){if(!confirm('¿Eliminar este arqueo?'))return;ls.set('epn_arqueos',arqLista().filter(y=>y.id!==ARQ_EDIT.id));ARQ_EDIT=null;renderVia()}});
+
+/* ===== Matrículas y permisos (embarcaciones, pangas y puerto) con aviso 30 días antes ===== */
+const MAT_TIPOS={emb:'Embarcación',pan:'Panga',pue:'Empresa (puerto)',otr:'Otro'};
+const MAT_DOC={emb:'Matrícula de embarcación',pan:'Matrícula de panga',pue:'Matrícula del puerto',otr:'Documento'};
+const MAT_DEF=[['Hilario Sánchez','emb','hsa'],['Río Escondido','emb','res'],['Jimmy Boppel','emb','jbo'],['Pedro Araúz Palacios','emb','pap'],['Libertad II','emb',''],['Tango I','pan',''],['Tango II','pan',''],['Tango III','pan',''],['Tango IV','pan',''],['Administración Portuaria Bluff–Bluefields','pue','']];
+let MAT_EDIT=null;
+function matLista(){return (COSTOS&&COSTOS.mat)||[]}
+function matInit(){if(!COSTOS||!OWNER||Array.isArray(COSTOS.mat))return;COSTOS.mat=MAT_DEF.map(([n,t,e],i)=>({id:'m'+i+Date.now().toString(36),n,t,e,doc:MAT_DOC[t],num:'',obs:'',pagos:[]}));ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}
+const matUlt=m=>(m.pagos||[]).slice().sort((a,b)=>String(a.v).localeCompare(String(b.v))).pop()||null;
+const diasHasta=f=>Math.round((new Date(f+'T12:00')-new Date(today()+'T12:00'))/864e5);
+function matEstado(m){const u=matUlt(m);if(!u||!u.v)return{k:'',t:'Sin registrar',d:null};const d=diasHasta(u.v);
+  return d<0?{k:'bad',t:'Vencida hace '+(-d)+' día'+(d===-1?'':'s'),d}:d<=30?{k:'warnc',t:d===0?'Vence hoy':'Vence en '+d+' día'+(d===1?'':'s'),d}:{k:'ok',t:'Vigente',d}}
+/* Pago anual vigente en una fecha (para costos fijos) */
+function matPagoEn(m,f){const ps=(m.pagos||[]).filter(p=>+p.m>0&&p.f).slice().sort((a,b)=>a.f.localeCompare(b.f));if(!ps.length)return 0;let x=ps[0];ps.forEach(p=>{if(p.f<=f)x=p});return +x.m||0}
+function matAnualEmb(embId,f){if(!COSTOS||!embId)return{own:0,pue:0,n:0};const L=matLista();const own=L.filter(m=>m.e===embId).reduce((s,m)=>s+matPagoEn(m,f),0);
+  const nE=Math.max(1,(COSTOS.emb||[]).length);const pue=L.filter(m=>m.t==='pue').reduce((s,m)=>s+matPagoEn(m,f),0)/nE;return{own,pue,n:nE}}
+function renderAvMat(){const el=$('#avMat');if(!el)return;const bell=$('#bell');if(!COSTOS||!puedeVia()){el.innerHTML='';if(bell)bell.hidden=true;return}
+  const al=matLista().map(m=>({m,e:matEstado(m)})).filter(x=>x.e.d!=null&&x.e.d<=30).sort((a,b)=>a.e.d-b.e.d);
+  if(bell){bell.hidden=!al.length;$('#bellN').textContent=al.length;bell.style.color=al.some(x=>x.e.d<0)?'#ffb4ab':'';if(al.length&&!bell._an){bell._an=1;bell.classList.add('anim')}}
+  if(!al.length||ls.get('epn_avmat_oc','')===today()+':'+al.length){el.innerHTML='';return}
+  el.innerHTML=`<div class="notice ${al.some(x=>x.e.d<0)?'bad':''}" style="margin-bottom:10px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:start"><b>Matrículas por vencer</b><button class="pv-x" data-avmatx aria-label="Ocultar hoy" style="width:30px;height:30px">✕</button></div>${al.map(x=>`<div class="sm" style="margin-top:3px">• <b>${esc(x.m.n)}</b> (${esc(x.m.doc)}): ${x.e.t} · ${fLarga(matUlt(x.m).v)}</div>`).join('')}<button class="btn2" data-avmatgo style="margin-top:8px;padding:6px 12px">Ver matrículas</button></div>`}
+document.addEventListener('click',e=>{if(e.target.closest('#bell')){VIA_SEC='mat';VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;show('via');return}const b=e.target.closest('[data-avmatx],[data-avmatgo]');if(!b)return;
+  if(b.hasAttribute('data-avmatx')){const n=matLista().filter(m=>{const s=matEstado(m);return s.d!=null&&s.d<=30}).length;ls.set('epn_avmat_oc',today()+':'+n);renderAvMat();return}
+  VIA_SEC='mat';VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;show('via')});
+/* Calendario (.ics) con alarma 30 días antes y el día del vencimiento */
+function icsDe(ms){const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//EPN APBB//Matriculas//ES','CALSCALE:GREGORIAN','METHOD:PUBLISH'];const st=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  ms.forEach(m=>{const u=matUlt(m);if(!u||!u.v)return;const d=u.v.replace(/-/g,''),d2=kd(new Date(new Date(u.v+'T12:00').getTime()+864e5)).replace(/-/g,'');const t=('Vence '+m.doc+' – '+m.n).replace(/[,;]/g,' ');
+    L.push('BEGIN:VEVENT','UID:'+m.id+'-'+d+'@apbb','DTSTAMP:'+st,'DTSTART;VALUE=DATE:'+d,'DTEND;VALUE=DATE:'+d2,'SUMMARY:'+t,'DESCRIPTION:'+(m.num?'N.º '+m.num+'. ':'')+'Renovar la matrícula (EPN · APBB).','BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+t+' en 30 días','TRIGGER:-P30D','END:VALARM','BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+t+' hoy','TRIGGER:PT8H','END:VALARM','END:VEVENT')});
+  L.push('END:VCALENDAR');return L.join('\r\n')}
+async function matCalendario(ms){const ok=ms.filter(m=>{const u=matUlt(m);return u&&u.v});if(!ok.length){toast('Primero registre la fecha de vencimiento');return}
+  const blob=new Blob([icsDe(ok)],{type:'text/calendar'});const nombre=ok.length===1?'Matricula-'+slug(ok[0].n)+'.ics':'Matriculas-APBB.ics';
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(!ios){try{const f=new File([blob],nombre,{type:'text/calendar'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Recordatorio de matrícula'});return}}catch(e){if(e&&e.name==='AbortError')return}}
+  try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
+  const r=new FileReader();r.onload=()=>{const a=document.createElement('a');a.href=r.result;a.download=nombre;a.target='_blank';document.body.appendChild(a);a.click();a.remove()};r.readAsDataURL(blob);toast('Abra el archivo y toque «Agregar» al calendario')}
+/* Pantalla */
+function renderMat(){const box=$('#viaBox');if(MAT_EDIT)return renderMatForm();const L=matLista();
+  const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];const ro=!OWNER;
+  const tot=L.reduce((s,m)=>s+matPagoEn(m,today()),0);
+  box.innerHTML=`${segVia()}<p class="sm" style="margin:10px 0 6px">Aviso automático 30 días antes del vencimiento. El pago anual de la matrícula de cada embarcación se suma a sus costos fijos. La matrícula del puerto es solo para control de vencimiento.</p>
+   <div class="rent-k"><div><span>Pagos anuales vigentes</span><b>${money(tot,'NIO')}</b></div><div class="${L.some(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30})?'warnc':'ok'}"><span>Por vencer o vencidas</span><b>${L.filter(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30}).length}</b><small>de ${L.length} registradas</small></div></div>
+   ${grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return'';return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);return `<button class="via-it" data-medit="${m.id}"><div><b>${esc(m.n)}</b><small>${esc(m.doc)}${m.num?' · N.º '+esc(m.num):''}${u&&+u.m?' · '+money(u.m,'NIO'):''}</small></div><div style="text-align:right"><span class="chip ${e.k}">${e.t}</span><small>${u&&u.v?'vence '+new Date(u.v+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'sin fecha'}</small></div></button>`}).join('')}).join('')}
+   <div class="row" style="flex-wrap:nowrap;margin-top:10px"><button class="btn2" data-mcalall style="flex:1">Todas al calendario</button><button class="btn2" data-mpdf style="flex:1">Reporte PDF</button></div>
+   ${ro?'':'<button class="btn" data-mnew style="width:100%;margin-top:10px">+ Agregar embarcación, panga u otro</button>'}`}
+function renderMatForm(){const m=MAT_EDIT,box=$('#viaBox'),ro=!OWNER,e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${m.nuevo?'Nueva matrícula':esc(m.n)}</b><button class="btn2" data-mcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
+   ${m.nuevo?'':`<p style="margin:6px 0"><span class="chip ${e.k}">${e.t}</span></p>`}
+   <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0"><div class="grid" style="margin-top:6px">
+    <div style="grid-column:1/-1"><label>Nombre</label><input data-mf="n" value="${esc(m.n)}" placeholder="Ej.: Tango V"></div>
+    <div><label>Tipo</label><select data-mf="t">${Object.entries(MAT_TIPOS).map(([k,l])=>`<option value="${k}" ${m.t===k?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div><label>Documento</label><input data-mf="doc" value="${esc(m.doc)}"></div>
+    <div><label>N.º de matrícula</label><input data-mf="num" value="${esc(m.num||'')}"></div>
+    ${m.t==='emb'?`<div><label>Costos de la embarcación</label><select data-mf="e"><option value="">— No vincular —</option>${(COSTOS.emb||[]).map(x=>`<option value="${x.id}" ${m.e===x.id?'selected':''}>${esc(x.n)}</option>`).join('')}</select></div>`:''}
+    <div style="grid-column:1/-1"><label>Observaciones</label><input data-mf="obs" value="${esc(m.obs||'')}"></div></div>
+   <h3 class="sub">Pago vigente</h3>
+   ${ps.length?'':'<p class="sm" style="margin-top:0">Registre el último pago y su fecha de vencimiento.</p>'}
+   ${(ps.length?[ps[0]]:[{f:'',m:'',v:''}]).map(p=>`<div class="grid"><div><label>Fecha de pago</label><input type="date" data-mp="f" value="${p.f||''}"></div><div><label>Monto pagado (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-mp="m" value="${p.m||''}" placeholder="0.00"></div><div style="grid-column:1/-1"><label>Fecha de vencimiento</label><input type="date" data-mp="v" value="${p.v||''}"></div></div>`).join('')}
+   </fieldset>
+   ${!ro&&ps.length?'<button class="btn2" data-mren style="width:100%;margin-top:8px">Registrar renovación (nuevo pago)</button>':''}
+   ${ps.length>1?`<details class="rg" style="margin-top:10px"><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${p.f?new Date(p.f+'T12:00').toLocaleDateString('es-NI'):'—'}<small>vence ${p.v?new Date(p.v+'T12:00').toLocaleDateString('es-NI'):'—'}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
+   ${ps.length&&ps[0].v?`<button class="btn2" data-mcal style="width:100%;margin-top:10px">📅 Agregar al calendario (aviso 30 días antes)</button>`:''}
+   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar</button>${m.nuevo?'':'<button class="btnd" data-mdel style="flex:1">Eliminar</button>'}</div>`}`}
+document.addEventListener('input',e=>{const el=e.target;if(!MAT_EDIT||!el.closest||!el.closest('#viaBox'))return;const m=MAT_EDIT;
+  if(el.dataset.mf){m[el.dataset.mf]=el.value}
+  if(el.dataset.mp){m.pagos=m.pagos||[];if(!m.pagos.length)m.pagos.push({f:'',m:'',v:''});const ps=m.pagos.slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));const p=m._cur||(m._cur=ps[0]);p[el.dataset.mp]=el.value;
+    if(el.dataset.mp==='f'&&el.value&&!p.v){const d=new Date(el.value+'T12:00');d.setFullYear(d.getFullYear()+1);p.v=kd(d);const iv=document.querySelector('[data-mp=v]');if(iv)iv.value=p.v}}});
+document.addEventListener('change',e=>{const el=e.target;if(MAT_EDIT&&el.dataset&&el.dataset.mf==='t'){MAT_EDIT.t=el.value;if(Object.values(MAT_DOC).includes(MAT_EDIT.doc)||!MAT_EDIT.doc)MAT_EDIT.doc=MAT_DOC[el.value];if(el.value!=='emb')MAT_EDIT.e='';renderMatForm()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[data-mnew],[data-mcancel],[data-msave],[data-mdel],[data-mren],[data-mcal],[data-mcalall],[data-mpdf]');if(!b||!b.closest('#viaBox'))return;
+  if(b.dataset.medit){const x=matLista().find(m=>m.id===b.dataset.medit);if(x){MAT_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-mcancel')){MAT_EDIT=null;return renderVia()}
+  if(b.hasAttribute('data-mcal'))return matCalendario([MAT_EDIT]);
+  if(b.hasAttribute('data-mcalall'))return matCalendario(matLista());
+  if(b.hasAttribute('data-mpdf'))return matPdf();
+  if(!OWNER)return;
+  if(b.hasAttribute('data-mnew')){MAT_EDIT={id:'m'+Date.now().toString(36),n:'',t:'pan',e:'',doc:MAT_DOC.pan,num:'',obs:'',pagos:[],nuevo:true};renderVia();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-mren')){const u=matUlt(MAT_EDIT)||{};const v=u.v?new Date(u.v+'T12:00'):new Date();v.setFullYear(v.getFullYear()+1);const p={f:today(),m:u.m||'',v:kd(v)};MAT_EDIT.pagos.push(p);MAT_EDIT._cur=p;renderMatForm();toast('Revise la fecha de pago, el monto y el vencimiento, y toque Guardar');return}
+  if(b.hasAttribute('data-msave')){const m=MAT_EDIT;if(!(m.n||'').trim()){toast('Escriba el nombre');return}const x={...m};delete x.nuevo;delete x._cur;x.pagos=(x.pagos||[]).filter(p=>p.f||p.v||+p.m);
+    {const L=matLista().slice();const i=L.findIndex(y=>y.id===x.id);if(i>=0)L[i]=x;else L.push(x);COSTOS.mat=L}guardarCostos();MAT_EDIT=null;toast('Matrícula guardada');renderVia();renderAvMat();return}
+  if(b.hasAttribute('data-mdel')){if(!confirm('¿Eliminar '+MAT_EDIT.n+' del control de matrículas?'))return;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderVia();renderAvMat()}});
+function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');return}const d=PDFW();d.page();let y=pdfHeader(d,'CONTROL DE MATRÍCULAS Y PERMISOS','Al '+fLarga(today()));
+  const C=[['Nombre',150],['Documento',120],['N.º',70],['Pagado',60],['Monto C$',60],['Vence',60],['Estado',72]];const W=C.reduce((s,x)=>s+x[1],0),sc=532/W;
+  const head=()=>{d.rect(40,y,532,15,NAVY);let x=40;C.forEach(([h,w])=>{d.text(x+4,y+10.5,h,{size:7.5,bold:true,color:'#ffffff'});x+=w*sc});y+=15};head();
+  [['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']].forEach(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return;d.rect(40,y,532,13,'#e8f0f9');d.text(44,y+9.5,t,{size:8,bold:true,color:NAVY});y+=13;
+    xs.forEach((m,i)=>{if(y>740){d.page();y=pdfHeader(d,'CONTROL DE MATRÍCULAS (continuación)','');head()}const u=matUlt(m)||{},e=matEstado(m);if(i%2)d.rect(40,y,532,13,'#f6f8fb');
+      const cells=[m.n,m.doc,m.num||'—',u.f?new Date(u.f+'T12:00').toLocaleDateString('es-NI'):'—',u.m?fmt(u.m):'—',u.v?new Date(u.v+'T12:00').toLocaleDateString('es-NI'):'—',e.t];let x=40;
+      cells.forEach((s,j)=>{d.text(x+4,y+9.5,d.wrap(String(s),7.5,j===6,C[j][1]*sc-8)[0],{size:7.5,bold:j===6,color:j===6?(e.k==='bad'?'#b42318':e.k==='warnc'?'#8a6100':'#1a1a1a'):'#1a1a1a'});x+=C[j][1]*sc});y+=13})});
+  y+=10;d.text(40,y+8,'Total de pagos anuales vigentes: '+money(L.reduce((s,m)=>s+matPagoEn(m,today()),0),'NIO'),{size:9,bold:true,color:'#1a1a1a'});
+  pdfFooters(d,'Control de matrículas · Documento interno · Empresa Portuaria Nacional · APBB');abrirVisor(d,'Matriculas-APBB-'+today()+'.pdf','Control de matrículas')}
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
@@ -1942,6 +2036,7 @@ function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=emb
   add('Convenio colectivo','Uniformes',n+' persona(s) × C$ '+fmt(par.unif)+' anual ÷ 12 ÷ 30 × '+dias,n*par.unif/12/30*dias);
   add('Convenio colectivo','Botas',n+' persona(s) × C$ '+fmt(par.botas)+' anual ÷ 12 ÷ 30 × '+dias,n*par.botas/12/30*dias);
   const nc=crew.filter(c=>c.rol==='cap').length;add('Convenio colectivo','Bono por viaje',nc+' capitán × C$ '+fmt(par.bonoCap)+' + '+(n-nc)+' × C$ '+fmt(par.bonoOtro),nc*par.bonoCap+(n-nc)*par.bonoOtro);
+  if(e){const ma=matAnualEmb(e.id,(P.itin&&P.itin[0]&&P.itin[0].sal||today()).slice(0,10));if(ma.own)add('Seguro y depreciación','Matrícula de la embarcación','C$ '+fmt(ma.own)+' anual ÷ 12 ÷ 30 × '+dias,ma.own/12/30*dias)}
   if(e){add('Seguro y depreciación','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12 ÷ 30 × '+dias,(+e.seg||0)/12/30*dias);add('Seguro y depreciación','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12 ÷ 30 × '+dias,(+e.dep||0)/12/30*dias)}
   const dv=par.desay+par.alm+par.cena+par.hosp;add('Viáticos','Alimentación y hospedaje',n+' persona(s) × '+dh+' día(s) hábil(es) × C$ '+fmt(dv),n*dh*dv);
   const gal=e?(+e.gal||0):0,mot=e?Math.max(1,+e.mot||1):1,gen=e?(+e.gen||0):0;add('Combustible y lubricantes','Diésel motores'+(mot>1?' ('+mot+')':''),(mot>1?mot+' motores × ':'')+gal+' gal/h × '+fq(hn)+' h navegación × C$ '+fmt(par.diesel)+' = '+fq(Math.round(mot*gal*hn*100)/100)+' gal',mot*gal*hn*par.diesel);
