@@ -910,7 +910,7 @@ function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(
   applyTipo();bindMeta();renderItin();if(P.tipo==='chr')chrRecalc();else{syncCoc();renderLines()}}
 
 /* ===== Navegación ===== */
-function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his'){MAT_EDIT=null;renderMat()}if(v==='pf')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();window.scrollTo(0,0)}
+function show(v){const nv=v==='prev'?'pf':v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his'){MAT_EDIT=null;renderMat();matSync(true)}if(v==='pf')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
 $('#btnPrev').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-'+(P.tipo||'buq')+'-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo · '+TIPOS[P.tipo||'buq'])}catch(e){console.error(e);toast('No se pudo generar la vista')}};
 
@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.02-38';
+const APP_VER='2026.11.02-39';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1085,7 +1085,7 @@ function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=se
 async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
   const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false),pv=ls.get('epn_viajes_pend',false)&&MK;if(!pc&&!pr&&!pv)return true;
   _ghBusy=true;let err=null,hecho=[];
-  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
+  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
     if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}
     if(pv){const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await ghPut('viajes.json',JSON.stringify(pub),'Actualizar viajes regulares (app)');ls.set('epn_viajes_pend',false);hecho.push('viajes')}}catch(e){err=e.message}
   _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
@@ -1228,7 +1228,7 @@ async function initAcceso(){
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
-  setTimeout(()=>arqSync(true),2500);
+  setTimeout(()=>arqSync(true),2500);setTimeout(()=>matSync(true),4000);
   renderAvMat();renderHis();pfSum();
   renderRent();
   const cl=window.claude;
@@ -1495,7 +1495,7 @@ async function recibirCostos(pub){if(OWNER||!LIC||!LIC.k)return;if(!pub||!pub.da
 async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=await DB.doc('config/costos').get();await recibirCostos(s.exists?s.data():null)}catch(e){estCostos('red');renderRent()}return}
   try{const r=await fetch('costos.json?t='+Date.now(),{cache:'no-store'});if(!r.ok){estCostos(r.status===404?'vacio':'red');renderRent();return}await recibirCostos(await r.json())}catch(e){estCostos('red');renderRent()}}
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
-  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
+  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
   if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
   if(ghTok()){ls.set('epn_costos_pend',true);if(await ghSync(true)){toast('Costos publicados para los colegas');renderCostAdm();return}}
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
@@ -1943,7 +1943,32 @@ const MAT_TIPOS={emb:'Embarcación',pan:'Panga',pue:'Empresa (puerto)',otr:'Otro
 const MAT_DOC={emb:'Matrícula de embarcación',pan:'Matrícula de panga',pue:'Matrícula del puerto',otr:'Documento'};
 const MAT_DEF=[['Hilario Sánchez','emb','hsa'],['Río Escondido','emb','res'],['Jimmy Boppel','emb','jbo'],['Pedro Araúz Palacios','emb','pap'],['Libertad II','emb',''],['Tango I','pan',''],['Tango II','pan',''],['Tango III','pan',''],['Tango IV','pan',''],['Administración Portuaria Bluff–Bluefields','pue','']];
 let MAT_EDIT=null;
-function matLista(){return (COSTOS&&COSTOS.mat)||[]}
+function matBase(){return (COSTOS&&COSTOS.mat)||[]}
+/* Lista efectiva: lo publicado por el administrador + cambios de colegas (recibidos o pendientes), gana el más reciente */
+function matLista(){const m={};const ord=[];matBase().forEach(x=>{m[x.id]=x;ord.push(x.id)});
+  [...(ls.get('epn_mat_rx',[])||[]),...(ls.get('epn_mat_loc',[])||[])].forEach(x=>{if(!x||!x.id)return;if(!m[x.id])ord.push(x.id);if(!m[x.id]||String(x.u||'')>String(m[x.id].u||''))m[x.id]=x});
+  return ord.filter((id,i)=>ord.indexOf(id)===i).map(id=>m[id])}
+const matPuedeEditar=()=>OWNER||!!(LIC&&LIC.i&&COSTOS&&(COSTOS.matEd||[]).includes(LIC.i));
+let _mqBusy=false;
+async function matSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_mqBusy||!puedeVia())return;_mqBusy=true;let err=null,cambio=false;
+  try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const raw=await arqKeyRaw();const k=await aesKey(raw);
+    for(const x of (ls.get('epn_mat_loc',[])||[])){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(x)));
+      const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:'matricula '+x.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
+      const rx=(ls.get('epn_mat_rx',[])||[]).filter(y=>y.id!==x.id);rx.push(x);ls.set('epn_mat_rx',rx);ls.set('epn_mat_loc',(ls.get('epn_mat_loc',[])||[]).filter(y=>y.id!==x.id||y.u!==x.u))}
+    const got={},nums={};for(let pg=1;pg<20;pg++){const r=await fetch(base+'?state=open&per_page=100&page='+pg+'&t='+Date.now(),{headers:H,cache:'no-store'});if(!r.ok)throw new Error(String(r.status));const L=await r.json();
+      for(const it of L){if(it.pull_request||!/^matricula /.test(it.title||''))continue;try{const o=JSON.parse(it.body);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(o.iv)},k,b64uToBytes(o.data));const a=JSON.parse(new TextDecoder().decode(pt));
+        (nums[a.id]=nums[a.id]||[]).push(it.number);if(!got[a.id]||String(a.u)>String(got[a.id].u))got[a.id]=a}catch(e){}}if(L.length<100)break}
+    if(OWNER){const L=matBase().slice();Object.values(got).forEach(a=>{const i=L.findIndex(y=>y.id===a.id);if(i<0){L.push(a);cambio=true}else if(String(a.u||'')>String(L[i].u||'')){L[i]=a;cambio=true}});
+      if(cambio){COSTOS.mat=L;guardarCostos()}for(const id in nums)for(const n of nums[id])await fetch(base+'/'+n,{method:'PATCH',headers:H,body:JSON.stringify({state:'closed'})});ls.set('epn_mat_rx',[])}
+    else{const b={};matBase().forEach(x=>b[x.id]=x);ls.set('epn_mat_rx',Object.values(got).filter(a=>!b[a.id]||String(a.u||'')>String(b[a.id].u||'')));cambio=true}}catch(e){err=e.message}
+  _mqBusy=false;if(err&&!silent)toast('Sin conexión con GitHub; se enviará al tener señal');if(cambio||!err){renderAvMat();if(document.querySelector('#v-his.on')&&!MAT_EDIT)renderMat()}}
+window.addEventListener('online',()=>matSync(true));
+function matPermPanel(){if(!OWNER)return'';const cs=Object.values(COL).filter(c=>!c.p&&!REV.has(c.i)).sort((a,b)=>a.n.localeCompare(b.n));const ed=COSTOS.matEd||[];
+  return `<details class="rg" data-ok="mperm" style="margin-top:12px"${ACC_OPEN.has('mperm')?' open':''}><summary><span>Quién puede registrar matrículas</span><span class="chev">›</span></summary><div style="padding:0 11px 11px">
+   ${arqTok()?'':'<p class="msg-bad" style="margin-top:0">Primero active la llave de arqueos (Viajes → Arqueo): los cambios de los colegas viajan por ella.</p>'}
+   ${cs.length?cs.map(c=>`<label class="chk" style="margin:6px 0"><input type="checkbox" data-mperm="${c.i}" ${ed.includes(c.i)?'checked':''}> ${esc(c.n)}</label>`).join(''):'<p class="sm">No hay colegas con acceso completo.</p>'}
+   <p class="sm" style="margin:6px 0 0">Los marcados pueden agregar, actualizar y renovar matrículas. Solo usted puede eliminarlas.</p></div></details>`}
+document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.mperm||!OWNER)return;const ed=new Set(COSTOS.matEd||[]);el.checked?ed.add(el.dataset.mperm):ed.delete(el.dataset.mperm);COSTOS.matEd=[...ed];guardarCostos();toast(el.checked?'Permiso otorgado':'Permiso retirado')});
 function matInit(){if(!COSTOS||!OWNER||Array.isArray(COSTOS.mat))return;COSTOS.mat=MAT_DEF.map(([n,t,e],i)=>({id:'m'+i+Date.now().toString(36),n,t,e,doc:MAT_DOC[t],num:'',obs:'',pagos:[]}));ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}
 const matUlt=m=>(m.pagos||[]).slice().sort((a,b)=>String(a.v).localeCompare(String(b.v))).pop()||null;
 const diasHasta=f=>Math.round((new Date(f+'T12:00')-new Date(today()+'T12:00'))/864e5);
@@ -1974,16 +1999,17 @@ async function matCalendario(ms){const ok=ms.filter(m=>{const u=matUlt(m);return
   const r=new FileReader();r.onload=()=>{const a=document.createElement('a');a.href=r.result;a.download=nombre;a.target='_blank';document.body.appendChild(a);a.click();a.remove()};r.readAsDataURL(blob);toast('Abra el archivo y toque «Agregar» al calendario')}
 /* Pantalla */
 function renderMat(){const box=$('#matBox');if(!box)return;if(MAT_EDIT)return renderMatForm();const L=matLista();
-  const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];const ro=!OWNER;
+  const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];const ro=!matPuedeEditar();
   const tot=L.reduce((s,m)=>s+matPagoEn(m,today()),0);
   box.innerHTML=`<p class="sm" style="margin:0 0 6px">Aviso automático 30 días antes del vencimiento. El pago anual de la matrícula de cada embarcación se suma a sus costos fijos. La matrícula del puerto es solo para control de vencimiento.</p>
    <div class="rent-k"><div><span>Pagos anuales vigentes</span><b>${money(tot,'NIO')}</b></div><div class="${L.some(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30})?'warnc':'ok'}"><span>Por vencer o vencidas</span><b>${L.filter(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30}).length}</b><small>de ${L.length} registradas</small></div></div>
    ${grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return'';return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);return `<button class="via-it" data-medit="${m.id}"><div><b>${esc(m.n)}</b><small>${esc(m.doc)}${m.num?' · N.º '+esc(m.num):''}${u&&+u.m?' · '+money(u.m,'NIO'):''}</small></div><div style="text-align:right"><span class="chip ${e.k}">${e.t}</span><small>${u&&u.v?'vence '+new Date(u.v+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'sin fecha'}</small></div></button>`}).join('')}).join('')}
    <div class="row" style="flex-wrap:nowrap;margin-top:10px"><button class="btn2" data-mcalall style="flex:1">Todas al calendario</button><button class="btn2" data-mpdf style="flex:1">Reporte PDF</button></div>
-   ${ro?'':'<button class="btn" data-mnew style="width:100%;margin-top:10px">+ Agregar embarcación, panga u otro</button>'}`}
-function renderMatForm(){const m=MAT_EDIT,box=$('#matBox'),ro=!OWNER,e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
+   ${ro?'':'<button class="btn" data-mnew style="width:100%;margin-top:10px">+ Agregar embarcación, panga u otro</button>'}
+   ${matPermPanel()}`}
+function renderMatForm(){const m=MAT_EDIT,box=$('#matBox'),ro=!matPuedeEditar(),e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${m.nuevo?'Nueva matrícula':esc(m.n)}</b><button class="btn2" data-mcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
-   ${m.nuevo?'':`<p style="margin:6px 0"><span class="chip ${e.k}">${e.t}</span></p>`}
+   ${m.nuevo?'':`<p style="margin:6px 0"><span class="chip ${e.k}">${e.t}</span>${m.por?` <span class="sm">· actualizado por ${esc(m.por)}${m.u?' el '+new Date(m.u).toLocaleDateString('es-NI'):''}</span>`:''}</p>`}
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0"><div class="grid" style="margin-top:6px">
     <div style="grid-column:1/-1"><label>Nombre</label><input data-mf="n" value="${esc(m.n)}" placeholder="Ej.: Tango V"></div>
     <div><label>Tipo</label><select data-mf="t">${Object.entries(MAT_TIPOS).map(([k,l])=>`<option value="${k}" ${m.t===k?'selected':''}>${l}</option>`).join('')}</select></div>
@@ -1998,7 +2024,7 @@ function renderMatForm(){const m=MAT_EDIT,box=$('#matBox'),ro=!OWNER,e=matEstado
    ${!ro&&ps.length?'<button class="btn2" data-mren style="width:100%;margin-top:8px">Registrar renovación (nuevo pago)</button>':''}
    ${ps.length>1?`<details class="rg" style="margin-top:10px"><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${p.f?new Date(p.f+'T12:00').toLocaleDateString('es-NI'):'—'}<small>vence ${p.v?new Date(p.v+'T12:00').toLocaleDateString('es-NI'):'—'}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
    ${ps.length&&ps[0].v?`<button class="btn2" data-mcal style="width:100%;margin-top:10px">📅 Agregar al calendario (aviso 30 días antes)</button>`:''}
-   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar</button>${m.nuevo?'':'<button class="btnd" data-mdel style="flex:1">Eliminar</button>'}</div>`}`}
+   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar</button>${m.nuevo||!OWNER?'':'<button class="btnd" data-mdel style="flex:1">Eliminar</button>'}</div>`}`}
 document.addEventListener('input',e=>{const el=e.target;if(!MAT_EDIT||!el.closest||!el.closest('#matBox'))return;const m=MAT_EDIT;
   if(el.dataset.mf){m[el.dataset.mf]=el.value}
   if(el.dataset.mp){m.pagos=m.pagos||[];if(!m.pagos.length)m.pagos.push({f:'',m:'',v:''});const ps=m.pagos.slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));const p=m._cur||(m._cur=ps[0]);p[el.dataset.mp]=el.value;
@@ -2010,12 +2036,15 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[da
   if(b.hasAttribute('data-mcal'))return matCalendario([MAT_EDIT]);
   if(b.hasAttribute('data-mcalall'))return matCalendario(matLista());
   if(b.hasAttribute('data-mpdf'))return matPdf();
-  if(!OWNER)return;
+  if(!matPuedeEditar())return;
   if(b.hasAttribute('data-mnew')){MAT_EDIT={id:'m'+Date.now().toString(36),n:'',t:'pan',e:'',doc:MAT_DOC.pan,num:'',obs:'',pagos:[],nuevo:true};renderMat();window.scrollTo(0,0);return}
   if(b.hasAttribute('data-mren')){const u=matUlt(MAT_EDIT)||{};const v=u.v?new Date(u.v+'T12:00'):new Date();v.setFullYear(v.getFullYear()+1);const p={f:today(),m:u.m||'',v:kd(v)};MAT_EDIT.pagos.push(p);MAT_EDIT._cur=p;renderMatForm();toast('Revise la fecha de pago, el monto y el vencimiento, y toque Guardar');return}
   if(b.hasAttribute('data-msave')){const m=MAT_EDIT;if(!(m.n||'').trim()){toast('Escriba el nombre');return}const x={...m};delete x.nuevo;delete x._cur;x.pagos=(x.pagos||[]).filter(p=>p.f||p.v||+p.m);
-    {const L=matLista().slice();const i=L.findIndex(y=>y.id===x.id);if(i>=0)L[i]=x;else L.push(x);COSTOS.mat=L}guardarCostos();MAT_EDIT=null;toast('Matrícula guardada');renderMat();renderAvMat();return}
-  if(b.hasAttribute('data-mdel')){if(!confirm('¿Eliminar '+MAT_EDIT.n+' del control de matrículas?'))return;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderMat();renderAvMat()}});
+    x.u=new Date().toISOString();x.por=OWNER?'Administrador':((LIC&&LIC.n)||'Colega');
+    if(OWNER){const L=matBase().slice();const i=L.findIndex(y=>y.id===x.id);if(i>=0)L[i]=x;else L.push(x);COSTOS.mat=L;guardarCostos()}
+    else{ls.set('epn_mat_loc',(ls.get('epn_mat_loc',[])||[]).filter(y=>y.id!==x.id).concat([x]));matSync(true)}
+    MAT_EDIT=null;toast(OWNER||arqTok()?'Matrícula guardada':'Guardada en este teléfono; se enviará al activar la llave');renderMat();renderAvMat();return}
+  if(b.hasAttribute('data-mdel')&&OWNER){if(!confirm('¿Eliminar '+MAT_EDIT.n+' del control de matrículas?'))return;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderMat();renderAvMat()}});
 function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');return}const d=PDFW();d.page();let y=pdfHeader(d,'CONTROL DE MATRÍCULAS Y PERMISOS','Al '+fLarga(today()));
   const C=[['Nombre',150],['Documento',120],['N.º',70],['Pagado',60],['Monto C$',60],['Vence',60],['Estado',72]];const W=C.reduce((s,x)=>s+x[1],0),sc=532/W;
   const head=()=>{d.rect(40,y,532,15,NAVY);let x=40;C.forEach(([h,w])=>{d.text(x+4,y+10.5,h,{size:7.5,bold:true,color:'#ffffff'});x+=w*sc});y+=15};head();
