@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.02-37';
+const APP_VER='2026.11.02-38';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1085,7 +1085,7 @@ function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=se
 async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
   const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false),pv=ls.get('epn_viajes_pend',false)&&MK;if(!pc&&!pr&&!pv)return true;
   _ghBusy=true;let err=null,hecho=[];
-  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[]});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
+  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
     if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}
     if(pv){const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await ghPut('viajes.json',JSON.stringify(pub),'Actualizar viajes regulares (app)');ls.set('epn_viajes_pend',false);hecho.push('viajes')}}catch(e){err=e.message}
   _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
@@ -1228,6 +1228,7 @@ async function initAcceso(){
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
+  setTimeout(()=>arqSync(true),2500);
   renderAvMat();renderHis();pfSum();
   renderRent();
   const cl=window.claude;
@@ -1494,7 +1495,7 @@ async function recibirCostos(pub){if(OWNER||!LIC||!LIC.k)return;if(!pub||!pub.da
 async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=await DB.doc('config/costos').get();await recibirCostos(s.exists?s.data():null)}catch(e){estCostos('red');renderRent()}return}
   try{const r=await fetch('costos.json?t='+Date.now(),{cache:'no-store'});if(!r.ok){estCostos(r.status===404?'vacio':'red');renderRent();return}await recibirCostos(await r.json())}catch(e){estCostos('red');renderRent()}}
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
-  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[]});
+  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
   if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
   if(ghTok()){ls.set('epn_costos_pend',true);if(await ghSync(true)){toast('Costos publicados para los colegas');renderCostAdm();return}}
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
@@ -1661,7 +1662,7 @@ function pieBloque(R,ing,gas,ut){const it=pieDatos(R,ut);if(!it.length)return'';
 /* ---------- Pantalla ---------- */
 function renderVia(){const box=$('#viaBox');if(!box)return;
   if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
-  if(OWNER&&VIA_SEC==='arq')return renderArq();
+  if(VIA_SEC==='arq'&&puedeVia())return renderArq();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
   if(VIA_EDIT)return renderViaForm();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
@@ -1853,7 +1854,7 @@ let VIA_SEC='via',ARQ_EDIT=null;
 const arqLista=()=>ls.get('epn_arqueos',[])||[];
 function arqNuevo(){const d=new Date();let f=today();// propone el último miércoles o sábado
   for(let i=0;i<7;i++){const x=new Date(d);x.setDate(d.getDate()-i);if([3,6].includes(x.getDay())){f=kd(x);break}}
-  return{id:'q'+Date.now().toString(36),f,hora:new Date().toTimeString().slice(0,5),enc:ls.get('epn_arq_enc',''),rec:ls.get('epn_arq_rec',''),cam:ls.get('epn_arq_cam',''),tc:ls.get('epn_arq_tc',36),nio:{},mon:{},usd:{},otros:'',obs:'',just:'',nuevo:true}}
+  return{id:'q'+Date.now().toString(36),f,hora:new Date().toTimeString().slice(0,5),enc:ls.get('epn_arq_enc',''),rec:ls.get('epn_arq_rec','')||(OWNER?'':(LIC&&LIC.n)||''),cam:ls.get('epn_arq_cam',''),tc:ls.get('epn_arq_tc',36),nio:{},mon:{},usd:{},otros:'',obs:'',just:'',nuevo:true}}
 function arqCalc(a){const s=(o,L)=>L.reduce((t,d)=>t+(+((o||{})[d])||0)*d,0);const nioB=s(a.nio,DEN_NIO_B),nioM=s(a.mon,DEN_NIO_M),usd=s(a.usd,DEN_USD),tc=+a.tc||36;
   const usdC=usd*tc,otros=0,gen=nioB+nioM+usdC+otros,cam=+a.cam||0,rec=gen-cam;
   return{nioB,nioM,nio:nioB+nioM,usd,tc,usdC,otros,gen,cam,rec}}
@@ -1865,8 +1866,9 @@ function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
    ${cs.length?`<div class="rent-k" style="margin-top:10px"><div><span>Total general (${cs.length} arqueo${cs.length===1?'':'s'})</span><b>${money(tot('gen'),'NIO')}</b><small>córdobas ${money(tot('nio'),'NIO')} · dólares US$ ${fmt(tot('usd'))}</small></div><div><span>Fondo de cambio</span><b>${money(tot('cam'),'NIO')}</b></div><div class="ok"><span>Dinero recibido</span><b>${money(tot('rec'),'NIO')}</b></div></div>
     <button class="btn2" data-qxls style="width:100%;margin-top:10px">Excel de arqueos del mes</button>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay arqueos en este mes.</p>'}
    <button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>
-   ${cs.length?`<details class="rg colw" data-ok="qlist" style="margin-top:12px"${ACC_OPEN.has('qlist')?' open':''}><summary><span>Arqueos de ${mesTxt(VIA_MES).toLowerCase()} (${cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>Entregó: ${esc(a.enc||'—')}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small>recibido</small></div></button>`).join('')}</div></details>`:''}`}
-const segVia=()=>!OWNER?'':`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${OWNER?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button>`:''}</div>`;
+   ${cs.length?`<details class="rg colw" data-ok="qlist" style="margin-top:12px"${ACC_OPEN.has('qlist')?' open':''}><summary><span>Arqueos de ${mesTxt(VIA_MES).toLowerCase()} (${cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>Entregó: ${esc(a.enc||'—')} · registró: ${esc(a.autor||'Administrador')}${a.mods&&a.mods.length?' · modificado':''}${a._p?' · <span class="chip warnc">sin enviar</span>':''}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small>recibido</small></div></button>`).join('')}</div></details>`:''}
+   ${OWNER?arqTokPanel():arqTok()?'':'<p class="sm" style="margin-top:10px">Sus arqueos quedan en este teléfono hasta que el administrador active los arqueos compartidos.</p>'}`}
+const segVia=()=>`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${puedeVia()?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button>`:''}</div>`;
 function denFila(grp,d,val,pre){const n=+val||0;return `<div class="den"><span>${pre} ${d<1?d.toFixed(2):fmt(d,0)}</span><input type="number" min="0" step="1" inputmode="numeric" data-qd="${grp}" data-den="${d}" value="${val||''}" placeholder="0"><b data-qm="${grp}-${d}">${pre} ${fmt(n*d)}</b></div>`}
 function arqResHTML(a,c){return `<div class="arq-r"><div><span>Efectivo en córdobas</span><b>${money(c.nio,'NIO')}</b></div><div><span>Efectivo en dólares (US$ ${fmt(c.usd)} × ${fq(c.tc)})</span><b>${money(c.usdC,'NIO')}</b></div>${c.otros?`<div><span>Otros (transferencias)</span><b>${money(c.otros,'NIO')}</b></div>`:''}
    <div class="t"><span>Total general</span><b>${money(c.gen,'NIO')}</b></div><div><span>(−) Dinero para cambio</span><b>${money(c.cam,'NIO')}</b></div>
@@ -1890,7 +1892,8 @@ function renderArqForm(){const a=ARQ_EDIT,c=arqCalc(a),box=$('#viaBox');
    <h3 class="sub">Cuadre</h3><div id="qRes">${arqResHTML(a,c)}</div>
    <div><label style="margin-top:8px">Observaciones</label><textarea data-qf="obs" rows="2">${esc(a.obs||'')}</textarea></div>
    ${a.mods&&a.mods.length?`<p class="sm">Modificado: ${a.mods.map(m=>new Date(m).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})).join(', ')}</p>`:''}
-   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-qsave style="flex:2;padding:13px">Guardar y ver acta</button>${a.nuevo?'':'<button class="btn2" data-qpdf style="flex:1">Acta PDF</button><button class="btnd" data-qdel style="flex:1">Eliminar</button>'}</div>`}
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-qsave style="flex:2;padding:13px">Guardar y ver acta</button>${a.nuevo?'':'<button class="btn2" data-qpdf style="flex:1">Acta PDF</button>'+(OWNER?'<button class="btnd" data-qdel style="flex:1">Eliminar</button>':'')}</div>`;
+  if(!OWNER&&!a.nuevo&&a.autor&&a.autor!==((LIC&&LIC.n)||'')){box.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);box.querySelectorAll('[data-qsave],[data-qrecadd]').forEach(e=>e.hidden=true);box.insertAdjacentHTML('afterbegin','<p class="sm" style="margin:0 0 8px">Registrado por '+esc(a.autor)+'. Solo consulta.</p>')}}
 function arqRefrescar(){const a=ARQ_EDIT,c=arqCalc(a),q=id=>document.getElementById(id);
   const set=(id,t)=>{if(q(id))q(id).textContent=t};set('qMon',money(c.nioM,'NIO'));set('qNio',money(c.nio,'NIO'));set('qUsd',fmt(c.usd));set('qUsdC',money(c.usdC,'NIO'));
   if(q('qRes'))q('qRes').innerHTML=arqResHTML(a,c)}
@@ -1899,9 +1902,9 @@ document.addEventListener('input',e=>{const el=e.target;if(!ARQ_EDIT||!el.closes
   if(el.dataset.qf){a[el.dataset.qf]=el.value;if(['cam','tc','otros'].includes(el.dataset.qf))arqRefrescar()}});
 document.addEventListener('change',e=>{const el=e.target;if(ARQ_EDIT&&el.dataset&&el.dataset.qf&&el.tagName==='SELECT')ARQ_EDIT[el.dataset.qf]=el.value});
 function arqGuardar(){const a=ARQ_EDIT,c=arqCalc(a);if(!(c.gen>0)){toast('Anote la cantidad de billetes recibidos');return}if(!a.enc){toast('Seleccione quién entrega');return}
-  const x={...a};const nuevo=x.nuevo;delete x.nuevo;x.u=new Date().toISOString();if(!nuevo)x.mods=(x.mods||[]).concat([x.u]);
+  const x={...a};const nuevo=x.nuevo;delete x.nuevo;x.u=new Date().toISOString();if(!nuevo)x.mods=(x.mods||[]).concat([x.u]);const yo=OWNER?'Administrador':((LIC&&LIC.n)||'Colega');if(nuevo)x.autor=yo;else x.editor=yo;x._p=true;
   ls.set('epn_arqueos',arqLista().filter(y=>y.id!==x.id).concat([x]));ls.set('epn_arq_enc',x.enc||'');ls.set('epn_arq_rec',x.rec||'');ls.set('epn_arq_cam',x.cam||'');ls.set('epn_arq_tc',+x.tc||36);
-  VIA_MES=x.f.slice(0,7);ARQ_EDIT=null;toast('Arqueo guardado');renderVia();arqPdf(x)}
+  VIA_MES=x.f.slice(0,7);ARQ_EDIT=null;toast(arqTok()?'Arqueo guardado; enviando…':'Arqueo guardado en este teléfono');renderVia();arqPdf(x);arqSync(true)}
 function arqPdf(a){const c=arqCalc(a);const d=PDFW();d.page();let y=pdfHeader(d,'ACTA DE ARQUEO DE CAJA','Venta viaje Bluefields – Corn Island · '+viaFecha(a.f)+(a.hora?' · '+a.hora:''));
   const dat=[['Entrega',a.enc||'—'],['Recibe',a.rec||'—'],['Tasa de cambio','C$ '+fq(c.tc)+' por US$']];dat.forEach(([k,v],i)=>{const x=40+i*178;d.text(x,y,k+':',{size:8.5,color:GRY});d.text(x+d.width(k+': ',8.5)+2,y,d.wrap(v,8.5,true,170-d.width(k+': ',8.5))[0],{size:8.5,bold:true,color:'#1a1a1a'})});y+=16;
   const tabla=(x,w,tit,L,o,pre,conv)=>{let yy=y;d.rect(x,yy,w,16,NAVY);d.text(x+6,yy+11,tit,{size:8.5,bold:true,color:'#ffffff'});yy+=16;d.rect(x,yy,w,13,'#e8f0f9');[['Denominación',x+6,''],['Cantidad',x+w*0.55,'r'],['Monto',x+w-6,'r']].forEach(([h,xx,al])=>d.text(xx,yy+9.5,h,{size:7.5,bold:true,color:NAVY,align:al||undefined}));yy+=13;
@@ -1924,8 +1927,8 @@ function arqExcel(){const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort(
   rows.push(['Total','','','','',...DEN_NIO_B.map(()=>''),...DEN_NIO_M.map(()=>''),B(S(c=>c.nio)),...DEN_USD.map(()=>''),B(S(c=>c.usd)),'',B(S(c=>c.usdC)),B(S(c=>c.gen)),B(S(c=>c.cam)),B(S(c=>c.rec)),'']);
   const blob=xlsx([{n:'Arqueos',rows:[[{v:'Arqueos de caja · '+mesTxt(VIA_MES),s:6}],[],head.map(H),...rows],w:head.map((h,i)=>i<5?(i===3||i===4?26:11):i===head.length-1?30:12)}]);
   compartirBlob(blob,'Arqueos-'+VIA_MES+'.xlsx','Arqueos de caja · '+mesTxt(VIA_MES))}
-document.addEventListener('click',e=>{const v=e.target.closest('[data-vsec]');if(v&&v.closest('#viaBox')){VIA_SEC=v.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;return renderVia()}});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!OWNER)return;
+document.addEventListener('click',e=>{const v=e.target.closest('[data-vsec]');if(v&&v.closest('#viaBox')){VIA_SEC=v.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;renderVia();if(VIA_SEC==='arq')arqSync(true);return}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!puedeVia())return;
   if(b.hasAttribute('data-qrecadd')){const n=(prompt('Nombre de quien recibe el dinero:')||'').trim();if(!n)return;const l=receptores();if(!l.includes(n)){l.push(n);l.sort();ls.set('epn_arq_recs',l)}ARQ_EDIT.rec=n;return renderArqForm()}
   if(b.hasAttribute('data-qnew')){ARQ_EDIT=arqNuevo();renderVia();window.scrollTo(0,0);return}
   if(b.dataset.qedit){const x=arqLista().find(y=>y.id===b.dataset.qedit);if(x){ARQ_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
@@ -1933,7 +1936,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[
   if(b.hasAttribute('data-qsave'))return arqGuardar();
   if(b.hasAttribute('data-qpdf'))return arqPdf(ARQ_EDIT);
   if(b.hasAttribute('data-qxls'))return arqExcel();
-  if(b.hasAttribute('data-qdel')){if(!confirm('¿Eliminar este arqueo?'))return;ls.set('epn_arqueos',arqLista().filter(y=>y.id!==ARQ_EDIT.id));ARQ_EDIT=null;renderVia()}});
+  if(b.hasAttribute('data-qdel')&&OWNER){if(!confirm('¿Eliminar este arqueo? Se elimina también para los colegas.'))return;const x=arqLista().find(y=>y.id===ARQ_EDIT.id);if(x&&x._n&&x._n.length)ls.set('epn_arq_delq',(ls.get('epn_arq_delq',[])||[]).concat(x._n));ls.set('epn_arqueos',arqLista().filter(y=>y.id!==ARQ_EDIT.id));ARQ_EDIT=null;renderVia();arqSync(true)}});
 
 /* ===== Matrículas y permisos (embarcaciones, pangas y puerto) con aviso 30 días antes ===== */
 const MAT_TIPOS={emb:'Embarcación',pan:'Panga',pue:'Empresa (puerto)',otr:'Otro'};
@@ -2022,6 +2025,43 @@ function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');r
       cells.forEach((s,j)=>{d.text(x+4,y+9.5,d.wrap(String(s),7.5,j===6,C[j][1]*sc-8)[0],{size:7.5,bold:j===6,color:j===6?(e.k==='bad'?'#b42318':e.k==='warnc'?'#8a6100':'#1a1a1a'):'#1a1a1a'});x+=C[j][1]*sc});y+=13})});
   y+=10;d.text(40,y+8,'Total de pagos anuales vigentes: '+money(L.reduce((s,m)=>s+matPagoEn(m,today()),0),'NIO'),{size:9,bold:true,color:'#1a1a1a'});
   pdfFooters(d,'Control de matrículas · Documento interno · Empresa Portuaria Nacional · APBB');abrirVisor(d,'Matriculas-APBB-'+today()+'.pdf','Control de matrículas')}
+
+/* ===== Arqueos compartidos: cada teléfono con acceso completo publica sus arqueos cifrados como "issues" del
+   repositorio usando una llave limitada (solo Issues). Todos leen todos; nadie copia ni pega. ===== */
+const arqTok=()=>(COSTOS&&COSTOS.arqTok)||'';
+const arqKeyRaw=async()=>OWNER?await llaveOwner():(LIC&&LIC.k?b64uToBytes(LIC.k):null);
+let _aqBusy=false;
+async function arqSync(silent){if(!puedeVia()||_aqBusy)return;const tok=arqTok();if(!tok||!navigator.onLine)return;_aqBusy=true;let err=null;
+  try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const raw=await arqKeyRaw();if(!raw)throw new Error('sin llave');const k=await aesKey(raw);
+    /* 1) subir pendientes */
+    for(const a of arqLista().filter(x=>x._p)){const y={...a};delete y._p;delete y._n;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
+      const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:'arqueo '+y.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
+      ls.set('epn_arqueos',arqLista().map(z=>z.id===a.id&&z.u===a.u?{...z,_p:false}:z))}
+    /* 2) cerrar los eliminados por el administrador */
+    if(OWNER){const del=ls.get('epn_arq_delq',[])||[];for(const n of del){const r=await fetch(base+'/'+n,{method:'PATCH',headers:H,body:JSON.stringify({state:'closed'})});if(!r.ok&&r.status!==404&&r.status!==410)throw new Error(String(r.status))}ls.set('epn_arq_delq',[])}
+    /* 3) leer todos (abiertos) */
+    const m={},nums={};for(let pg=1;pg<20;pg++){const r=await fetch(base+'?state=open&per_page=100&page='+pg+'&t='+Date.now(),{headers:H,cache:'no-store'});if(!r.ok)throw new Error(String(r.status));const L=await r.json();
+      for(const it of L){if(it.pull_request||!/^arqueo /.test(it.title||''))continue;try{const o=JSON.parse(it.body);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(o.iv)},k,b64uToBytes(o.data));const a=JSON.parse(new TextDecoder().decode(pt));
+        (nums[a.id]=nums[a.id]||[]).push(it.number);if(!m[a.id]||String(a.u)>String(m[a.id].u))m[a.id]=a}catch(e){}}
+      if(L.length<100)break}
+    const loc=arqLista().filter(x=>x._p);loc.forEach(x=>{if(!m[x.id]||String(x.u)>String(m[x.id].u))m[x.id]=x});
+    ls.set('epn_arqueos',Object.values(m).map(a=>({...a,_n:nums[a.id]||a._n||[]})));ls.set('epn_arq_sync',new Date().toISOString())}catch(e){err=e.message}
+  _aqBusy=false;if(err&&!silent)toast(err==='401'||err==='403'?'La llave de arqueos no es válida; avise al administrador':'Sin conexión con GitHub; se enviará al tener señal');
+  if(document.querySelector('#v-via.on')&&VIA_SEC==='arq'&&!ARQ_EDIT)renderArq()}
+window.addEventListener('online',()=>arqSync(true));
+function arqTokPanel(){if(!OWNER)return'';const t=arqTok();return `<details class="rg" data-ok="aqk" style="margin-top:12px"${ACC_OPEN.has('aqk')||!t?' open':''}><summary><span>Arqueos compartidos con los colegas</span><span style="display:flex;gap:6px;align-items:center"><span class="chip ${t?'ok':'warnc'}">${t?'Activo':'Sin configurar'}</span><span class="chev">›</span></span></summary><div style="padding:0 11px 11px">
+  ${t?`<p class="sm" style="margin-top:0">Lesbia, Osman y usted registran arqueos; todos los ven al abrir la app con señal.${ls.get('epn_arq_sync','')?' Última sincronización: '+new Date(ls.get('epn_arq_sync','')).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})+'.':''}</p><div class="row"><button class="btn2" data-aqsync>Sincronizar ahora</button><button class="btnd" data-aqdel>Quitar llave</button></div>`
+  :`<p class="sm" style="margin-top:0">Para que los colegas con acceso completo registren arqueos y usted los reciba solo, cree una <b>segunda llave</b> que únicamente permite publicar arqueos (no puede tocar la app ni los costos):</p>
+   <ol class="sm" style="padding-left:18px;margin:6px 0"><li>Abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener"><b>Crear llave en GitHub</b></a>.</li><li><b>Token name:</b> Arqueos APBB · <b>Expiration:</b> la mayor disponible.</li><li><b>Repository access:</b> Only select repositories → <b>memoria-calculo-apbb</b>.</li><li><b>Permissions → Repository permissions → Issues:</b> Read and write. <b>Nada más.</b></li><li><b>Generate token</b> y copie la llave.</li></ol>
+   <div class="row" style="flex-wrap:nowrap"><input id="aqIn" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1"><button type="button" class="btn2" data-pegar="aqIn" style="padding:6px 12px">Pegar</button></div>
+   <button class="btn" data-aqsave style="width:100%;margin-top:8px">Guardar llave de arqueos</button>`}</div></details>`}
+async function arqTokGuardar(tok){tok=(tok||'').trim();if(!tok){toast('Pegue la llave');return}
+  try{const r=await fetch(`https://api.github.com/repos/${GH.own}/${GH.repo}/issues?per_page=1`,{headers:ghH(tok),cache:'no-store'});if(!r.ok){toast(r.status===401?'La llave no es válida':'La llave no tiene acceso a Issues del repositorio');return}}catch(e){toast('Sin conexión; intente con señal');return}
+  COSTOS.arqTok=tok;guardarCostos();ls.set('epn_arqueos',arqLista().map(a=>({...a,_p:true})));toast('Llave guardada; sincronizando…');await arqSync(false);renderArq()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-aqsave],[data-aqsync],[data-aqdel]');if(!b||!b.closest('#viaBox')||!OWNER)return;
+  if(b.hasAttribute('data-aqsave'))return arqTokGuardar(($('#aqIn')||{}).value);
+  if(b.hasAttribute('data-aqsync'))return arqSync(false).then(()=>toast('Arqueos sincronizados'));
+  if(confirm('¿Quitar la llave de arqueos? Los colegas ya no podrán enviar arqueos.')){delete COSTOS.arqTok;guardarCostos();renderArq()}});
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
