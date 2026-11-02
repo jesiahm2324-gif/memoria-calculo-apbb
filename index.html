@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.01-36';
+const APP_VER='2026.11.02-37';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1085,7 +1085,7 @@ function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=se
 async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
   const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false),pv=ls.get('epn_viajes_pend',false)&&MK;if(!pc&&!pr&&!pv)return true;
   _ghBusy=true;let err=null,hecho=[];
-  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
+  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[]});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
     if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}
     if(pv){const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await ghPut('viajes.json',JSON.stringify(pub),'Actualizar viajes regulares (app)');ls.set('epn_viajes_pend',false);hecho.push('viajes')}}catch(e){err=e.message}
   _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
@@ -1476,6 +1476,7 @@ let COSTOS=null;
 function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||JSON.parse(JSON.stringify(COSTO_DEF))):ls.get('epn_costos_rx',null);
   if(COSTOS&&OWNER&&!Array.isArray((COSTOS.par||{}).mu)){COSTOS.par=COSTOS.par||{};const b=+COSTOS.par.muBF,c=+COSTOS.par.muCI;COSTOS.par.mu=(b||c)?[{f:'2026-10-01',B:b||647.43,C:c||575}]:JSON.parse(JSON.stringify(COSTO_DEF.par.mu));ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}
   if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[];matInit();COSTOS.emb.forEach(e=>{if(e.mot==null)e.mot=e.tipo==='mot'?2:1;if(e.gen==null)e.gen=e.tipo==='mot'?1:0;if(e.genH==null)e.genH=2})}
+  if(OWNER&&COSTOS&&!ls.get('epn_mat_pub_v1',false)){ls.set('epn_mat_pub_v1',true);ls.set('epn_costos_pend',true)}
   if(OWNER&&COSTOS&&!ls.get('epn_gen_v1',false)){COSTOS.emb.forEach(e=>{if(e.tipo==='mot'&&!+e.gen)e.gen=1});ls.set('epn_gen_v1',true);ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}return COSTOS}
 const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true);ghProgramar()}if(typeof renderAvMat==='function')renderAvMat()};
 const puedeCostos=()=>OWNER||(!!LIC&&!LIC.p);
@@ -1493,7 +1494,7 @@ async function recibirCostos(pub){if(OWNER||!LIC||!LIC.k)return;if(!pub||!pub.da
 async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=await DB.doc('config/costos').get();await recibirCostos(s.exists?s.data():null)}catch(e){estCostos('red');renderRent()}return}
   try{const r=await fetch('costos.json?t='+Date.now(),{cache:'no-store'});if(!r.ok){estCostos(r.status===404?'vacio':'red');renderRent();return}await recibirCostos(await r.json())}catch(e){estCostos('red');renderRent()}}
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
-  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par});
+  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[]});
   if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
   if(ghTok()){ls.set('epn_costos_pend',true);if(await ghSync(true)){toast('Costos publicados para los colegas');renderCostAdm();return}}
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
