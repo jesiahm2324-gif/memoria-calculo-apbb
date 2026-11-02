@@ -933,7 +933,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.01-32';
+const APP_VER='2026.11.01-33';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1451,11 +1451,13 @@ const COSTO_DEF={personal:[],emb:[
   {id:'hsa',n:'Motonave Hilario Sánchez',tipo:'mot',seg:0,dep:0,gal:11,mot:2,gen:1,genH:2,crew:[]},
   {id:'res',n:'Motonave Río Escondido',tipo:'mot',seg:0,dep:0,gal:11,mot:2,gen:1,genH:2,crew:[]}],
  par:{diesel:168,desay:100,alm:130,cena:120,hosp:700,unif:4500,botas:3600,bonoCap:1000,bonoOtro:750,inss:22.5,inatec:2,
+  mu:[{f:'2026-10-01',B:647.43,C:575}],
   lub:[{n:'Lubricante (10 gal, cada 250 h)',p:5773.01,h:250},{n:'Filtro de diésel (cada 250 h)',p:1299,h:250},{n:'Filtro de aire (cada 250 h)',p:0,h:250},{n:'Filtro de aceite (cada 250 h)',p:0,h:250}]}};
 const ROLES={cap:'Capitán / patrón',maq:'Maquinista',mar:'Marino',otr:'Otro'};
 const rolDe=c=>/patr|capit/i.test(c)?'cap':/maquin/i.test(c)?'maq':/marin/i.test(c)?'mar':'otr';
 let COSTOS=null;
 function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||JSON.parse(JSON.stringify(COSTO_DEF))):ls.get('epn_costos_rx',null);
+  if(COSTOS&&OWNER&&!Array.isArray((COSTOS.par||{}).mu)){COSTOS.par=COSTOS.par||{};const b=+COSTOS.par.muBF,c=+COSTOS.par.muCI;COSTOS.par.mu=(b||c)?[{f:'2026-10-01',B:b||647.43,C:c||575}]:JSON.parse(JSON.stringify(COSTO_DEF.par.mu));ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}
   if(COSTOS){COSTOS.par={...COSTO_DEF.par,...(COSTOS.par||{})};COSTOS.emb=COSTOS.emb||[];COSTOS.personal=COSTOS.personal||[];COSTOS.emb.forEach(e=>{if(e.mot==null)e.mot=e.tipo==='mot'?2:1;if(e.gen==null)e.gen=e.tipo==='mot'?1:0;if(e.genH==null)e.genH=2})}
   if(OWNER&&COSTOS&&!ls.get('epn_gen_v1',false)){COSTOS.emb.forEach(e=>{if(e.tipo==='mot'&&!+e.gen)e.gen=1});ls.set('epn_gen_v1',true);ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}return COSTOS}
 const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true);ghProgramar()}};
@@ -1501,13 +1503,14 @@ const VIA_DIAS_PROG=[0,3,4,6];// dom, mié, jue, sáb
 const VIA_DIR={ida:'Bluefields → Corn Island',vue:'Corn Island → Bluefields'};
 let VIA_MES=today().slice(0,7),VIA_EDIT=null;
 const puedeVia=()=>OWNER||!!(LIC&&LIC.k&&!LIC.p);
+function muTarifa(f){const l=((COSTOS&&COSTOS.par.mu)||[]).filter(x=>x&&x.f).slice().sort((a,b)=>a.f.localeCompare(b.f));if(!l.length)return{B:0,C:0,f:''};let t=l[0];l.forEach(x=>{if(x.f<=f)t=x});return t}
 const viaNuevoId=()=>'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function viaPlantilla(f,dir){const vu=dir==='vue';
   return vu?[{de:'Muelle municipal Corn Island',a:'Muelle municipal Bluefields',sal:'09:00',lle:'',cd:0.5},{de:'Muelle municipal Bluefields',a:'Muelle EPN',sal:'',lle:'',cd:0,auto:true}]
            :[{de:'Muelle EPN',a:'Muelle municipal Bluefields',sal:'07:00',lle:'07:15',cd:0},{de:'Muelle municipal Bluefields',a:'Muelle Corn Island',sal:'09:00',lle:'',cd:2}]}
 function viaDirDe(f){const d=new Date(f+'T12:00').getDay();return d===4||d===0?'vue':'ida'}
 function viaNuevo(){const f=today(),dir=viaDirDe(f);const embs=(COSTOS&&COSTOS.emb||[]).filter(e=>e.tipo==='mot');const eid=ls.get('epn_via_emb','')||(embs[0]&&embs[0].id)||'';
-  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',oi:[],muB:par.muBF?String(par.muBF):'',muC:dir==='ida'&&par.muCI?String(par.muCI):'',og:[],hx:'',obs:'',autor:'Administrador',nuevo:true}}
+  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:'Administrador',nuevo:true}}
 const addMin=(hhmm,m)=>{if(!hhmm)return'';const t=hm2m(hhmm)+m;const x=((t%1440)+1440)%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')};
 function viaAuto(v){const t=v.tr;if(v.dir==='vue'&&t[1]&&t[1].auto&&t[0].lle){t[1].sal=addMin(t[0].lle,Math.round((+t[0].cd||0)*60));t[1].lle=addMin(t[1].sal,15)}}
 /* Convierte los tramos en fechas reales (si una hora es menor que la anterior, pasa al día siguiente) */
@@ -1537,8 +1540,8 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
   const hosp=v.dir==='ida';const dv=par.desay+par.alm+par.cena+(hosp?par.hosp:0);
   add('Viáticos','Alimentación'+(hosp?' y hospedaje':''),n+' persona(s) × C$ '+fmt(dv)+(hosp?' (incluye hospedaje en Corn Island)':' (sin hospedaje: regresan a casa)'),n*dv);
   if(par.bonoReg){const nc=crew.filter(c=>c.rol==='cap').length;add('Viáticos','Bono por viaje',nc+' capitán × C$ '+fmt(par.bonoCap)+' + '+(n-nc)+' × C$ '+fmt(par.bonoOtro),nc*par.bonoCap+(n-nc)*par.bonoOtro)}
-  const muB=v.muB!==''&&v.muB!=null?+v.muB:(+par.muBF||0),muC=v.dir==='ida'?(v.muC!==''&&v.muC!=null?+v.muC:(+par.muCI||0)):0;
-  if(muB)add('Muellaje','Muelle municipal Bluefields','Estadía',muB);if(muC)add('Muellaje','Muelle Corn Island','Estadía',muC);
+  const muT=muTarifa(v.f),muB=+v.muB>0?+v.muB:(+muT.B||0),muC=v.dir==='ida'?(+v.muC>0?+v.muC:(+muT.C||0)):0;
+  if(muB)add('Muellaje','Muelle municipal Bluefields',+v.muB>0?'Monto del viaje':'Tarifa vigente desde '+muT.f,muB);if(muC)add('Muellaje','Muelle Corn Island',+v.muC>0?'Monto del viaje':'Tarifa vigente desde '+muT.f,muC);
   (v.og||[]).forEach(o=>{if(+o.m)add('Otros gastos',o.d||'Otro gasto','',+o.m)});
   const dv2=viaDivisor(v,lista||viaLista());const D=Math.max(1,dv2.d);const sm=crew.reduce((s,c)=>s+salTot(c.p),0);
   const nota=' ÷ '+D+' viajes del mes';
@@ -1651,8 +1654,8 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
     ${Object.keys(R.porEmb).length>1?`<h3 class="sub">Por embarcación</h3>${Object.entries(R.porEmb).map(([k,r])=>`<div class="rl"><div>${esc(k)}<small>${r.n} viaje(s) · ingresos ${money(r.ing,'NIO')}</small></div><b>${money(r.ut,'NIO')}</b></div>`).join('')}`:''}
     <div class="row" style="flex-wrap:nowrap;margin-top:12px"><button class="btn2" data-vpdf style="flex:1">Informe PDF</button><button class="btn2" data-vxls style="flex:1">Excel</button></div></div>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay viajes registrados en este mes.</p>'}
    ${OWNER?'<button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>':'<p class="sm" style="margin-top:10px">Los viajes los registra el administrador; aquí puede consultarlos y descargar los informes.</p>'}
-   ${OWNER?`<details class="rg" data-ok="vaj" style="margin-top:12px"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Muellaje Bluefields por escala (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muBF" value="${COSTOS.par.muBF||''}" placeholder="0.00"></div><div><label>Muellaje Corn Island por estadía (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="muCI" value="${COSTOS.par.muCI||''}" placeholder="0.00"></div><div><label>Precio del boleto (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="pasaje" value="${COSTOS.par.pasaje||310}"></div></div>
-     <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">Estos valores se ponen solos en cada viaje nuevo y se pueden cambiar en el viaje. El muellaje de Corn Island va solo en la ida (la nave pernocta allí).</p></div></details>`:''}
+   ${OWNER?`<details class="rg" data-ok="vaj" style="margin-top:12px"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Precio del boleto (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="pasaje" value="${COSTOS.par.pasaje||310}"></div></div>
+     <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">El muellaje se configura en Ajustes → Estructura de costos (tarifas con fecha de vigencia).</p></div></details>`:''}
    ${R.cs.length?`<details class="rg colw" data-ok="vlist" style="margin-top:12px"${ACC_OPEN.has('vlist')?' open':''}><summary><span>Viajes de ${mesTxt(VIA_MES).toLowerCase()} (${R.cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${R.cs.map(({v,c})=>`<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(c.emb?c.emb.n.replace(/^Motonave /,''):'—')}${+v.np?' · '+v.np+' boletos':''}</small></div><div style="text-align:right"><b class="${c.ut<0?'neg':''}">${money(c.ut,'NIO')}</b><small>${fq(c.mg)} %</small></div></button>`).join('')}</div></details>`:''}`}
 function viaResHTML(c){const sem=viaSem(c);const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
   return `<div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b><small>variables ${money(c.gv,'NIO')} · fijos ${money(c.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
@@ -1687,7 +1690,7 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
    ${(v.oi||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-voi="${i}" data-f="d" value="${esc(o.d)}" placeholder="Otro ingreso" style="flex:2"><input data-voi="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1">${ro?'':`<button type="button" class="btnd" data-voidel="${i}" style="width:40px;padding:0">✕</button>`}</div>`).join('')}
    ${ro?'':'<button type="button" class="btn2" data-voiadd style="width:100%;margin-top:6px">+ Otro ingreso</button>'}
    <h3 class="sub">Otros gastos del viaje (C$)</h3>
-   <div class="grid"><div><label>Muellaje Bluefields</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muB" value="${v.muB}" placeholder="0.00"></div>${v.dir==='ida'?`<div><label>Muellaje Corn Island</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muC" value="${v.muC}" placeholder="0.00"></div>`:''}
+   <div class="grid"><div><label>Muellaje Bluefields</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muB" value="${+v.muB>0?v.muB:''}" placeholder="tarifa: ${fmt(muTarifa(v.f).B)}"></div>${v.dir==='ida'?`<div><label>Muellaje Corn Island</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="muC" value="${+v.muC>0?v.muC:''}" placeholder="tarifa: ${fmt(muTarifa(v.f).C)}"></div>`:''}
     <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="hx" value="${v.hx}" placeholder="auto: ${c.hxA}"></div></div>
    ${(v.og||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-vog="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Hielo, reparación…" style="flex:2"><input data-vog="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1">${ro?'':`<button type="button" class="btnd" data-vogdel="${i}" style="width:40px;padding:0">✕</button>`}</div>`).join('')}
    ${ro?'':'<button type="button" class="btn2" data-vogadd style="width:100%;margin-top:6px">+ Otro gasto</button>'}
@@ -1697,10 +1700,9 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
    ${ro?'':`<p class="msg-bad" id="viaFalta" style="margin-top:8px"${viaFalta(v)?'':' hidden'}>Anote la hora de llegada para calcular el combustible.</p>
    <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-vsave style="flex:2;padding:13px">Guardar viaje</button>${v.nuevo?'':'<button class="btnd" data-vdel style="flex:1">Eliminar</button>'}</div>`}`}
 function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;let full=false;
-  if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d);v.muC=d==='ida'&&COSTOS.par.muCI?String(COSTOS.par.muCI):'';full=true}}
-  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC=val==='ida'&&COSTOS.par.muCI?String(COSTOS.par.muCI):'';full=true}
+  if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d);v.muC='';full=true}}
+  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC='';full=true}
   if(k==='emb'){v.crew=null;ls.set('epn_via_emb',val);full=true}
-  if(OWNER&&(k==='muB'||k==='muC')&&+val>0){const pk=k==='muB'?'muBF':'muCI';if(!+COSTOS.par[pk]){COSTOS.par[pk]=+val;guardarCostos()}}
   if(full)renderViaForm();else viaRefrescar()}
 function viaGuardar(){const v=VIA_EDIT;if(viaFalta(v)&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
   const x={...v};delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
@@ -2062,18 +2064,24 @@ function renderCostAdm(){const b=$('#costBox');const dd=$('details.acc[data-acc=
    <div class="crew-l">${COSTOS.personal.slice().sort((x,y)=>x.n.localeCompare(y.n)).map(p=>{const cc=(e.crew||[]).find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-ecrew="${i}" data-pid="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-erol="${i}" data-pid="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')||'<p class="sm">Primero importe el personal.</p>'}</div></details>`).join('')}
   <h3 class="sub">Parámetros (C$)</h3>
   <div class="grid">${[['diesel','Diésel por galón'],['desay','Desayuno'],['alm','Almuerzo'],['cena','Cena'],['hosp','Hospedaje por noche'],['unif','Uniformes anual por persona'],['botas','Botas anual por persona'],['bonoCap','Bono capitán por viaje'],['bonoOtro','Bono maquinista / marino'],['inss','INSS patronal %'],['inatec','INATEC %']].map(([k,l])=>`<div><label>${l}</label><input type="number" step="any" data-cp="${k}" value="${par[k]}"></div>`).join('')}</div>
+  <h3 class="sub">Muellaje (viajes regulares)</h3>
+  <p class="sm" style="margin-top:0">Tarifa por escala en el muelle municipal de Bluefields (cada viaje) y por estadía en Corn Island (solo la ida). Cuando suba, agregue la nueva con su fecha: los viajes anteriores conservan la tarifa vieja.</p>
+  ${(par.mu||[]).map((m,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px;align-items:end"><div style="flex:1.2"><label style="font-size:12px">Vigente desde</label><input type="date" data-mu="${i}" data-f="f" value="${m.f}"></div><div style="flex:1"><label style="font-size:12px">Bluefields C$</label><input type="number" step="any" inputmode="decimal" data-mu="${i}" data-f="B" value="${m.B}"></div><div style="flex:1"><label style="font-size:12px">Corn Island C$</label><input type="number" step="any" inputmode="decimal" data-mu="${i}" data-f="C" value="${m.C}"></div>${(par.mu||[]).length>1?`<button class="btnd" data-mudel="${i}" style="width:40px;padding:0;height:42px">✕</button>`:''}</div>`).join('')}
+  <button class="btn2" data-muadd style="width:100%">+ Nueva tarifa de muellaje</button>
   <label style="margin-top:8px">Lubricantes y filtros</label>${(par.lub||[]).map((l,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-cl="${i}" data-f="n" value="${esc(l.n)}" style="flex:2"><input type="number" step="any" data-cl="${i}" data-f="p" value="${l.p}" placeholder="Precio" style="flex:1"><input type="number" step="any" data-cl="${i}" data-f="h" value="${l.h}" placeholder="Horas" style="width:70px"></div>`).join('')}
   <button class="btn" id="cpPub" style="width:100%;margin-top:12px">Publicar costos a los colegas</button>
   <p class="sm">Los colegas con acceso completo reciben los costos cifrados la próxima vez que abran la app con señal.</p>`}
 document.addEventListener('change',e=>{const el=e.target;if(!el.closest('#costBox')||!COSTOS)return;
   if(el.dataset.ce!=null){const x=COSTOS.emb[+el.dataset.ce];x[el.dataset.f]=el.dataset.f==='n'?el.value:(+el.value||0)}
   else if(el.dataset.cp){COSTOS.par[el.dataset.cp]=+el.value||0}
+  else if(el.dataset.mu!=null){const m=COSTOS.par.mu[+el.dataset.mu];m[el.dataset.f]=el.dataset.f==='f'?el.value:(+el.value||0)}
   else if(el.dataset.cl!=null){const l=COSTOS.par.lub[+el.dataset.cl];l[el.dataset.f]=el.dataset.f==='n'?el.value:(+el.value||0)}
   else if(el.dataset.ecrew!=null){const x=COSTOS.emb[+el.dataset.ecrew];const p=COSTOS.personal.find(q=>q.id===el.dataset.pid);x.crew=(x.crew||[]).filter(c=>c.pid!==el.dataset.pid);if(el.checked)x.crew.push({pid:el.dataset.pid,rol:rolDe(p&&p.cargo)})}
   else if(el.dataset.erol!=null){const x=COSTOS.emb[+el.dataset.erol];const c=(x.crew||[]).find(c=>c.pid===el.dataset.pid);if(c)c.rol=el.value}
   else return;
   guardarCostos();const open=[...$$('#costBox details')].map(d=>d.open);renderCostAdm();$$('#costBox details').forEach((d,i)=>{if(open[i])d.open=true});renderRent();if(typeof subAju==='function')subAju()});
 document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.pcargo||!OWNER)return;const p=COSTOS.personal.find(x=>x.id===el.dataset.pcargo);if(!p)return;const v=el.value.trim();if(!v){el.value=p.cargo;return}p.cargo=v;guardarCostos();toast('Cargo actualizado: '+p.n.split(' ')[0]+' → '+v)});
+document.addEventListener('click',e=>{const m=e.target.closest('[data-muadd],[data-mudel]');if(m&&m.closest('#costBox')&&OWNER){const l=COSTOS.par.mu=COSTOS.par.mu||[];if(m.hasAttribute('data-muadd')){const u=l.slice().sort((a,b)=>a.f.localeCompare(b.f)).pop()||{B:0,C:0};l.push({f:today(),B:u.B,C:u.C})}else l.splice(+m.dataset.mudel,1);guardarCostos();const open=[...$$('#costBox details')].map(d=>d.open);renderCostAdm();$$('#costBox details').forEach((d,i)=>{if(open[i])d.open=true});return}});
 document.addEventListener('click',e=>{const b=e.target.closest('#cpImp,#cpPub,[data-pdel]');if(!b||!b.closest('#costBox'))return;
   if(b.id==='cpImp'){const n=importarPersonal($('#cpPaste').value);toast(n?n+' persona(s) importada(s)':'No se reconocieron filas. Copie desde Excel las columnas Nombre, Cargo, Salario y Antigüedad.');renderCostAdm();renderRent();if(typeof subAju==='function')subAju()}
   else if(b.id==='cpPub')publicarCostos();
