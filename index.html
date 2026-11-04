@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.03-46';
+const APP_VER='2026.11.03-47';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1209,11 +1209,11 @@ document.addEventListener('focusin',e=>{if(e.target.id!=='gN')return;const a=ls.
 
 /* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
 const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
-async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[]),arqueos:ls.get('epn_arqueos',[]),estArribos:ls.get('epn_est_arr',[]),estSaldos:ls.get('epn_est_sal',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[]),arqueos:ls.get('epn_arqueos',[]),estArribos:ls.get('epn_est_arr',[]),estSaldos:ls.get('epn_est_sal',[]),estSemanas:ls.get('epn_est_sem',[]),estCabotaje:ls.get('epn_est_cab',[]),estNotas:ls.get('epn_est_cno',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
   const fn='respaldo-calculos-apbb-'+today()+'.json';
   try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
-async function restaurar(file){try{const o=JSON.parse(await file.text());let nEst=0;[['estArribos','epn_est_arr'],['estSaldos','epn_est_sal']].forEach(([k,key])=>{if(OWNER&&Array.isArray(o[k])&&o[k].length){nEst+=o[k].length;const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o[k].forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]={...x,_p:true}});ls.set(key,Object.values(m))}});if(OWNER&&Array.isArray(o.arqueos)&&o.arqueos.length){const m={};(ls.get('epn_arqueos',[])||[]).forEach(x=>m[x.id]=x);o.arqueos.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set('epn_arqueos',Object.values(m))}if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
+async function restaurar(file){try{const o=JSON.parse(await file.text());let nEst=0;[['estArribos','epn_est_arr'],['estSaldos','epn_est_sal'],['estSemanas','epn_est_sem'],['estCabotaje','epn_est_cab'],['estNotas','epn_est_cno']].forEach(([k,key])=>{if(OWNER&&Array.isArray(o[k])&&o[k].length){nEst+=o[k].length;const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o[k].forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]={...x,_p:true}});ls.set(key,Object.values(m))}});if(OWNER&&Array.isArray(o.arqueos)&&o.arqueos.length){const m={};(ls.get('epn_arqueos',[])||[]).forEach(x=>m[x.id]=x);o.arqueos.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set('epn_arqueos',Object.values(m))}if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
   const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
   ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(OWNER&&o.costos&&!(COSTOS&&COSTOS.personal.length)){COSTOS=o.costos;ls.set('epn_costos',COSTOS)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}if(o.condiciones){COND={...o.condiciones,...COND};ls.set('epn_cond_cache',COND)}}renderHis();toast(nEst&&!n?nEst+' registro(s) estadístico(s) cargado(s)':n+' cálculo(s) restaurado(s)'+(nEst?' y '+nEst+' registro(s) estadístico(s)':''));if(nEst)estSync(true)}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
 
@@ -2135,23 +2135,23 @@ const pct=(a,b)=>b?((a-b)/b*100):null;
 /* ---- Pasajeros de motonaves desde Viajes ---- */
 function estMN(ym){const L=viaLista().filter(v=>v.f.slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const por={};L.forEach(v=>{(por[v.emb]=por[v.emb]||[]).push(v)});return{L,por}}
 /* ---- Sincronización (mismo canal que arqueos) ---- */
-let _esBusy=false;
+let _esBusy=false;const EST_KINDS=[['arribo','epn_est_arr'],['saldo','epn_est_sal'],['semana','epn_est_sem'],['cabot','epn_est_cab'],['cnota','epn_est_cno']];
 async function estSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_esBusy||!puedeVia())return;_esBusy=true;let err=null;
   try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const k=await aesKey(await arqKeyRaw());
-    for(const [kind,key] of [['arribo','epn_est_arr'],['saldo','epn_est_sal']]){for(const a of (ls.get(key,[])||[]).filter(x=>x._p)){const y={...a};delete y._p;delete y._n;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
+    for(const [kind,key] of EST_KINDS){for(const a of (ls.get(key,[])||[]).filter(x=>x._p)){const y={...a};delete y._p;delete y._n;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
       const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:kind+' '+y.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
       ls.set(key,(ls.get(key,[])||[]).map(z=>z.id===a.id&&z.u===a.u?{...z,_p:false}:z))}}
     if(OWNER){for(const n of (ls.get('epn_est_delq',[])||[]))await fetch(base+'/'+n,{method:'PATCH',headers:H,body:JSON.stringify({state:'closed'})});ls.set('epn_est_delq',[])}
-    const got={arribo:{},saldo:{}},nums={};for(let pg=1;pg<30;pg++){const r=await fetch(base+'?state=open&per_page=100&page='+pg+'&t='+Date.now(),{headers:H,cache:'no-store'});if(!r.ok)throw new Error(String(r.status));const L=await r.json();
-      for(const it of L){const m=(it.title||'').match(/^(arribo|saldo) /);if(it.pull_request||!m)continue;try{const o=JSON.parse(it.body);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(o.iv)},k,b64uToBytes(o.data));const a=JSON.parse(new TextDecoder().decode(pt));
+    const got={},nums={};EST_KINDS.forEach(([k])=>got[k]={});for(let pg=1;pg<30;pg++){const r=await fetch(base+'?state=open&per_page=100&page='+pg+'&t='+Date.now(),{headers:H,cache:'no-store'});if(!r.ok)throw new Error(String(r.status));const L=await r.json();
+      for(const it of L){const m=(it.title||'').match(/^(arribo|saldo|semana|cabot|cnota) /);if(it.pull_request||!m)continue;try{const o=JSON.parse(it.body);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(o.iv)},k,b64uToBytes(o.data));const a=JSON.parse(new TextDecoder().decode(pt));
         (nums[a.id]=nums[a.id]||[]).push(it.number);const g=got[m[1]];if(!g[a.id]||String(a.u)>String(g[a.id].u))g[a.id]=a}catch(e){}}if(L.length<100)break}
-    for(const [kind,key] of [['arribo','epn_est_arr'],['saldo','epn_est_sal']]){const g=got[kind];(ls.get(key,[])||[]).filter(x=>x._p).forEach(x=>{if(!g[x.id]||String(x.u)>String(g[x.id].u))g[x.id]=x});ls.set(key,Object.values(g).map(a=>({...a,_n:nums[a.id]||[]})))}}catch(e){err=e.message}
+    for(const [kind,key] of EST_KINDS){const g=got[kind];(ls.get(key,[])||[]).filter(x=>x._p).forEach(x=>{if(!g[x.id]||String(x.u)>String(g[x.id].u))g[x.id]=x});ls.set(key,Object.values(g).map(a=>({...a,_n:nums[a.id]||[]})))}}catch(e){err=e.message}
   _esBusy=false;if(err&&!silent)toast('Sin conexión con GitHub; se enviará al tener señal');if(document.querySelector('#v-via.on')&&VIA_SEC==='est'&&!EST_EDIT)renderEst()}
 window.addEventListener('online',()=>estSync(true));
 /* ---- Pantallas ---- */
-function renderEst(){const box=$('#viaBox');if(EST_EDIT)return EST_EDIT._sal?renderSalForm():renderArrForm();const ed=estPuedeEditar(),ym=VIA_MES;
+function renderEst(){const box=$('#viaBox');if(EST_EDIT)return EST_EDIT._sem?renderSemForm():EST_EDIT._cab?renderCabForm():EST_EDIT._sal?renderSalForm():renderArrForm();const ed=estPuedeEditar(),ym=VIA_MES;
   const M=estMes(ym),P=estMes(ymPrev(ym)),MN=estMN(ym);const pas=MN.L.reduce((s,v)=>s+(+v.np||0),0);const dif=(a,b)=>{const p=pct(a,b);return p==null?'':` <small style="color:${a>=b?'#1e7b3a':'#b42318'}">${a>=b?'▲':'▼'} ${fq(Math.abs(Math.round(p*10)/10))} %</small>`};
-  const sub=`<div class="seg" style="margin-top:10px"><button data-esec="res" class="${EST_SEC==='res'?'on':''}">Resumen</button><button data-esec="arr" class="${EST_SEC==='arr'?'on':''}">Arribos</button>${ed?`<button data-esec="sal" class="${EST_SEC==='sal'?'on':''}">Meses anteriores</button>`:''}</div>`;
+  const sub=`<div class="seg" style="margin-top:10px"><button data-esec="res" class="${EST_SEC==='res'?'on':''}">Resumen</button><button data-esec="arr" class="${EST_SEC==='arr'?'on':''}">Arribos</button><button data-esec="pes" class="${EST_SEC==='pes'?'on':''}">Pesca y cabotaje</button>${ed?`<button data-esec="sal" class="${EST_SEC==='sal'?'on':''}">Meses anteriores</button>`:''}</div>`;
   const mes=`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:10px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(ym)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>`;
   let body='';
   if(EST_SEC==='res'){const ac=estAcum(ym);const faltan=ac.filter((x,i)=>!x.reg&&!x.sal).map((x,i)=>i);
@@ -2165,6 +2165,7 @@ function renderEst(){const box=$('#viaBox');if(EST_EDIT)return EST_EDIT._sal?ren
   else if(EST_SEC==='arr'){const L=M.arr.slice().sort((a,b)=>(a.hl||a.f).localeCompare(b.hl||b.f));
     body=`${ed?'<button class="btn" data-enew style="width:100%;margin-top:10px;padding:13px">+ Registrar arribo</button>':''}
      ${L.length?L.map(a=>`<button class="via-it" data-eedit="${a.id}"><div><b>${esc(a.buque||'—')} ${a.viaje?'· V '+esc(a.viaje):''}</b><small>${a.hl?new Date(a.hl).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'}):a.f} · ${esc(a.ban||'')} · ${esc(EST_TIPOS[a.tipo]||'')}${a._p?' · <span class="chip warnc">sin enviar</span>':''}</small></div><div style="text-align:right"><b>${fq(+a.trb||0)}</b><small>T.R.B.</small></div></button>`).join(''):'<p class="mut" style="text-align:center;margin:14px 0">Sin arribos registrados en este mes.</p>'}`}
+  else if(EST_SEC==='pes'){body=renderPes()}
   else{const y=ym.slice(0,4);body=`<p class="sm" style="margin:10px 0 6px">Totales de los meses en que todavía no se usaba la app. Se cargan una sola vez para que el acumulado del año y la comparación con el mes anterior salgan completos. Si un mes tiene arribos registrados, se usan los registros.</p>
      ${Array.from({length:12},(_,i)=>y+'-'+String(i+1).padStart(2,'0')).filter(m=>m<=today().slice(0,7)).map(m=>{const s=estSal().find(x=>x.ym===m),r=estArr().some(a=>(a.f||'').slice(0,7)===m);const z=estMes(m);
        return `<button class="via-it" data-esal="${m}" ${r?'disabled style="opacity:.6"':''}><div><b>${mesTxt(m)}</b><small>${r?'Con arribos registrados':s?z.n+' buques · '+fq(z.d+z.e)+' TM':'Sin datos'}</small></div><div><span class="chip ${r||s?'ok':'warnc'}">${r?'Registros':s?'Saldo':'Falta'}</span></div></button>`}).join('')}`}
@@ -2195,7 +2196,7 @@ function renderArrForm(){const a=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();
    <div class="via-tr"><div class="sm"><b>${a.tr!==false&&(a.tran||'').trim()?4:2}.</b> Salida final hacia ${esc(a.dest||'destino')} (leva ancla)</div><div class="grid">${I('hs','Fecha y hora de salida','datetime-local')}${I('cal2','Calado (m)','number','inputmode="decimal"')}</div></div>
    ${(()=>{const H=(x,y)=>x&&y?hm((new Date(y)-new Date(x))/6e4):'—';return `<p class="sm" style="margin:4px 0 0">Estadía total en puerto: <b>${H(a.hl,a.hs)}</b>${a.tr!==false&&(a.tran||'').trim()?` · en tránsito a ${esc(a.tran)}: <b>${H(a.sr,a.rb)}</b>`:''}</p>`})()}
    <h3 class="sub">Carga desembarcada (TM)</h3>${cargaFilas('des',a,EST_PD)}
-   <h3 class="sub">Carga embarcada (TM)</h3>${cargaFilas('emb',a,EST_PE)}
+   <h3 class="sub">Carga embarcada (TM)</h3>${cargaFilas('emb',a,EST_PE)}${contHTML(a)}
    <div><label style="margin-top:10px">Observaciones</label><input data-ef="obs" value="${esc(a.obs||'')}" placeholder="Ej.: zarpa hacia Arlen Siu"></div></fieldset>
    ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-esave style="flex:2;padding:13px">Guardar arribo</button>${!a.nuevo&&OWNER?'<button class="btnd" data-edel style="flex:1">Eliminar</button>':''}</div>`}`}
 function renderSalForm(){const s=EST_EDIT,box=$('#viaBox');const N=(o,k,l)=>`<div><label>${l}</label><input type="number" min="0" step="any" inputmode="decimal" data-es="${o}" data-k="${k}" value="${(o?(s[o]||{})[k]:s[k])??''}" placeholder="0"></div>`;
@@ -2277,6 +2278,7 @@ function estExcel(){const {C,ym}=estCuadros(VIA_MES);const sheets=[];
     if(c.sec)c.sec.forEach(([lab,rs,sub])=>{rows.push([{v:lab,s:14},...Array(w-1).fill({v:'',s:14})]);rs.forEach(r=>rows.push(fila(r)));rows.push(fila(sub,true))});else c.rows.forEach(r=>rows.push(fila(r)));
     rows.push(fila(c.tot,true));rows.push(...firmas(w));
     const hts=[];hts[6]=42;sheets.push({n:name,rows,w:c.h.map((h,i)=>i===0?34:15),m:[0,1,2,3,4].map(r=>`A${r+1}:${colL(w-1)}${r+1}`),h:hts})});
+  const H2=estHojas2(ym);sheets.push(H2.teus);
   /* Detalle de barcos */
   const L=estMes(ym).arr.slice().sort((a,b)=>String(a.hl).localeCompare(String(b.hl)));const dr=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:5}],[{v:'BARCOS LLEGADOS AL PUERTO DEL BLUFF',s:11}],[{v:'MES DE: '+mesUp(ym),s:12}],[]];const fdt=x=>x?new Date(x).toLocaleString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
   L.forEach((a,i)=>{const d=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0),e=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0);
@@ -2285,6 +2287,7 @@ function estExcel(){const {C,ym}=estCuadros(VIA_MES);const sheets=[];
     if(a.obs)dr.push([{v:'Observaciones',s:15},{v:a.obs,s:18}]);dr.push([])});
   if(!L.length)dr.push([{v:'Sin arribos registrados en el mes.',s:12}]);
   sheets.push({n:'DETALLE DE BARCOS',rows:dr,w:[30,26,30,26],m:[0,1,2,3].map(r=>`A${r+1}:D${r+1}`)});
+  sheets.push(H2.traf,H2.pes,H2.cab);
   /* Viajes motonaves */
   const MN=estMN(ym);const vr=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'TRANSPORTE DE PASAJEROS EN MOTONAVES · '+mesUp(ym),s:11}],[]];
   (COSTOS?COSTOS.emb.filter(e=>e.tipo==='mot'):[]).forEach(e=>{const vs=MN.por[e.id]||[];vr.push([{v:e.n.toUpperCase(),s:5}]);vr.push(['ITEM','FECHA','RUTA','TOTAL PASAJEROS','TOTAL VIAJE'].map(h=>({v:h,s:1})));
@@ -2305,7 +2308,129 @@ function estPdf(){const {C,ym}=estCuadros(VIA_MES);const d=PDFW();const yR={y:0}
   if(yR.y>600)nueva();const L=estMes(ym).arr;pdfTabla(d,yR,'BARCOS LLEGADOS AL PUERTO DEL BLUFF',['Buque / viaje','Llegada','Salida','Bandera','T.R.B.','T.R.N.','Eslora','Desemb. TM','Emb. TM'],[120,70,70,70,40,40,40,50,50],
     L.map(a=>[(a.buque||'')+(a.viaje?' V'+a.viaje:''),a.hl?new Date(a.hl).toLocaleString('es-NI',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—',a.hs?new Date(a.hs).toLocaleString('es-NI',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—',a.ban||'',fq(+a.trb||0),fq(+a.trn||0),fq(+a.eslora||0),fmt((a.des||[]).reduce((s,x)=>s+(+x.tm||0),0)),fmt((a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0))]),null,Array(9).fill(''),nueva);
   const MN=estMN(ym);pdfTabla(d,yR,'TRANSPORTE DE PASAJEROS EN MOTONAVES',['Fecha','Motonave','Ruta','Pasajeros'],[80,140,180,80],MN.L.map(v=>[new Date(v.f+'T12:00').toLocaleDateString('es-NI'),(COSTOS&&(COSTOS.emb.find(e=>e.id===v.emb)||{}).n)||'',v.dir==='ida'?'Bluefields – Corn Island':'Corn Island – Bluefields',fq(+v.np||0)]),['Total','','',fq(MN.L.reduce((s,v)=>s+(+v.np||0),0))],Array(4).fill(''),nueva);
+  {const M=contMes(ym),A=contMes(ym,true);if(yR.y>620)nueva();const fr=(l,z)=>[l,fq(z.imp.ll20),fq(z.imp.ll40),fq(z.imp.va20),fq(z.imp.va40),fq(z.exp.ll20),fq(z.exp.ll40),fq(z.exp.va20),fq(z.exp.va40),fq(z.teus)];
+   pdfTabla(d,yR,"TRÁFICO DE CONTENEDORES (40' = 2 TEUS)",['Periodo',"Imp. ll. 20'","Imp. ll. 40'","Imp. vac. 20'","Imp. vac. 40'","Exp. ll. 20'","Exp. ll. 40'","Exp. vac. 20'","Exp. vac. 40'",'TEUS'],[100,48,48,48,48,48,48,48,48,48],[fr('Mes',M),fr('Acumulado del año',A)],null,Array(10).fill(''),nueva);
+   const est=estMes(ym),tot=est.d+est.e,cc=M.tmImp+M.tmExp,pp=(x)=>tot?fq(Math.round(x/tot*1000)/10)+' %':'—';yR.y+=4;
+   pdfTabla(d,yR,'CARGA MOVILIZADA EN CONTENEDORES',['Concepto','TM','% de la carga'],[260,120,120],[['Importación en contenedor',fmt(M.tmImp),pp(M.tmImp)],['Exportación en contenedor',fmt(M.tmExp),pp(M.tmExp)]],['Total en contenedor (de '+fmt(tot)+' TM en puerto)',fmt(cc),pp(cc)],Array(3).fill(''),nueva);yR.y+=8}
+  {const W=semanasMes(ym),S=W.map((w,i)=>semDe(ym,i));const sm=k=>S.reduce((s,x)=>s+(+x[k]||0),0);if(yR.y>560)nueva();
+   pdfTabla(d,yR,'BARCOS DE PESCA Y CABOTAJE · EMBARCACIONES POR SEMANA',['Periodo','Flotante pesq.','Flotante cabot.','Cabotaje pesq.','Cabotaje cabot.','Total'],[132,80,80,80,80,80],S.map((s,i)=>[semTxt(W[i]),fq(s.fp),fq(s.fc),fq(s.cp),fq(s.cc),fq((+s.fp||0)+(+s.fc||0)+(+s.cp||0)+(+s.cc||0))]),['Total',fq(sm('fp')),fq(sm('fc')),fq(sm('cp')),fq(sm('cc')),fq(sm('fp')+sm('fc')+sm('cp')+sm('cc'))],Array(6).fill(''),nueva);yR.y+=4;
+   const R=[];PES_CAT.forEach(([c,f,n])=>{const rs=S.flatMap((s,i)=>(s.rows||[]).filter(r=>r.c===c).map(r=>({...r,w:i})));if(!rs.length)return;const g={};rs.forEach(r=>{const k=(r.emp||'')+'|'+(r.dest||'');g[k]=(g[k]||0)+(+r.tm||0)});Object.entries(g).forEach(([k,v])=>{const [e,de]=k.split('|');R.push([n,f,e,de,fmt(v)])})});
+   pdfTabla(d,yR,'TONELADAS MOVILIZADAS POR FLOTA (MES)',['Embarcación / carga','Flota','Empresa','Destino','TM'],[150,80,90,142,70],R.length?R:[['Sin registros','','','','']],['Total','','','',fmt(S.reduce((s,x)=>s+(x.rows||[]).reduce((a,r)=>a+(+r.tm||0),0),0))],Array(5).fill(''),nueva);yR.y+=8}
+  {const L=estCab().filter(x=>(x.f||'').slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const nota=(estNot().find(q=>q.ym===ym)||{}).t||'';if(yR.y>620)nueva();const t=x=>(+x.mg||0)+(+x.veh||0)+(+x.cha||0);
+   pdfTabla(d,yR,'CARGA MOVILIZADA (CABOTAJE)',['Fecha','M/N','Descripción','Merc. gral.','Vehículo','Chatarra','Desemb.','Emb.'],[56,84,112,56,56,56,56,56],L.length?L.map(x=>[new Date(x.f+'T12:00').toLocaleDateString('es-NI'),x.nom||'',x.desc||'',fmt(+x.mg||0),fmt(+x.veh||0),fmt(+x.cha||0),fmt(x.dir==='emb'?0:t(x)),fmt(x.dir==='emb'?t(x):0)]):[[nota?'Nota: '+nota.slice(0,95):'Sin movimientos en el mes','','','','','','','']],L.length?['Total','','',fmt(L.reduce((s,x)=>s+(+x.mg||0),0)),fmt(L.reduce((s,x)=>s+(+x.veh||0),0)),fmt(L.reduce((s,x)=>s+(+x.cha||0),0)),fmt(L.filter(x=>x.dir!=='emb').reduce((s,x)=>s+t(x),0)),fmt(L.filter(x=>x.dir==='emb').reduce((s,x)=>s+t(x),0))]:null,Array(8).fill(''),nueva)}
   pdfFooters(d,'Informe estadístico · Elaborado: Asistente Administrativo · Autorizado: Gerente Portuario · GPBB');abrirVisor(d,'Informe-estadistico-'+ym+'.pdf','Informe estadístico · '+mesTxt(ym))}
+
+/*EST2*/
+/* ===== Estadísticas · Etapa 2: contenedores (TEUS), pesca y cabotaje semanal, carga de cabotaje ===== */
+const PES_CAT=[['pes','Flota Pesquera','Productos del mar'],['mg','Flota Cabotaje','Mercadería General'],['hs','Flota Cabotaje','EPN / MN Hilario Sánchez'],['re','Flota Cabotaje','EPN / MN Río Escondido'],['zo','Flota Cabotaje','BT Zompopo'],['iv','Flota Cabotaje','BT IV Marías'],['chs','Viaje Chárter','MN Hilario Sánchez'],['pap','Viaje Chárter','MR Pedro Araúz P. – Plana 3279'],['mer','Viaje Chárter','Remolcador y Plana Merling']];
+const estSem=()=>ls.get('epn_est_sem',[])||[];
+const estCab=()=>ls.get('epn_est_cab',[])||[];
+const estNot=()=>ls.get('epn_est_cno',[])||[];
+/* Semanas del mes: del día 1 al primer domingo, luego lunes a domingo, la última hasta fin de mes */
+function semanasMes(ym){const [y,m]=ym.split('-').map(Number);const out=[];let d=new Date(y,m-1,1);while(d.getMonth()===m-1){const ini=new Date(d);while(d.getDay()!==0&&new Date(d.getTime()+864e5).getMonth()===m-1)d.setDate(d.getDate()+1);out.push([kd(ini),kd(d)]);d.setDate(d.getDate()+1)}return out}
+const semTxt=([a,b])=>{const A=new Date(a+'T12:00'),B=new Date(b+'T12:00');return String(A.getDate()).padStart(2,'0')+' – '+String(B.getDate()).padStart(2,'0')+' '+MESES[B.getMonth()]+' '+B.getFullYear()};
+function semDe(ym,i){const id='w'+ym+'-'+(i+1);return estSem().find(x=>x.id===id)||{id,ym,i,fp:'',fc:'',cp:'',cc:'',rows:[]}}
+const contTot=a=>{const c=a.cont||{};const g=(s,k)=>+((c[s]||{})[k])||0;return{imp:{ll20:g('imp','ll20'),ll40:g('imp','ll40'),va20:g('imp','va20'),va40:g('imp','va40')},exp:{ll20:g('exp','ll20'),ll40:g('exp','ll40'),va20:g('exp','va20'),va40:g('exp','va40')},tmImp:+c.tmImp||0,tmExp:+c.tmExp||0}};
+function contMes(ym,acum){const y=ym.slice(0,4);const L=estArr().filter(a=>acum?((a.f||'').slice(0,4)===y&&(a.f||'').slice(0,7)<=ym):(a.f||'').slice(0,7)===ym);
+  const z={imp:{ll20:0,ll40:0,va20:0,va40:0},exp:{ll20:0,ll40:0,va20:0,va40:0},tmImp:0,tmExp:0};L.forEach(a=>{const t=contTot(a);['imp','exp'].forEach(s=>Object.keys(z[s]).forEach(k=>z[s][k]+=t[s][k]));z.tmImp+=t.tmImp;z.tmExp+=t.tmExp});
+  z.teus=['imp','exp'].reduce((s,k)=>s+z[k].ll20+z[k].va20+2*(z[k].ll40+z[k].va40),0);return z}
+/* ---- Pantalla Pesca / Cabotaje ---- */
+function renderPes(){const ym=VIA_MES,ed=estPuedeEditar();const W=semanasMes(ym);const S=W.map((w,i)=>semDe(ym,i));
+  const tot=k=>S.reduce((s,x)=>s+(+x[k]||0),0);const tm=c=>S.reduce((s,x)=>s+(x.rows||[]).filter(r=>r.c===c).reduce((t,r)=>t+(+r.tm||0),0),0);
+  const C=estCab().filter(x=>(x.f||'').slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const nota=(estNot().find(n=>n.ym===ym)||{}).t||'';
+  return `<h3 class="sub">Barcos de pesca y cabotaje · por semana</h3>
+   ${W.map((w,i)=>{const s=S[i];const n=(+s.fp||0)+(+s.fc||0)+(+s.cp||0)+(+s.cc||0);const t=(s.rows||[]).reduce((a,r)=>a+(+r.tm||0),0);const lleno=s.u;
+     return `<button class="via-it" data-wsem="${i}"><div><b>${semTxt(w)}</b><small>${lleno?n+' embarcaciones · '+fq(Math.round(t*100)/100)+' TM':'Sin registrar'}</small></div><div><span class="chip ${lleno?'ok':'warnc'}">${lleno?'Registrada':'Falta'}</span></div></button>`}).join('')}
+   <div class="rent-k" style="margin-top:8px;grid-template-columns:1fr 1fr"><div><span>Pesqueros</span><b>${tot('fp')+tot('cp')}</b></div><div><span>Carga y pasajeros</span><b>${tot('fc')+tot('cc')}</b></div></div>
+   <details class="rg" data-ok="pestm" style="margin-top:8px"${ACC_OPEN.has('pestm')?' open':''}><summary><span>Toneladas del mes por flota</span><b>${fq(Math.round(PES_CAT.reduce((s,[c])=>s+tm(c),0)*100)/100)} TM</b></summary><div style="padding:0 10px 8px">${PES_CAT.map(([c,f,n])=>`<div class="rl"><div>${esc(n)}<small>${esc(f)}</small></div><b>${fq(Math.round(tm(c)*100)/100)} TM</b></div>`).join('')}</div></details>
+   <h3 class="sub">Carga movilizada (cabotaje)</h3>
+   ${C.length?C.map(x=>`<button class="via-it" data-wcab="${x.id}"><div><b>${esc(x.nom||'—')}</b><small>${[new Date(x.f+'T12:00').toLocaleDateString('es-NI'),esc(x.desc||''),x.dir==='emb'?'Embarque':'Desembarque'].filter(Boolean).join(' · ')}</small></div><div style="text-align:right"><b>${fq((+x.mg||0)+(+x.veh||0)+(+x.cha||0))}</b><small>TM</small></div></button>`).join(''):'<p class="sm">Sin movimientos de cabotaje este mes.</p>'}
+   ${ed?'<button class="btn2" data-wcabnew style="width:100%">+ Registrar carga de cabotaje</button>':''}
+   <label style="margin-top:10px">Nota del mes (hoja Cabotaje)</label><textarea data-wnota rows="2" ${ed?'':'disabled'} placeholder="Ej.: En el presente mes no hay manejo de carga de cabotaje…">${esc(nota)}</textarea>`}
+function renderSemForm(){const s=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();const w=semanasMes(s.ym)[s.i];
+  const N=(k,l)=>`<div><label>${l}</label><input type="number" min="0" step="1" inputmode="numeric" data-wf="${k}" value="${s[k]??''}" placeholder="0"></div>`;
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">Semana ${semTxt(w)}</b><button class="btn2" data-ecancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
+   <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">
+   <h3 class="sub">Embarcaciones atendidas</h3>
+   <div class="via-tr"><div class="sm"><b>Muelle flotante líquido</b></div><div class="grid">${N('fp','Pesqueros')}${N('fc','Cabotaje')}</div></div>
+   <div class="via-tr"><div class="sm"><b>Muelles de cabotaje</b></div><div class="grid">${N('cp','Pesqueros')}${N('cc','Cabotaje')}</div></div>
+   <h3 class="sub">Toneladas movilizadas (TM)</h3>
+   ${PES_CAT.map(([c,f,n])=>{const rs=(s.rows||[]).map((r,i)=>[r,i]).filter(([r])=>r.c===c);return `<details class="rg" data-ok="wc-${c}"${ACC_OPEN.has('wc-'+c)||rs.length?' open':''}><summary><span>${esc(n)}<small class="sm" style="display:block;font-weight:500">${esc(f)}</small></span><b>${fq(rs.reduce((t,[r])=>t+(+r.tm||0),0))} TM</b></summary><div style="padding:0 8px 8px">
+     ${rs.map(([r,i])=>`<div class="grid" style="border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px"><div><label>TM</label><input type="number" min="0" step="any" inputmode="decimal" data-wr="${i}" data-f="tm" value="${r.tm??''}"></div><div><label>Empresa</label><input data-wr="${i}" data-f="emp" value="${esc(r.emp||'')}"></div><div style="grid-column:1/-1"><label>Destino / ruta</label><div class="row" style="flex-wrap:nowrap"><input data-wr="${i}" data-f="dest" value="${esc(r.dest||'')}" style="flex:1">${ro?'':`<button type="button" class="btnd" data-wrdel="${i}" style="width:40px;padding:0">✕</button>`}</div></div></div>`).join('')}
+     ${ro?'':`<button type="button" class="btn2" data-wradd="${c}" style="width:100%">+ Agregar ${esc(n)}</button>`}</div></details>`}).join('')}
+   </fieldset>${ro?'':'<button class="btn" data-wsave style="width:100%;margin-top:12px;padding:13px">Guardar semana</button>'}`}
+const PES_PRE={pes:{emp:'Varias',dest:'Bluefields'},mg:{emp:'Varios',dest:'Puerto Arlen Siú – Rama · Bluefields – Corn Island'},hs:{emp:'EPN',dest:'Bluefields – Corn Island'},re:{emp:'EPN',dest:'Bluefields – Corn Island'}};
+function renderCabForm(){const x=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();const I=(k,l,t='text',a='')=>`<div><label>${l}</label><input ${t==='text'?'':`type="${t}"`} data-cf="${k}" value="${esc(x[k]??'')}" ${a}></div>`;
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">Carga de cabotaje</b><button class="btn2" data-ecancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
+   <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0"><div class="grid" style="margin-top:8px">
+    ${I('desc','Descripción','text','placeholder="Ej.: Productos básicos"')}${I('f','Fecha','date')}${I('at','Hora de atraque','time')}${I('de','Hora de desatraque','time')}${I('reg','Registro')}${I('nom','Nombre de la M/N','text','placeholder="Ej.: Génesis VI"')}
+    <div><label>Movimiento</label><select data-cf="dir"><option value="des" ${x.dir!=='emb'?'selected':''}>Desembarque</option><option value="emb" ${x.dir==='emb'?'selected':''}>Embarque</option></select></div><div></div>
+    ${I('mg','Mercadería general (TM)','number','inputmode="decimal"')}${I('veh','Vehículo (TM)','number','inputmode="decimal"')}${I('cha','Chatarra (TM)','number','inputmode="decimal"')}</div></fieldset>
+   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-csave style="flex:2;padding:13px">Guardar</button>${!x.nuevo&&OWNER?'<button class="btnd" data-cdel style="flex:1">Eliminar</button>':''}</div>`}`}
+/* Contenedores dentro del arribo */
+function contHTML(a){const c=a.cont||{};const v=(s,k)=>(c[s]||{})[k]??'';const N=(s,k,l)=>`<div><label>${l}</label><input type="number" min="0" step="1" inputmode="numeric" data-ect="${s}" data-k="${k}" value="${v(s,k)}" placeholder="0"></div>`;const t=contTot(a);
+  const teus=['imp','exp'].reduce((s,k)=>s+t[k].ll20+t[k].va20+2*(t[k].ll40+t[k].va40),0);
+  return `<details class="rg" data-ok="ecnt" style="margin-top:10px"${ACC_OPEN.has('ecnt')||teus?' open':''}><summary><span>Contenedores</span><b>${teus} TEUS</b></summary><div style="padding:0 8px 8px">
+   <div class="via-tr"><div class="sm"><b>Importación (desembarque)</b></div><div class="grid">${N('imp','ll20',"Llenos 20'")}${N('imp','ll40',"Llenos 40'")}${N('imp','va20',"Vacíos 20'")}${N('imp','va40',"Vacíos 40'")}<div style="grid-column:1/-1"><label>Carga en contenedor (TM)</label><input type="number" min="0" step="any" inputmode="decimal" data-ect="" data-k="tmImp" value="${c.tmImp??''}" placeholder="0.00"></div></div></div>
+   <div class="via-tr"><div class="sm"><b>Exportación (embarque)</b></div><div class="grid">${N('exp','ll20',"Llenos 20'")}${N('exp','ll40',"Llenos 40'")}${N('exp','va20',"Vacíos 20'")}${N('exp','va40',"Vacíos 40'")}<div style="grid-column:1/-1"><label>Carga en contenedor (TM)</label><input type="number" min="0" step="any" inputmode="decimal" data-ect="" data-k="tmExp" value="${c.tmExp??''}" placeholder="0.00"></div></div></div>
+   <p class="sm" style="margin:0">Cada contenedor de 40' cuenta como 2 TEUS, lleno o vacío.</p></div></details>`}
+document.addEventListener('input',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;const a=EST_EDIT;
+  if(el.dataset.ect!==undefined){a.cont=a.cont||{};const s=el.dataset.ect;if(s)(a.cont[s]=a.cont[s]||{})[el.dataset.k]=el.value;else a.cont[el.dataset.k]=el.value}
+  if(el.dataset.wf)a[el.dataset.wf]=el.value;if(el.dataset.wr!==undefined)a.rows[+el.dataset.wr][el.dataset.f]=el.value;if(el.dataset.cf)a[el.dataset.cf]=el.value});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.cf==='dir'&&EST_EDIT)EST_EDIT.dir=el.value;
+  if(el.dataset&&el.dataset.wnota!==undefined&&estPuedeEditar()){const ym=VIA_MES;const x={id:'n'+ym,ym,t:el.value,u:new Date().toISOString(),_p:true};ls.set('epn_est_cno',estNot().filter(n=>n.ym!==ym).concat([x]));estSync(true);toast('Nota guardada')}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-wsem],[data-wsave],[data-wradd],[data-wrdel],[data-wcab],[data-wcabnew],[data-csave],[data-cdel]');if(!b||!b.closest('#viaBox'))return;
+  if(b.dataset.wsem!==undefined){EST_EDIT={...JSON.parse(JSON.stringify(semDe(VIA_MES,+b.dataset.wsem))),_sem:true};EST_EDIT.rows=EST_EDIT.rows||[];renderEst();window.scrollTo(0,0);return}
+  if(b.dataset.wcab){const x=estCab().find(y=>y.id===b.dataset.wcab);if(x){EST_EDIT={...JSON.parse(JSON.stringify(x)),_cab:true};renderEst();window.scrollTo(0,0)}return}
+  if(!estPuedeEditar())return;
+  if(b.dataset.wradd){const c=b.dataset.wradd;const pre={...(PES_PRE[c]||{emp:'',dest:''})};const prev=EST_EDIT.rows.filter(r=>r.c===c).pop();if(prev&&/Bluefields – Corn Island/.test(prev.dest||'')&&(c==='hs'||c==='re'))pre.dest='Corn Island – Bluefields';else if(prev)Object.assign(pre,{emp:prev.emp,dest:prev.dest});EST_EDIT.rows.push({c,tm:'',...pre});ACC_OPEN.add('wc-'+c);return renderSemForm()}
+  if(b.dataset.wrdel!==undefined){EST_EDIT.rows.splice(+b.dataset.wrdel,1);return renderSemForm()}
+  if(b.hasAttribute('data-wsave')){const x={...EST_EDIT};delete x._sem;x.rows=(x.rows||[]).filter(r=>+r.tm||r.emp||r.dest);x.u=new Date().toISOString();x._p=true;ls.set('epn_est_sem',estSem().filter(y=>y.id!==x.id).concat([x]));EST_EDIT=null;toast('Semana guardada');renderEst();estSync(true);return}
+  if(b.hasAttribute('data-wcabnew')){const [y,m]=VIA_MES.split('-');EST_EDIT={id:'c'+Date.now().toString(36),f:VIA_MES===today().slice(0,7)?today():VIA_MES+'-01',desc:'',at:'',de:'',reg:'',nom:'',dir:'des',mg:'',veh:'',cha:'',nuevo:true,_cab:true};renderEst();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-csave')){const x={...EST_EDIT};if(!x.f){toast('Anote la fecha');return}delete x._cab;delete x.nuevo;x.u=new Date().toISOString();x._p=true;ls.set('epn_est_cab',estCab().filter(y=>y.id!==x.id).concat([x]));VIA_MES=x.f.slice(0,7);EST_EDIT=null;toast('Carga de cabotaje guardada');renderEst();estSync(true);return}
+  if(b.hasAttribute('data-cdel')&&OWNER){if(!confirm('¿Eliminar este registro?'))return;const x=estCab().find(y=>y.id===EST_EDIT.id);if(x&&x._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(x._n));ls.set('epn_est_cab',estCab().filter(y=>y.id!==EST_EDIT.id));EST_EDIT=null;renderEst();estSync(true)}});
+/* ---- Hojas del Excel (etapa 2) ---- */
+function estHojas2(ym){const H=(t,s)=>({v:t,s:s||1}),out={};const mesU=mesUp(ym);const fir=w=>[[],[],[{v:'Elaborado: _______________________',s:0},...Array(Math.max(1,w-3)).fill(''),{v:'Autorizado: _______________________',s:0}],[{v:'Asistente Administrativo · GPBB',s:12},...Array(Math.max(1,w-3)).fill(''),{v:'Gerente Portuario · GPBB',s:12}]];
+  const n=(v,b)=>({v:+v||0,s:b?8:(+v?7:9)}),t2=(v,b)=>({v:+v||0,s:b?3:(+v?2:17)});
+  /* TEUS */
+  const M=contMes(ym),A=contMes(ym,true);const r20=z=>[z.exp.va20,z.exp.ll20,z.imp.va20,z.imp.ll20],r40=z=>[z.exp.va40,z.exp.ll40,z.imp.va40,z.imp.ll40];
+  const blk=(tit,fm)=>[[{v:tit,s:14},...Array(7).fill({v:'',s:14})],[H('MOVIMIENTO DEL MES'),H(''),H(''),H(''),H('ACUMULADO ENE – '+mesU.slice(0,3)),H(''),H(''),H('')],[H('EMBARQUE'),H(''),H('DESEMBARQUE'),H(''),H('EMBARQUE'),H(''),H('DESEMBARQUE'),H('')],['VACÍOS','LLENOS','VACÍOS','LLENOS','VACÍOS','LLENOS','VACÍOS','LLENOS'].map(x=>H(x)),[...fm(M),...fm(A)].map(v=>n(v))];
+  const tr0=0,tr=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:5}],[{v:'TRÁFICO DE CONTENEDORES',s:11}],[{v:'MES DE: '+mesU,s:12}],[],...blk('UNIDAD DE MEDIDA: 1 TEU (contenedores de 20\')',r20),[],...blk('UNIDAD DE MEDIDA: 2 TEUS (contenedores de 40\')',r40),[],[{v:'TEUS movilizados en el mes: '+M.teus+' · acumulado del año: '+A.teus,s:5}],...fir(8)];
+  out.teus={n:'TEUS',rows:tr,w:[13,13,13,13,13,13,13,13],m:['A18:H18','A1:H1','A2:H2','A3:H3','A4:H4','A6:H6','A7:D7','E7:H7','A8:B8','C8:D8','E8:F8','G8:H8','A12:H12','A13:D13','E13:H13','A14:B14','C14:D14','E14:F14','G14:H14']};
+  /* Tráfico de contenedores y carga en contenedor */
+  const est=estMes(ym);const tc=est.d+est.e+M.tmImp*0;const tot=est.d+est.e;const cc=M.tmImp+M.tmExp;
+  const E=H('');const hh=[
+   [H('C O N T E N E D O R E S'),E,E,E,E,E,E,E,H('TOTAL TEUS EN EL MES'),H('TOTAL CARGA MANEJADA EN PUERTO (TM)'),H('CARGA EN CONTENEDORES'),E,E,E,H('TOTAL CARGA MANEJADA EN CONTENEDOR (TM)'),H('% DE CARGA EN CONTENEDOR')],
+   [H('IMPORTACIÓN'),E,E,E,H('EXPORTACIÓN'),E,E,E,E,E,H('IMPORTACIÓN'),E,H('EXPORTACIÓN'),E,E,E],
+   [H('LLENOS'),E,H('VACÍOS'),E,H('LLENOS'),E,H('VACÍOS'),E,E,E,H('CARGA EN CONTENEDOR (TM)'),H('% DE LA CARGA'),H('CARGA EN CONTENEDOR (TM)'),H('% DE LA CARGA'),E,E],
+   [H("20'"),H("40'"),H("20'"),H("40'"),H("20'"),H("40'"),H("20'"),H("40'"),E,E,E,E,E,E,E,E]];
+  const pc=(a,b)=>({v:b?a/b:0,s:4});
+  const tf=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:5}],[{v:'TRÁFICO DE CONTENEDORES Y DE CARGA MOVILIZADA EN CONTENEDORES',s:11}],[{v:'MES DE: '+mesU,s:12}],[],...hh,
+    [n(M.imp.ll20),n(M.imp.ll40),n(M.imp.va20),n(M.imp.va40),n(M.exp.ll20),n(M.exp.ll40),n(M.exp.va20),n(M.exp.va40),n(M.teus,1),t2(tot),t2(M.tmImp),pc(M.tmImp,tot),t2(M.tmExp),pc(M.tmExp,tot),t2(cc,1),pc(cc,tot)],[],[{v:"Nota: los contenedores de 40' valen por 2 TEUS, estén vacíos o llenos.",s:12}],...fir(16)];
+  const th=[];th[7]=30;out.traf={n:'TRAFICO DE CONTENEDORES',rows:tf,w:[9,9,9,9,9,9,9,9,13,16,14,11,14,11,16,13],m:['A1:P1','A2:P2','A3:P3','A4:P4','A12:P12','A6:H6','I6:I9','J6:J9','K6:N6','O6:O9','P6:P9','A7:D7','E7:H7','K7:L7','M7:N7','A8:B8','C8:D8','E8:F8','G8:H8','K8:K9','L8:L9','M8:M9','N8:N9'],h:th};
+  /* Barcos de pesca y cabotaje */
+  const W=semanasMes(ym),S=W.map((w,i)=>semDe(ym,i));const sum=k=>S.reduce((s,x)=>s+(+x[k]||0),0);
+  const pr=[[{v:'EMPRESA PORTUARIA NACIONAL · GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:6}],[{v:'BARCOS DE PESCA Y CABOTAJE · '+mesU,s:11}],[],
+    [H('PERIODO'),H('MUELLE FLOTANTE LÍQUIDO'),H(''),H('MUELLES DE CABOTAJE'),H(''),H('TOTAL'),'',H('RESUMEN CANTIDAD DE EMBARCACIONES'),H(''),H('TOTAL')],
+    [H(''),H('PESQUERO'),H('CABOTAJE'),H('PESQUERO'),H('CABOTAJE'),H(''),'',H('PESQUEROS'),H('CARGA Y PASAJEROS'),H('')]];
+  S.forEach((s,i)=>{const t=(+s.fp||0)+(+s.fc||0)+(+s.cp||0)+(+s.cc||0);const r=[{v:semTxt(W[i]),s:18},n(s.fp),n(s.fc),n(s.cp),n(s.cc),n(t,1)];if(i===0)r.push('',n(sum('fp')+sum('cp'),1),n(sum('fc')+sum('cc'),1),n(sum('fp')+sum('cp')+sum('fc')+sum('cc'),1));pr.push(r)});
+  pr.push([{v:'TOTAL',s:13},n(sum('fp'),1),n(sum('fc'),1),n(sum('cp'),1),n(sum('cc'),1),n(sum('fp')+sum('fc')+sum('cp')+sum('cc'),1)],[]);
+  const r0=pr.length;const C=PES_CAT.length;const flo=[{v:'',s:1}],cat=[H('SEMANA')],sub=[H('')];PES_CAT.forEach(([c,f,nm])=>{flo.push(H(f.toUpperCase()),H(''),H(''),H(''));cat.push(H(nm.toUpperCase()),H(''),H(''),H(''));sub.push(H('UNIDAD'),H('TOTAL'),H('EMPRESA'),H('DESTINO'))});
+  pr.push(flo,cat,sub);
+  S.forEach((s,i)=>{const lines=Math.max(2,...PES_CAT.map(([c])=>(s.rows||[]).filter(r=>r.c===c).length));for(let k=0;k<lines;k++){const r=[k===0?{v:semTxt(W[i]),s:18}:{v:'',s:18}];PES_CAT.forEach(([c])=>{const x=(s.rows||[]).filter(q=>q.c===c)[k];r.push({v:k===0||x?'TM':'',s:15},x?t2(x.tm):{v:'',s:18},{v:x?x.emp||'':'',s:18},{v:x?x.dest||'':'',s:18})});pr.push(r)}});
+  const trow=[{v:'TOTAL TM',s:13}];PES_CAT.forEach(([c])=>{trow.push({v:'',s:13},t2(S.reduce((s,x)=>s+(x.rows||[]).filter(r=>r.c===c).reduce((a,r)=>a+(+r.tm||0),0),0),1),{v:'',s:13},{v:'',s:13})});pr.push(trow);
+  pr.push([{v:'',s:0},...PES_CAT.flatMap(([c])=>[{v:c==='pes'?'Productos del mar':'Mercadería general',s:12},'','',''])]);pr.push(...fir(10));
+  const mg=['A1:J1','A2:J2','B4:C4','D4:E4','F4:F5','H4:I4','J4:J5','A4:A5'];for(let j=0;j<C;j++){const c1=colL(1+j*4),c4=colL(4+j*4);mg.push(`${c1}${r0+2}:${c4}${r0+2}`);if(j===0||PES_CAT[j-1][1]!==PES_CAT[j][1]){let k=j;while(k+1<C&&PES_CAT[k+1][1]===PES_CAT[j][1])k++;mg.push(`${c1}${r0+1}:${colL(4+k*4)}${r0+1}`)}}
+  out.pes={n:'BARCOS DE PESCA Y CABOTAJE',rows:pr,w:[22,...Array(C*4).fill(0).map((_,i)=>[7,10,20,26][i%4])],m:mg};
+  /* Cabotaje */
+  const L=estCab().filter(x=>(x.f||'').slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const nota=(estNot().find(q=>q.ym===ym)||{}).t||'';
+  const cr=[[{v:'CARGA MOVILIZADA (CABOTAJE)',s:6}],[{v:'CORRESPONDIENTE A: '+mesU,s:11}],[],[H('DESCRIPCIÓN'),H('FECHA'),H('HORA ATRAQUE'),H('HORA DESATRAQUE'),H('REGISTRO'),H('NOMBRE M/N'),H('MERCADERÍA GENERAL'),H('VEHÍCULO'),H('CHATARRA'),H('DESEMB.'),H('EMB.'),H('TOTAL')]];
+  L.forEach(x=>{const t=(+x.mg||0)+(+x.veh||0)+(+x.cha||0);cr.push([{v:x.desc||'',s:18},{v:new Date(x.f+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}),s:18},{v:x.at||'',s:18},{v:x.de||'',s:18},{v:x.reg||'',s:18},{v:x.nom||'',s:18},t2(x.mg),t2(x.veh),t2(x.cha),t2(x.dir==='emb'?0:t),t2(x.dir==='emb'?t:0),t2(t,1)])});
+  const sm=k=>L.reduce((s,x)=>s+(+x[k]||0),0),sd=L.filter(x=>x.dir!=='emb').reduce((s,x)=>s+(+x.mg||0)+(+x.veh||0)+(+x.cha||0),0),se=L.filter(x=>x.dir==='emb').reduce((s,x)=>s+(+x.mg||0)+(+x.veh||0)+(+x.cha||0),0);
+  cr.push([{v:'TOTAL',s:13},{v:'',s:13},{v:'',s:13},{v:'',s:13},{v:'',s:13},{v:'',s:13},t2(sm('mg'),1),t2(sm('veh'),1),t2(sm('cha'),1),t2(sd,1),t2(se,1),t2(sd+se,1)]);
+  if(nota)cr.push([],[{v:'Nota: '+nota,s:12}]);cr.push(...fir(12));
+  const ch=[];ch[3]=36;if(nota)ch[cr.length-5]=48;out.cab={n:'CABOTAJE',rows:cr,w:[22,12,11,11,14,18,13,11,11,11,11,12],m:['A1:L1','A2:L2',...(nota?[`A${cr.length-4}:L${cr.length-4}`]:[])],h:ch};
+  return out}
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
