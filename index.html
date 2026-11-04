@@ -415,7 +415,7 @@ body.pv-on{overflow:hidden}
 </section>
 
 <!-- ACCESO -->
-<section class="view" id="v-via"><div class="card"><h2>Viajes regulares · Bluefields ⇄ Corn Island</h2><p class="sm" style="margin-top:0">Rentabilidad real de cada viaje del Hilario Sánchez y el Río Escondido (no es proforma). Uso interno.</p><div id="viaBox"></div></div></section>
+<section class="view" id="v-via"><div class="card"><h2>Operaciones · Bluefields ⇄ Corn Island</h2><p class="sm" style="margin-top:0">Viajes regulares de motonaves, arqueos de caja y estadísticas del puerto. Uso interno.</p><div id="viaBox"></div></div></section>
 <section class="view" id="v-acc"><div class="card"><div id="accBox"></div></div></section>
 
 <!-- HISTORIAL -->
@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.02-40';
+const APP_VER='2026.11.03-41';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1085,7 +1085,7 @@ function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=se
 async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
   const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false),pv=ls.get('epn_viajes_pend',false)&&MK;if(!pc&&!pr&&!pv)return true;
   _ghBusy=true;let err=null,hecho=[];
-  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
+  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],estEd:COSTOS.estEd||[],estEdD:COSTOS.estEdD||[],estEdN:COSTOS.estEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
     if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}
     if(pv){const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await ghPut('viajes.json',JSON.stringify(pub),'Actualizar viajes regulares (app)');ls.set('epn_viajes_pend',false);hecho.push('viajes')}}catch(e){err=e.message}
   _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
@@ -1209,11 +1209,11 @@ document.addEventListener('focusin',e=>{if(e.target.id!=='gN')return;const a=ls.
 
 /* --- Respaldo de los cálculos (cada colega en su teléfono) --- */
 const hayHist=()=>(ls.get('epn_pf',[])||[]).length>0;
-async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[]),arqueos:ls.get('epn_arqueos',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
+async function respaldo(){const data=JSON.stringify({app:'proformas-apbb',fecha:new Date().toISOString(),calculos:ls.get('epn_pf',[]),contactos:CONT,horario:HOR,feriados:FER,...(OWNER?{costos:COSTOS,viajes:ls.get('epn_viajes',[]),arqueos:ls.get('epn_arqueos',[]),estArribos:ls.get('epn_est_arr',[]),estSaldos:ls.get('epn_est_sal',[])}:{viajes:ls.get('epn_viajes_mios',[])}),...(OWNER?{colegas:COL,retirados:[...REV],condiciones:COND}:{})},null,1);
   const fn='respaldo-calculos-apbb-'+today()+'.json';
   try{if(DL){await DL.save({filename:fn,data});ls.set('epn_ultbk',today());renderHis();return}}catch(e){if(e&&e.code==='declined')return}
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=fn;a.click();ls.set('epn_ultbk',today());renderHis()}catch(e){copiar(data,'No se pudo descargar; se copió el respaldo como texto')}}
-async function restaurar(file){try{const o=JSON.parse(await file.text());if(OWNER&&Array.isArray(o.arqueos)&&o.arqueos.length){const m={};(ls.get('epn_arqueos',[])||[]).forEach(x=>m[x.id]=x);o.arqueos.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set('epn_arqueos',Object.values(m))}if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
+async function restaurar(file){try{const o=JSON.parse(await file.text());[['estArribos','epn_est_arr'],['estSaldos','epn_est_sal']].forEach(([k,key])=>{if(OWNER&&Array.isArray(o[k])&&o[k].length){const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o[k].forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]={...x,_p:true}});ls.set(key,Object.values(m))}});if(OWNER&&Array.isArray(o.arqueos)&&o.arqueos.length){const m={};(ls.get('epn_arqueos',[])||[]).forEach(x=>m[x.id]=x);o.arqueos.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set('epn_arqueos',Object.values(m))}if(Array.isArray(o.viajes)&&o.viajes.length){const key=OWNER?'epn_viajes':'epn_viajes_mios';const m={};(ls.get(key,[])||[]).forEach(x=>m[x.id]=x);o.viajes.forEach(x=>{if(x&&x.id&&(!m[x.id]||String(x.u)>String(m[x.id].u)))m[x.id]=x});ls.set(key,Object.values(m));if(OWNER){ls.set('epn_viajes_pend',true);ghProgramar()}}const arr=o&&Array.isArray(o.calculos)?o.calculos:null;if(!arr)throw 0;
   const cur=ls.get('epn_pf',[]);const ids=new Set(cur.map(x=>x.id));let n=0;arr.forEach(x=>{if(x&&x.lines&&!ids.has(x.id)){cur.push(x);n++}});
   ls.set('epn_pf',cur);if(Array.isArray(o.contactos)){const ids2=new Set(CONT.map(c=>c.id));o.contactos.forEach(c=>{if(c&&c.id&&!ids2.has(c.id))CONT.push(c)});guardarCont();renderCliSel()}if(o.horario){HOR={...HOR_DEF,...o.horario};ls.set('epn_hor',HOR)}if(OWNER&&o.costos&&!(COSTOS&&COSTOS.personal.length)){COSTOS=o.costos;ls.set('epn_costos',COSTOS)}if(Array.isArray(o.feriados)&&!FER.length){FER=o.feriados;ls.set('epn_fer',FER)}if(OWNER&&o.colegas){COL={...o.colegas,...COL};guardarCol();if(Array.isArray(o.retirados)){o.retirados.forEach(x=>REV.add(x));ls.set(REV_KEY,[...REV])}if(o.condiciones){COND={...o.condiciones,...COND};ls.set('epn_cond_cache',COND)}}renderHis();toast(n+' cálculo(s) restaurado(s)')}catch(e){toast('El archivo no es un respaldo válido de esta app')}}
 
@@ -1228,7 +1228,7 @@ async function initAcceso(){
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
-  setTimeout(()=>arqSync(true),2500);setTimeout(()=>matSync(true),4000);
+  setTimeout(()=>arqSync(true),2500);setTimeout(()=>matSync(true),4000);setTimeout(()=>estSync(true),5500);
   renderAvMat();renderHis();pfSum();
   renderRent();
   const cl=window.claude;
@@ -1496,7 +1496,7 @@ async function recibirCostos(pub){if(OWNER||!LIC||!LIC.k)return;if(!pub||!pub.da
 async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=await DB.doc('config/costos').get();await recibirCostos(s.exists?s.data():null)}catch(e){estCostos('red');renderRent()}return}
   try{const r=await fetch('costos.json?t='+Date.now(),{cache:'no-store'});if(!r.ok){estCostos(r.status===404?'vacio':'red');renderRent();return}await recibirCostos(await r.json())}catch(e){estCostos('red');renderRent()}}
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
-  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
+  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],estEd:COSTOS.estEd||[],estEdD:COSTOS.estEdD||[],estEdN:COSTOS.estEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
   if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
   if(ghTok()){ls.set('epn_costos_pend',true);if(await ghSync(true)){toast('Costos publicados para los colegas');renderCostAdm();return}}
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
@@ -1664,6 +1664,7 @@ function pieBloque(R,ing,gas,ut){const it=pieDatos(R,ut);if(!it.length)return'';
 function renderVia(){const box=$('#viaBox');if(!box)return;
   if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
   if(VIA_SEC==='arq'&&puedeVia())return renderArq();
+  if(VIA_SEC==='est'&&puedeVia())return renderEst();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
   if(VIA_EDIT)return renderViaForm();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
@@ -1773,15 +1774,15 @@ function zipStore(files){const enc=new TextEncoder();const parts=[],cen=[];let o
 const xEsc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const colL=i=>{let s='';i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
 /* celdas: número → formato 0.00; {v,s}: s 1=encabezado, 3=número en negrita, 4=porcentaje, 5=texto en negrita, 6=título */
-function xSheet(rows,widths){const body=rows.map((r,ri)=>`<row r="${ri+1}">${r.map((c,ci)=>{if(c==null||c==='')return'';const o=typeof c==='object'?c:{v:c};const ref=colL(ci)+(ri+1);
+function xSheet(rows,widths,merges,hts){const body=rows.map((r,ri)=>`<row r="${ri+1}"${hts&&hts[ri]?` ht="${hts[ri]}" customHeight="1"`:''}>${r.map((c,ci)=>{if(c==null||c==='')return'';const o=typeof c==='object'?c:{v:c};const ref=colL(ci)+(ri+1);
     if(typeof o.v==='number'&&isFinite(o.v))return `<c r="${ref}" s="${o.s||2}"><v>${Math.round(o.v*10000)/10000}</v></c>`;return `<c r="${ref}" t="inlineStr" s="${o.s||0}"><is><t xml:space="preserve">${xEsc(o.v)}</t></is></c>`}).join('')}</row>`).join('');
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews>${widths?`<cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols>`:''}<sheetData>${body}</sheetData></worksheet>`}
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews>${widths?`<cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols>`:''}<sheetData>${body}</sheetData>${merges&&merges.length?`<mergeCells count="${merges.length}">${merges.map(m=>`<mergeCell ref="${m}"/>`).join('')}</mergeCells>`:''}<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`}
 function xlsx(sheets){const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`;
   const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
   const wb=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s,i)=>`<sheet name="${xEsc(s.n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`;
   const wbr=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
-  const st=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0%"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><color rgb="FF0B4F8A"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B4F8A"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="2" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
-  return zipStore([{n:'[Content_Types].xml',d:ct},{n:'_rels/.rels',d:rels},{n:'xl/workbook.xml',d:wb},{n:'xl/_rels/workbook.xml.rels',d:wbr},{n:'xl/styles.xml',d:st},...sheets.map((s,i)=>({n:`xl/worksheets/sheet${i+1}.xml`,d:xSheet(s.rows,s.w)}))])}
+  const st=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0%"/></numFmts><fonts count="7"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><color rgb="FF0B4F8A"/><name val="Calibri"/></font><font><sz val="11"/><color rgb="FF9AA6B5"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFC8326F"/><name val="Calibri"/></font><font><sz val="10"/><color rgb="FF5B6B80"/><name val="Calibri"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B4F8A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8F0F9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F6FB"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top/><bottom style="thin"><color rgb="FFE3E8EF"/></bottom><diagonal/></border><border><left/><right/><top style="medium"><color rgb="FF13233A"/></top><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="19"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="4" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="4" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="3" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="3" fontId="4" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/><xf numFmtId="164" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf><xf numFmtId="0" fontId="2" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"/><xf numFmtId="164" fontId="4" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/><xf numFmtId="4" fontId="4" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  return zipStore([{n:'[Content_Types].xml',d:ct},{n:'_rels/.rels',d:rels},{n:'xl/workbook.xml',d:wb},{n:'xl/_rels/workbook.xml.rels',d:wbr},{n:'xl/styles.xml',d:st},...sheets.map((s,i)=>({n:`xl/worksheets/sheet${i+1}.xml`,d:xSheet(s.rows,s.w,s.m,s.h)}))])}
 async function compartirBlob(blob,nombre,titulo){const f=new File([blob],nombre,{type:blob.type});
   try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:titulo});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
@@ -1869,7 +1870,7 @@ function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
    <button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>
    ${cs.length?`<details class="rg colw" data-ok="qlist" style="margin-top:12px"${ACC_OPEN.has('qlist')?' open':''}><summary><span>Arqueos de ${mesTxt(VIA_MES).toLowerCase()} (${cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>Entregó: ${esc(a.enc||'—')} · registró: ${esc(a.autor||'Administrador')}${a.mods&&a.mods.length?' · modificado':''}${a._p?' · <span class="chip warnc">sin enviar</span>':''}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small>recibido</small></div></button>`).join('')}</div></details>`:''}
    ${OWNER?arqTokPanel():arqTok()?'':'<p class="sm" style="margin-top:10px">Sus arqueos quedan en este teléfono hasta que el administrador active los arqueos compartidos.</p>'}`}
-const segVia=()=>`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${puedeVia()?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button>`:''}</div>`;
+const segVia=()=>`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${puedeVia()?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button><button data-vsec="est" class="${VIA_SEC==='est'?'on':''}">Estadísticas</button>`:''}</div>`;
 function denFila(grp,d,val,pre){const n=+val||0;return `<div class="den"><span>${pre} ${d<1?d.toFixed(2):fmt(d,0)}</span><input type="number" min="0" step="1" inputmode="numeric" data-qd="${grp}" data-den="${d}" value="${val||''}" placeholder="0"><b data-qm="${grp}-${d}">${pre} ${fmt(n*d)}</b></div>`}
 function arqResHTML(a,c){return `<div class="arq-r"><div><span>Efectivo en córdobas</span><b>${money(c.nio,'NIO')}</b></div><div><span>Efectivo en dólares (US$ ${fmt(c.usd)} × ${fq(c.tc)})</span><b>${money(c.usdC,'NIO')}</b></div>${c.otros?`<div><span>Otros (transferencias)</span><b>${money(c.otros,'NIO')}</b></div>`:''}
    <div class="t"><span>Total general</span><b>${money(c.gen,'NIO')}</b></div><div><span>(−) Dinero para cambio</span><b>${money(c.cam,'NIO')}</b></div>
@@ -1928,7 +1929,7 @@ function arqExcel(){const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort(
   rows.push(['Total','','','','',...DEN_NIO_B.map(()=>''),...DEN_NIO_M.map(()=>''),B(S(c=>c.nio)),...DEN_USD.map(()=>''),B(S(c=>c.usd)),'',B(S(c=>c.usdC)),B(S(c=>c.gen)),B(S(c=>c.cam)),B(S(c=>c.rec)),'']);
   const blob=xlsx([{n:'Arqueos',rows:[[{v:'Arqueos de caja · '+mesTxt(VIA_MES),s:6}],[],head.map(H),...rows],w:head.map((h,i)=>i<5?(i===3||i===4?26:11):i===head.length-1?30:12)}]);
   compartirBlob(blob,'Arqueos-'+VIA_MES+'.xlsx','Arqueos de caja · '+mesTxt(VIA_MES))}
-document.addEventListener('click',e=>{const v=e.target.closest('[data-vsec]');if(v&&v.closest('#viaBox')){VIA_SEC=v.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;renderVia();if(VIA_SEC==='arq')arqSync(true);return}});
+document.addEventListener('click',e=>{const v=e.target.closest('[data-vsec]');if(v&&v.closest('#viaBox')){VIA_SEC=v.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;EST_EDIT=null;renderVia();if(VIA_SEC==='arq')arqSync(true);if(VIA_SEC==='est')estSync(true);return}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!puedeVia())return;
   if(b.hasAttribute('data-qrecadd')){const n=(prompt('Nombre de quien recibe el dinero:')||'').trim();if(!n)return;const l=receptores();if(!l.includes(n)){l.push(n);l.sort();ls.set('epn_arq_recs',l)}ARQ_EDIT.rec=n;return renderArqForm()}
   if(b.hasAttribute('data-qnew')){ARQ_EDIT=arqNuevo();renderVia();window.scrollTo(0,0);return}
@@ -2093,6 +2094,199 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-aqsave],[d
   if(b.hasAttribute('data-aqsave'))return arqTokGuardar(($('#aqIn')||{}).value);
   if(b.hasAttribute('data-aqsync'))return arqSync(false).then(()=>toast('Arqueos sincronizados'));
   if(confirm('¿Quitar la llave de arqueos? Los colegas ya no podrán enviar arqueos.')){delete COSTOS.arqTok;guardarCostos();renderArq()}});
+
+/* ===== Estadísticas portuarias (Etapa 1): arribos de buques, saldos de meses anteriores, informe mensual ===== */
+const EST_TIPOS={conv:'Carguero convencional',tanq:'Tanquero',gran:'Granelero',tur:'Turístico',rem:'Remolcador',otr:'Otros'};
+const EST_PD=['Merc. en general','Vehículo','Combustible','Madera'];
+const EST_PE=['Madera','Mariscos','Vehículo','Combustible','Agua','Merc. en general'];
+const EST_LIQ=p=>/combustible|agua/i.test(p);
+const EST_BAND=['Colombia','Dinamarca','Russo','Togo','Tanzania','Bolivia','Británica','Nicaragüense','Hondureña','Antigua & Barbuda','Costa Rica','Bahamas','Canadiense','Cook Island','United Kingdom','USA','Turquía','Gibraltar','Guatemala','Panamá','St. Vicent'];
+const EST_AGE=['AMINSA','J F Griffith Sucesors','Nicaragua Marítima S.A.','Nicaraguan Shipping Enterprise','Humberto Álvarez Sucs','EMPREMAR','ARTEMAR','ANATLAN','Puerto Cabeza Power','COMANICSA (Transtainer S.A)','AVASA','Agent S','ANAKOSTA'];
+const EST_LIN=['King Ocean','Vandale Campbell S.A','Caytrans BBC Inc','Trans Petrol Ltda.','Transp. Marítimo Lamol','Ocean Marine Management','COMANICSA','Marítima Makaira C.A.','ATS Denizcilik ve Nakliyat','Intermarine','BBC Chartering & Logistic GmbH','ILG Logistic S.A','Pritchard Gordon Tankers Ltd','Tide Water Marine','Dan-Gulf Shipping, Inc'];
+let EST_SEC='res',EST_EDIT=null;
+const estArr=()=>ls.get('epn_est_arr',[])||[];
+const estSal=()=>ls.get('epn_est_sal',[])||[];
+const estPuedeEditar=()=>OWNER||!!(LIC&&COSTOS&&(((COSTOS.estEd||[]).includes(LIC.i))||((COSTOS.estEdD||[]).includes(devId()))||((COSTOS.estEdN||[]).includes(norm(LIC.n||'')))));
+const ymPrev=(ym,n=1)=>{const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1-n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+const mesUp=ym=>mesTxt(ym).toUpperCase();
+const lista=(base,k)=>[...new Set([...base,...(ls.get(k,[])||[])])].sort((a,b)=>a.localeCompare(b));
+/* ---- Agregado de un mes: desde arribos registrados, o desde el saldo inicial si no hay registros ---- */
+function estMes(ym){const L=estArr().filter(a=>(a.f||'').slice(0,7)===ym);const z={reg:L.length>0,arr:L,n:0,trb:0,trn:0,tipo:{},esl:{b:0,a:0},pd:{},pe:{},ban:{},age:{},lin:{}};
+  EST_PD.forEach(p=>z.pd[p]=0);EST_PE.forEach(p=>z.pe[p]=0);Object.keys(EST_TIPOS).forEach(k=>z.tipo[k]=0);
+  if(L.length){L.forEach(a=>{z.n++;z.trb+=+a.trb||0;z.trn+=+a.trn||0;z.tipo[a.tipo||'conv']++;(+a.eslora>100?z.esl.a++:z.esl.b++);
+    const d=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0),e=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0);(a.des||[]).forEach(x=>z.pd[x.p]=(z.pd[x.p]||0)+(+x.tm||0));(a.emb||[]).forEach(x=>z.pe[x.p]=(z.pe[x.p]||0)+(+x.tm||0));
+    const B=a.ban||'—',A=a.age||'—',N=a.lin||'—';const bb=z.ban[B]||(z.ban[B]={n:0,t:{},d:0,e:0});bb.n++;bb.t[a.tipo||'conv']=(bb.t[a.tipo||'conv']||0)+1;bb.d+=d;bb.e+=e;
+    const aa=z.age[A]||(z.age[A]={n:0,trb:0,trn:0,d:0,e:0});aa.n++;aa.trb+=+a.trb||0;aa.trn+=+a.trn||0;aa.d+=d;aa.e+=e;const ll=z.lin[N]||(z.lin[N]={d:0,e:0});ll.d+=d;ll.e+=e})}
+  else{const s=estSal().find(x=>x.ym===ym);if(s){Object.keys(EST_TIPOS).forEach(k=>{z.tipo[k]=+(s.tipo||{})[k]||0;z.n+=z.tipo[k]});z.esl.b=+s.eb||0;z.esl.a=+s.ea||0;z.trb=+s.trb||0;z.trn=+s.trn||0;
+    EST_PD.forEach(p=>z.pd[p]=+(s.pd||{})[p]||0);EST_PE.forEach(p=>z.pe[p]=+(s.pe||{})[p]||0);z.sal=true}}
+  z.d=Object.values(z.pd).reduce((s,x)=>s+x,0);z.e=Object.values(z.pe).reduce((s,x)=>s+x,0);
+  z.dl=EST_PD.filter(EST_LIQ).reduce((s,p)=>s+z.pd[p],0);z.el=EST_PE.filter(EST_LIQ).reduce((s,p)=>s+z.pe[p],0);return z}
+function estAcum(ym){const y=ym.slice(0,4),out=[];for(let m=1;m<=+ym.slice(5);m++)out.push(estMes(y+'-'+String(m).padStart(2,'0')));return out}
+const pct=(a,b)=>b?((a-b)/b*100):null;
+/* ---- Pasajeros de motonaves desde Viajes ---- */
+function estMN(ym){const L=viaLista().filter(v=>v.f.slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const por={};L.forEach(v=>{(por[v.emb]=por[v.emb]||[]).push(v)});return{L,por}}
+/* ---- Sincronización (mismo canal que arqueos) ---- */
+let _esBusy=false;
+async function estSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_esBusy||!puedeVia())return;_esBusy=true;let err=null;
+  try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const k=await aesKey(await arqKeyRaw());
+    for(const [kind,key] of [['arribo','epn_est_arr'],['saldo','epn_est_sal']]){for(const a of (ls.get(key,[])||[]).filter(x=>x._p)){const y={...a};delete y._p;delete y._n;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
+      const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:kind+' '+y.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
+      ls.set(key,(ls.get(key,[])||[]).map(z=>z.id===a.id&&z.u===a.u?{...z,_p:false}:z))}}
+    if(OWNER){for(const n of (ls.get('epn_est_delq',[])||[]))await fetch(base+'/'+n,{method:'PATCH',headers:H,body:JSON.stringify({state:'closed'})});ls.set('epn_est_delq',[])}
+    const got={arribo:{},saldo:{}},nums={};for(let pg=1;pg<30;pg++){const r=await fetch(base+'?state=open&per_page=100&page='+pg+'&t='+Date.now(),{headers:H,cache:'no-store'});if(!r.ok)throw new Error(String(r.status));const L=await r.json();
+      for(const it of L){const m=(it.title||'').match(/^(arribo|saldo) /);if(it.pull_request||!m)continue;try{const o=JSON.parse(it.body);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(o.iv)},k,b64uToBytes(o.data));const a=JSON.parse(new TextDecoder().decode(pt));
+        (nums[a.id]=nums[a.id]||[]).push(it.number);const g=got[m[1]];if(!g[a.id]||String(a.u)>String(g[a.id].u))g[a.id]=a}catch(e){}}if(L.length<100)break}
+    for(const [kind,key] of [['arribo','epn_est_arr'],['saldo','epn_est_sal']]){const g=got[kind];(ls.get(key,[])||[]).filter(x=>x._p).forEach(x=>{if(!g[x.id]||String(x.u)>String(g[x.id].u))g[x.id]=x});ls.set(key,Object.values(g).map(a=>({...a,_n:nums[a.id]||[]})))}}catch(e){err=e.message}
+  _esBusy=false;if(err&&!silent)toast('Sin conexión con GitHub; se enviará al tener señal');if(document.querySelector('#v-via.on')&&VIA_SEC==='est'&&!EST_EDIT)renderEst()}
+window.addEventListener('online',()=>estSync(true));
+/* ---- Pantallas ---- */
+function renderEst(){const box=$('#viaBox');if(EST_EDIT)return EST_EDIT._sal?renderSalForm():renderArrForm();const ed=estPuedeEditar(),ym=VIA_MES;
+  const M=estMes(ym),P=estMes(ymPrev(ym)),MN=estMN(ym);const pas=MN.L.reduce((s,v)=>s+(+v.np||0),0);const dif=(a,b)=>{const p=pct(a,b);return p==null?'':` <small style="color:${a>=b?'#1e7b3a':'#b42318'}">${a>=b?'▲':'▼'} ${fq(Math.abs(Math.round(p*10)/10))} %</small>`};
+  const sub=`<div class="seg" style="margin-top:10px"><button data-esec="res" class="${EST_SEC==='res'?'on':''}">Resumen</button><button data-esec="arr" class="${EST_SEC==='arr'?'on':''}">Arribos</button>${ed?`<button data-esec="sal" class="${EST_SEC==='sal'?'on':''}">Meses anteriores</button>`:''}</div>`;
+  const mes=`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:10px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(ym)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>`;
+  let body='';
+  if(EST_SEC==='res'){const ac=estAcum(ym);const faltan=ac.filter((x,i)=>!x.reg&&!x.sal).map((x,i)=>i);
+    body=`<div class="rent-k" style="margin-top:10px;grid-template-columns:1fr 1fr"><div><span>Buques</span><b>${M.n}</b>${dif(M.n,P.n)}</div><div><span>T.R.B.</span><b>${fq(M.trb)}</b></div><div><span>Toneladas</span><b>${fq(Math.round((M.d+M.e)*100)/100)} TM</b><small>desemb. ${fq(M.d)} · emb. ${fq(M.e)}</small></div><div><span>Pasajeros motonaves</span><b>${fq(pas)}</b><small>${MN.L.length} viaje(s)</small></div></div>
+     <div class="card" style="margin:10px 0 0;padding:10px 12px"><b style="font-size:13.5px">Estado del registro</b>
+      <div class="rl"><div>Arribos de buques<small>${M.n} registrado(s) en ${mesTxt(ym).toLowerCase()}</small></div><span class="chip ${M.reg?'ok':'warnc'}">${M.reg?'Con datos':'Sin arribos'}</span></div>
+      <div class="rl"><div>Viajes de motonaves<small>Se toman de Viajes</small></div><span class="chip ok">Automático</span></div>
+      <div class="rl"><div>Acumulado del año<small>${faltan.length?'Faltan datos de '+faltan.length+' mes(es) anteriores':'Enero a '+mesTxt(ym).split(' ')[0].toLowerCase()+' completo'}</small></div><span class="chip ${faltan.length?'warnc':'ok'}">${faltan.length?'Revisar':'Completo'}</span></div></div>
+     <div class="row" style="flex-wrap:nowrap;margin-top:12px"><button class="btn" data-exls style="flex:1">Informe Excel</button><button class="btn2" data-epdf style="flex:1">Ver en PDF</button></div>
+     ${OWNER?estPermPanel():''}`}
+  else if(EST_SEC==='arr'){const L=M.arr.slice().sort((a,b)=>(a.hl||a.f).localeCompare(b.hl||b.f));
+    body=`${ed?'<button class="btn" data-enew style="width:100%;margin-top:10px;padding:13px">+ Registrar arribo</button>':''}
+     ${L.length?L.map(a=>`<button class="via-it" data-eedit="${a.id}"><div><b>${esc(a.buque||'—')} ${a.viaje?'· V '+esc(a.viaje):''}</b><small>${a.hl?new Date(a.hl).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'}):a.f} · ${esc(a.ban||'')} · ${esc(EST_TIPOS[a.tipo]||'')}${a._p?' · <span class="chip warnc">sin enviar</span>':''}</small></div><div style="text-align:right"><b>${fq(+a.trb||0)}</b><small>T.R.B.</small></div></button>`).join(''):'<p class="mut" style="text-align:center;margin:14px 0">Sin arribos registrados en este mes.</p>'}`}
+  else{const y=ym.slice(0,4);body=`<p class="sm" style="margin:10px 0 6px">Totales de los meses en que todavía no se usaba la app. Se cargan una sola vez para que el acumulado del año y la comparación con el mes anterior salgan completos. Si un mes tiene arribos registrados, se usan los registros.</p>
+     ${Array.from({length:12},(_,i)=>y+'-'+String(i+1).padStart(2,'0')).filter(m=>m<=today().slice(0,7)).map(m=>{const s=estSal().find(x=>x.ym===m),r=estArr().some(a=>(a.f||'').slice(0,7)===m);const z=estMes(m);
+       return `<button class="via-it" data-esal="${m}" ${r?'disabled style="opacity:.6"':''}><div><b>${mesTxt(m)}</b><small>${r?'Con arribos registrados':s?z.n+' buques · '+fq(z.d+z.e)+' TM':'Sin datos'}</small></div><div><span class="chip ${r||s?'ok':'warnc'}">${r?'Registros':s?'Saldo':'Falta'}</span></div></button>`}).join('')}`}
+  box.innerHTML=segVia()+mes+sub+body}
+function estPermPanel(){const cs=Object.values(COL).filter(c=>!c.p&&!REV.has(c.i)).sort((a,b)=>a.n.localeCompare(b.n));const ed=COSTOS&&COSTOS.estEd||[];
+  return `<details class="rg" data-ok="eperm" style="margin-top:12px"${ACC_OPEN.has('eperm')?' open':''}><summary><span>Quién puede registrar estadísticas</span><span class="chev">›</span></summary><div style="padding:0 11px 11px">${arqTok()?'':'<p class="msg-bad" style="margin-top:0">Primero active la llave de arqueos (Viajes → Arqueo).</p>'}
+   ${cs.length?cs.map(c=>`<label class="chk" style="margin:6px 0"><input type="checkbox" data-eperm="${c.i}" ${ed.includes(c.i)?'checked':''}> ${esc(c.n)}</label>`).join(''):'<p class="sm">No hay colegas con acceso completo. Dé primero acceso completo al compañero que registrará.</p>'}</div></details>`}
+document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.eperm||!OWNER)return;const ed=new Set(COSTOS.estEd||[]);el.checked?ed.add(el.dataset.eperm):ed.delete(el.dataset.eperm);COSTOS.estEd=[...ed];const sel=Object.values(COL).filter(c=>ed.has(c.i));COSTOS.estEdD=sel.map(c=>c.d).filter(Boolean);COSTOS.estEdN=sel.map(c=>norm(c.n||''));guardarCostos();toast(el.checked?'Permiso otorgado':'Permiso retirado')});
+function arrNuevo(prev){const t=new Date();const hl=kd(t)+'T07:00';const b={id:'a'+Date.now().toString(36),f:kd(t),hl,hs:'',buque:'',viaje:'',ban:'',tipo:'conv',trb:'',trn:'',eslora:'',cal1:'',cal2:'',age:'',lin:'',proc:'',dest:'',fon1:'',lev1:'',fon2:'',lev2:'',tran:'',des:[],emb:[],obs:'',nuevo:true};
+  if(prev){['buque','ban','tipo','trb','trn','eslora','cal1','cal2','age','lin','proc','dest'].forEach(k=>b[k]=prev[k]);b.viaje=/^\d+$/.test(prev.viaje||'')?String(+prev.viaje+1):''}return b}
+const dl=(id,arr)=>`<datalist id="${id}">${arr.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`;
+function cargaFilas(k,a,prods){return (a[k]||[]).map((x,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><select data-ec="${k}" data-i="${i}" data-f="p" style="flex:2">${prods.map(p=>`<option ${x.p===p?'selected':''}>${p}</option>`).join('')}</select><input type="number" min="0" step="any" inputmode="decimal" data-ec="${k}" data-i="${i}" data-f="tm" value="${x.tm}" placeholder="TM" style="flex:1"><button type="button" class="btnd" data-ecdel="${k}" data-i="${i}" style="width:40px;padding:0">✕</button></div>`).join('')+`<button type="button" class="btn2" data-ecadd="${k}" style="width:100%">+ ${k==='des'?'Desembarque':'Embarque'} (producto y TM)</button>`}
+function renderArrForm(){const a=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();const ult=estArr().slice().sort((x,y)=>String(y.hl||y.f).localeCompare(String(x.hl||x.f)))[0];
+  const I=(k,l,t='text',x='')=>`<div><label>${l}</label><input ${t==='text'?'':`type="${t}"`} data-ef="${k}" value="${esc(a[k]??'')}" ${x}></div>`;
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${a.nuevo?'Nuevo arribo':'Arribo'}</b><button class="btn2" data-ecancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
+   ${a.nuevo&&ult?`<button class="btn2" data-erep style="width:100%;margin:8px 0 0">↺ Repetir viaje anterior: ${esc(ult.buque)} ${esc(ult.viaje||'')}</button>`:''}
+   <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">${dl('dlBan',lista(EST_BAND,'epn_est_ban'))}${dl('dlAge',lista(EST_AGE,'epn_est_age'))}${dl('dlLin',lista(EST_LIN,'epn_est_lin'))}${dl('dlBuq',[...new Set(estArr().map(x=>x.buque).filter(Boolean))])}
+   <div class="grid" style="margin-top:8px">${I('buque','Buque','text','list="dlBuq" placeholder="Ej.: M/N Charlotte"')}${I('viaje','N.º de viaje')}
+    <div><label>Bandera</label><input data-ef="ban" list="dlBan" value="${esc(a.ban||'')}" placeholder="Escoja o escriba"></div><div><label>Tipo de buque</label><select data-ef="tipo">${Object.entries(EST_TIPOS).map(([k,l])=>`<option value="${k}" ${a.tipo===k?'selected':''}>${l}</option>`).join('')}</select></div>
+    ${I('trb','T.R.B.','number','inputmode="decimal"')}${I('trn','T.R.N.','number','inputmode="decimal"')}${I('eslora','Eslora (m)','number','inputmode="decimal"')}${I('tran','En tránsito','text','placeholder="—"')}
+    <div><label>Agencia naviera</label><input data-ef="age" list="dlAge" value="${esc(a.age||'')}"></div><div><label>Línea naviera</label><input data-ef="lin" list="dlLin" value="${esc(a.lin||'')}"></div>
+    ${I('proc','Puerto de procedencia')}${I('dest','Puerto de destino')}</div>
+   <h3 class="sub">Llegada</h3><div class="grid">${I('hl','Fecha y hora de llegada','datetime-local')}${I('cal1','Calado (m)','number','inputmode="decimal"')}${I('fon1','Hora de fondeo','time')}${I('lev1','Hora de leva ancla','time')}</div>
+   <h3 class="sub">Salida</h3><div class="grid">${I('hs','Fecha y hora de salida','datetime-local')}${I('cal2','Calado (m)','number','inputmode="decimal"')}${I('fon2','Hora de fondeo','time')}${I('lev2','Hora de leva ancla','time')}</div>
+   <h3 class="sub">Carga desembarcada (TM)</h3>${cargaFilas('des',a,EST_PD)}
+   <h3 class="sub">Carga embarcada (TM)</h3>${cargaFilas('emb',a,EST_PE)}
+   <div><label style="margin-top:10px">Observaciones</label><input data-ef="obs" value="${esc(a.obs||'')}" placeholder="Ej.: zarpa hacia Arlen Siu"></div></fieldset>
+   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-esave style="flex:2;padding:13px">Guardar arribo</button>${!a.nuevo&&OWNER?'<button class="btnd" data-edel style="flex:1">Eliminar</button>':''}</div>`}`}
+function renderSalForm(){const s=EST_EDIT,box=$('#viaBox');const N=(o,k,l)=>`<div><label>${l}</label><input type="number" min="0" step="any" inputmode="decimal" data-es="${o}" data-k="${k}" value="${(o?(s[o]||{})[k]:s[k])??''}" placeholder="0"></div>`;
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">Saldo de ${mesTxt(s.ym)}</b><button class="btn2" data-ecancel style="padding:8px 14px">Cancelar</button></div>
+   <p class="sm">Copie los totales del informe estadístico de ese mes.</p>
+   <h3 class="sub">Buques por tipo (cuadro 1.9)</h3><div class="grid">${Object.entries(EST_TIPOS).map(([k,l])=>N('tipo',k,l)).join('')}</div>
+   <h3 class="sub">Buques por eslora (cuadro 1.8)</h3><div class="grid">${N('','eb','Hasta 100 m')}${N('','ea','Más de 100 m')}</div>
+   <h3 class="sub">Arqueo (cuadro 1.7)</h3><div class="grid">${N('','trb','T.R.B. total')}${N('','trn','T.R.N. total')}</div>
+   <h3 class="sub">Toneladas desembarcadas por producto</h3><div class="grid">${EST_PD.map(p=>N('pd',p,p)).join('')}</div>
+   <h3 class="sub">Toneladas embarcadas por producto</h3><div class="grid">${EST_PE.map(p=>N('pe',p,p)).join('')}</div>
+   <div class="row" style="margin-top:12px"><button class="btn" data-esalsave style="flex:1;padding:13px">Guardar saldo</button></div>`}
+document.addEventListener('input',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;const a=EST_EDIT;
+  if(el.dataset.ef){a[el.dataset.ef]=el.value;if(el.dataset.ef==='hl'&&el.value)a.f=el.value.slice(0,10)}
+  if(el.dataset.ec){a[el.dataset.ec][+el.dataset.i][el.dataset.f]=el.value}
+  if(el.dataset.es!==undefined){const o=el.dataset.es;if(o)(a[o]=a[o]||{})[el.dataset.k]=el.value;else a[el.dataset.k]=el.value}});
+document.addEventListener('change',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;if(el.tagName==='SELECT'){if(el.dataset.ef)EST_EDIT[el.dataset.ef]=el.value;if(el.dataset.ec)EST_EDIT[el.dataset.ec][+el.dataset.i][el.dataset.f]=el.value}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-esec],[data-enew],[data-eedit],[data-ecancel],[data-esave],[data-edel],[data-erep],[data-ecadd],[data-ecdel],[data-esal],[data-esalsave],[data-exls],[data-epdf]');if(!b||!b.closest('#viaBox'))return;
+  if(b.dataset.esec){EST_SEC=b.dataset.esec;EST_EDIT=null;return renderEst()}
+  if(b.hasAttribute('data-ecancel')){EST_EDIT=null;return renderEst()}
+  if(b.dataset.eedit){const x=estArr().find(a=>a.id===b.dataset.eedit);if(x){EST_EDIT=JSON.parse(JSON.stringify(x));renderEst();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-exls'))return estExcel();
+  if(b.hasAttribute('data-epdf'))return estPdf();
+  if(!estPuedeEditar())return;
+  if(b.hasAttribute('data-enew')){EST_EDIT=arrNuevo();renderEst();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-erep')){const ult=estArr().slice().sort((x,y)=>String(y.hl||y.f).localeCompare(String(x.hl||x.f)))[0];const n=arrNuevo(ult);n.id=EST_EDIT.id;EST_EDIT=n;renderArrForm();toast('Datos del buque copiados: revise viaje, fechas y carga');return}
+  if(b.dataset.ecadd){const k=b.dataset.ecadd;(EST_EDIT[k]=EST_EDIT[k]||[]).push({p:k==='des'?EST_PD[0]:EST_PE[0],tm:''});return renderArrForm()}
+  if(b.dataset.ecdel){EST_EDIT[b.dataset.ecdel].splice(+b.dataset.i,1);return renderArrForm()}
+  if(b.dataset.esal){const ex=estSal().find(x=>x.ym===b.dataset.esal);EST_EDIT=ex?JSON.parse(JSON.stringify(ex)):{id:'s'+b.dataset.esal,ym:b.dataset.esal,tipo:{},pd:{},pe:{}};EST_EDIT._sal=true;renderEst();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-esalsave')){const x={...EST_EDIT};delete x._sal;delete x.nuevo;x.u=new Date().toISOString();x._p=true;ls.set('epn_est_sal',estSal().filter(y=>y.ym!==x.ym).concat([x]));EST_EDIT=null;toast('Saldo guardado');renderEst();estSync(true);return}
+  if(b.hasAttribute('data-esave')){const a=EST_EDIT;if(!(a.buque||'').trim()||!a.hl){toast('Anote el buque y la fecha de llegada');return}
+    const x={...a};const nuevo=x.nuevo;delete x.nuevo;x.f=x.hl.slice(0,10);x.u=new Date().toISOString();x._p=true;const yo=OWNER?'Administrador':((LIC&&LIC.n)||'Colega');if(nuevo)x.autor=yo;else x.editor=yo;
+    [['ban','epn_est_ban',EST_BAND],['age','epn_est_age',EST_AGE],['lin','epn_est_lin',EST_LIN]].forEach(([k,key,base])=>{const v=(x[k]||'').trim();if(v&&!base.includes(v)){const l=ls.get(key,[])||[];if(!l.includes(v)){l.push(v);ls.set(key,l)}}});
+    ls.set('epn_est_arr',estArr().filter(y=>y.id!==x.id).concat([x]));VIA_MES=x.f.slice(0,7);EST_EDIT=null;EST_SEC='arr';toast('Arribo guardado');renderEst();estSync(true);return}
+  if(b.hasAttribute('data-edel')&&OWNER){if(!confirm('¿Eliminar este arribo?'))return;const x=estArr().find(y=>y.id===EST_EDIT.id);if(x&&x._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(x._n));ls.set('epn_est_arr',estArr().filter(y=>y.id!==EST_EDIT.id));EST_EDIT=null;renderEst();estSync(true)}});
+/* ---- Construcción de los cuadros (misma estructura del informe) ---- */
+function estCuadros(ym){const M=estMes(ym),P=estMes(ymPrev(ym)),AC=estAcum(ym),y=ym.slice(0,4);const S=f=>AC.reduce((s,z)=>s+f(z),0);
+  const mA=mesUp(ym).split(' ')[0],mP=mesUp(ymPrev(ym)).split(' ')[0],acT='ACUMULADO ENE – '+mA.slice(0,3)+' '+y;
+  const comp=(rows)=>{const tot=rows.reduce((t,r)=>[t[0]+r[1],t[1]+r[2],t[2]+r[3]],[0,0,0]);return{rows:rows.map(([n,a,b,ac])=>[n,a,b,a-b,pct(a,b),ac,tot[2]?ac/tot[2]*100:0]),tot:['TOTALES',tot[0],tot[1],tot[0]-tot[1],pct(tot[0],tot[1]),tot[2],tot[2]?100:0]}};
+  const C={};
+  C.c11={t:'TONELAJE MANIPULADO EN DESEMBARQUE SEGÚN BANDERA Y TIPO DE BUQUES',h:['BANDERA','Nº DE BUQUES','CONVENCIONAL','TANQUERO','REMOLCADOR','OTROS','TONELADAS EN DESEMBARQUE','TONELADAS EN EMBARQUE','TOTAL'],f:['','n','n','n','n','n','t','t','t'],
+    rows:lista(EST_BAND,'epn_est_ban').concat(Object.keys(M.ban).filter(k=>!lista(EST_BAND,'epn_est_ban').includes(k))).map(b=>{const r=M.ban[b]||{n:0,t:{},d:0,e:0};const o=(r.t.gran||0)+(r.t.tur||0)+(r.t.otr||0);return[b.toUpperCase(),r.n,r.t.conv||0,r.t.tanq||0,r.t.rem||0,o,r.d,r.e,r.d+r.e]})};
+  C.c11.tot=['TOTAL',...[1,2,3,4,5,6,7,8].map(i=>C.c11.rows.reduce((s,r)=>s+r[i],0))];
+  C.c12={t:'TONELAJE MANIPULADO SEGÚN AGENCIA NAVIERA Y CARACTERÍSTICAS DE LOS BUQUES',h:['AGENCIA NAVIERA','Nº DE BUQUES','T.R.B.','T.R.N.','TONELADAS EN DESEMBARQUE','TONELADAS EN EMBARQUE','TOTAL'],f:['','n','n','n','t','t','t'],
+    rows:lista(EST_AGE,'epn_est_age').concat(Object.keys(M.age).filter(k=>!lista(EST_AGE,'epn_est_age').includes(k))).map(k=>{const r=M.age[k]||{n:0,trb:0,trn:0,d:0,e:0};return[k.toUpperCase(),r.n,r.trb,r.trn,r.d,r.e,r.d+r.e]})};
+  C.c12.tot=['TOTALES',...[1,2,3,4,5,6].map(i=>C.c12.rows.reduce((s,r)=>s+r[i],0))];
+  const linAc={};estArr().filter(a=>(a.f||'').slice(0,4)===y&&(a.f||'').slice(0,7)<=ym).forEach(a=>{const k=a.lin||'—';const r=linAc[k]||(linAc[k]={d:0,e:0});r.d+=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0);r.e+=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0)});
+  const tm=M.d+M.e;C.c13={t:'TONELAJE MANIPULADO SEGÚN LÍNEA NAVIERA Y ESTADÍA EN PUERTO',h:['LÍNEA NAVIERA','DESEMBARQUE '+mA,'EMBARQUE '+mA,'TOTAL '+mA,'DESEMBARQUE ACUMULADO','EMBARQUE ACUMULADO','TOTAL ACUMULADO','% DE LA CARGA'],f:['','t','t','t','t','t','t','p'],
+    rows:lista(EST_LIN,'epn_est_lin').concat(Object.keys(linAc).filter(k=>!lista(EST_LIN,'epn_est_lin').includes(k))).map(k=>{const r=M.lin[k]||{d:0,e:0},a=linAc[k]||{d:0,e:0};return[k.toUpperCase(),r.d,r.e,r.d+r.e,a.d,a.e,a.d+a.e,tm?(r.d+r.e)/tm*100:0]})};
+  C.c13.tot=['TOTALES',...[1,2,3,4,5,6].map(i=>C.c13.rows.reduce((s,r)=>s+r[i],0)),tm?100:0];
+  const H=lab=>[lab,mA,mP,'DIFERENCIA','% AUMENTO Y/O DISMINUC.',acT,'% POR RUBRO'];
+  C.c14={t:'TONELAJE MANIPULADO MANIFESTADO Y NO MANIFESTADO EN DESEMBARQUE Y EMBARQUE',h:H('RUBROS'),f:['','t','t','t','p','t','p'],...comp([['TON. DESEMBARCADO',M.d,P.d,S(z=>z.d)],['TON. EMBARCADO',M.e,P.e,S(z=>z.e)]])};
+  const cd=comp(EST_PD.map(p=>[p.toUpperCase(),M.pd[p],P.pd[p],S(z=>z.pd[p])])),ce=comp(EST_PE.map(p=>[p.toUpperCase(),M.pe[p],P.pe[p],S(z=>z.pe[p])]));const gT=cd.tot[5]+ce.tot[5];
+  const rp=r=>{r[6]=gT?r[5]/gT*100:0;return r};cd.rows.forEach(rp);ce.rows.forEach(rp);
+  C.c15={t:'PRODUCTO MANEJADO EN DESEMBARQUE Y EMBARQUE',h:H('PRODUCTOS'),f:['','t','t','t','p','t','p'],sec:[['DESEMBARCADO',cd.rows,rp(['SUB-TOTAL',...cd.tot.slice(1)])],['EMBARCADO',ce.rows,rp(['SUB-TOTAL',...ce.tot.slice(1)])]],
+    tot:['TOTALES',M.d+M.e,P.d+P.e,M.d+M.e-P.d-P.e,pct(M.d+M.e,P.d+P.e),gT,gT?100:0]};
+  const lq=(z,k)=>k==='d'?[z.dl,z.d-z.dl]:[z.el,z.e-z.el];const sec6=k=>{const c=comp([['CARGA LÍQUIDA',lq(M,k)[0],lq(P,k)[0],S(z=>lq(z,k)[0])],['CARGA SECA',lq(M,k)[1],lq(P,k)[1],S(z=>lq(z,k)[1])]]);c.rows.forEach(rp);return [c.rows,rp(['SUB-TOTAL',...c.tot.slice(1)])]};
+  const s6d=sec6('d'),s6e=sec6('e');C.c16={t:'TONELAJE MANEJADO EN DESEMBARQUE Y EMBARQUE SEGÚN TIPO DE CARGA',h:H('TIPOS DE CARGA'),f:['','t','t','t','p','t','p'],sec:[['DESEMBARCADO',...s6d],['EMBARCADO',...s6e]],tot:C.c15.tot};
+  const tt={conv:[0,0,0],gran:[0,0,0],rem:[0,0,0],otr:[0,0,0]};M.arr.forEach(a=>{const k=a.tipo==='conv'||a.tipo==='gran'||a.tipo==='rem'?a.tipo:'otr';tt[k][0]++;tt[k][1]+=+a.trb||0;tt[k][2]+=+a.trn||0});
+  if(!M.reg&&M.sal){tt.conv=[M.tipo.conv,M.trb,M.trn]}
+  C.c17={t:'Nº DE BUQUES ARRIBADOS, T.R.B. Y T.R.N. SEGÚN SU TIPO',h:['Nº DE BUQUES','TIPO DE BUQUES','T.R.B.','%','T.R.N.','%'],f:['n','','n','p','n','p'],rows:[['conv','CARGUERO CONVENCIONAL'],['gran','GRANELERO'],['rem','REMOLCADOR'],['otr','OTROS']].map(([k,l])=>[tt[k][0],l,tt[k][1],M.trb?tt[k][1]/M.trb*100:0,tt[k][2],M.trn?tt[k][2]/M.trn*100:0]),tot:[M.n,'TOTALES',M.trb,M.trb?100:0,M.trn,M.trn?100:0],lbl:1};
+  const c8=comp([['BAJO – 100',M.esl.b,P.esl.b,S(z=>z.esl.b)],['MÁS DE 100',M.esl.a,P.esl.a,S(z=>z.esl.a)]]);C.c18={t:'BUQUES ARRIBADOS Y CLASIFICADOS SEGÚN SU ESLORA',h:H('RANGOS X ESLORA'),f:['','n','n','n','p','n','p'],...c8};
+  const t9=[['conv','CARGUERO CONVENCIONAL'],['gran','GRANELERO'],['tur','TURÍSTICO'],['rem','REMOLCADOR'],['otr','OTROS']];const T9=(z,k)=>k==='otr'?(z.tipo.otr||0)+(z.tipo.tanq||0):(z.tipo[k]||0);
+  C.c19={t:'Nº DE BUQUES ARRIBADOS Y CLASIFICADOS SEGÚN SU TIPO',h:H('TIPO DE BUQUE'),f:['','n','n','n','p','n','p'],...comp(t9.map(([k,l])=>[l,T9(M,k),T9(P,k),S(z=>T9(z,k))]))};
+  return {C,M,P,mA,ym}}
+const CUAD=[['c11','1.1','TONELAJE Y TIPO DE BUQUE'],['c12','1.2','TRB Y TRN SEGUN AGENCIA'],['c13','1.3','TONELAJE SEGUN LINEA NAV.'],['c14','1.4','TONELAJE MANIPULADO'],['c15','1.5','PRODUCTO MANEJADO'],['c16','1.6','TONELAJE SEGUN TIPO DE CARGA'],['c17','1.7','N° BUQUES ARRIBADOS TRN Y TRB'],['c18','1.8','BUQUES SEGUN LOA'],['c19','1.9','BUQUES SEGUN SU TIPO']];
+/* ---- Excel ---- */
+function estExcel(){const {C,ym}=estCuadros(VIA_MES);const sheets=[];
+  const cell=(v,f,tot)=>{if(v==null)return{v:'—',s:tot?13:15};if(typeof v!=='number')return{v:String(v),s:tot?13:18};const z=Math.abs(v)<1e-9;
+    if(f==='p')return{v:v/100,s:tot?10:(z?16:4)};if(f==='n')return{v,s:tot?8:(z?9:7)};return{v,s:tot?3:(z?17:2)}};
+  const head=(t,cuadro,w)=>[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:5}],[{v:'CUADRO '+cuadro,s:11}],[{v:t,s:5}],[{v:'MES DE: '+mesUp(ym),s:12}],[]];
+  const firmas=w=>[[],[],[{v:'Elaborado: _______________________',s:0},...Array(Math.max(1,w-3)).fill(''),{v:'Autorizado: _______________________',s:0}],[{v:'Asistente Administrativo · GPBB',s:12},...Array(Math.max(1,w-3)).fill(''),{v:'Gerente Portuario · GPBB',s:12}]];
+  CUAD.forEach(([k,num,name])=>{const c=C[k],w=c.h.length;const rows=head(c.t,num,w);rows.push(c.h.map(h=>({v:h,s:1})));
+    const fila=(r,tot)=>r.map((v,i)=>i===0&&!c.lbl||(c.lbl&&i===1)?{v:String(v),s:tot?13:((r.slice(1).every(x=>typeof x!=='number'||!x))?15:18)}:cell(v,c.f[i],tot));
+    if(c.sec)c.sec.forEach(([lab,rs,sub])=>{rows.push([{v:lab,s:14},...Array(w-1).fill({v:'',s:14})]);rs.forEach(r=>rows.push(fila(r)));rows.push(fila(sub,true))});else c.rows.forEach(r=>rows.push(fila(r)));
+    rows.push(fila(c.tot,true));rows.push(...firmas(w));
+    const hts=[];hts[6]=42;sheets.push({n:name,rows,w:c.h.map((h,i)=>i===0?34:15),m:[0,1,2,3,4].map(r=>`A${r+1}:${colL(w-1)}${r+1}`),h:hts})});
+  /* Detalle de barcos */
+  const L=estMes(ym).arr.slice().sort((a,b)=>String(a.hl).localeCompare(String(b.hl)));const dr=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:5}],[{v:'BARCOS LLEGADOS AL PUERTO DEL BLUFF',s:11}],[{v:'MES DE: '+mesUp(ym),s:12}],[]];const fdt=x=>x?new Date(x).toLocaleString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
+  L.forEach((a,i)=>{const d=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0),e=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0);
+    dr.push([{v:(i+1)+'. '+(a.buque||'')+(a.viaje?' · VOY '+a.viaje:''),s:14},{v:'',s:14},{v:'',s:14},{v:'',s:14}]);
+    [['Llegada',fdt(a.hl),'Salida',fdt(a.hs)],['Bandera',a.ban||'—','Tipo',EST_TIPOS[a.tipo]||''],['T.R.B.',+a.trb||0,'T.R.N.',+a.trn||0],['Eslora (m)',+a.eslora||0,'En tránsito',a.tran||'—'],['Agente',a.age||'—','Línea naviera',a.lin||'—'],['Total desembarcado (TM)',d,'Total embarcado (TM)',e],['Procedencia',a.proc||'—','Destino',a.dest||'—'],['Hora de fondeo (llegada)',a.fon1||'—','Hora de fondeo (salida)',a.fon2||'—'],['Hora de leva ancla (llegada)',a.lev1||'—','Hora de leva ancla (salida)',a.lev2||'—'],['Calado llegada (m)',+a.cal1||0,'Calado salida (m)',+a.cal2||0]].forEach(r=>dr.push(r.map((v,j)=>j%2===0?{v,s:15}:(typeof v==='number'?{v,s:2}:{v:String(v),s:18}))));
+    if(a.obs)dr.push([{v:'Observaciones',s:15},{v:a.obs,s:18}]);dr.push([])});
+  if(!L.length)dr.push([{v:'Sin arribos registrados en el mes.',s:12}]);
+  sheets.push({n:'DETALLE DE BARCOS',rows:dr,w:[30,26,30,26],m:[0,1,2,3].map(r=>`A${r+1}:D${r+1}`)});
+  /* Viajes motonaves */
+  const MN=estMN(ym);const vr=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'TRANSPORTE DE PASAJEROS EN MOTONAVES · '+mesUp(ym),s:11}],[]];
+  (COSTOS?COSTOS.emb.filter(e=>e.tipo==='mot'):[]).forEach(e=>{const vs=MN.por[e.id]||[];vr.push([{v:e.n.toUpperCase(),s:5}]);vr.push(['ITEM','FECHA','RUTA','TOTAL PASAJEROS','TOTAL VIAJE'].map(h=>({v:h,s:1})));
+    vs.forEach((v,i)=>vr.push([{v:i+1,s:7},{v:new Date(v.f+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}),s:18},{v:v.dir==='ida'?'Bluefields – Corn Island':'Corn Island – Bluefields',s:18},{v:+v.np||0,s:7},{v:1,s:7}]));
+    vr.push([{v:'TOTAL',s:13},{v:'',s:13},{v:'',s:13},{v:vs.reduce((s,v)=>s+(+v.np||0),0),s:8},{v:vs.length,s:8}]);vr.push([]);
+    vr.push(['RUTA','PASAJEROS','VIAJES'].map(h=>({v:h,s:1})));[['ida','Bluefields – Corn Island'],['vue','Corn Island – Bluefields']].forEach(([k,l])=>{const x=vs.filter(v=>v.dir===k);vr.push([{v:l,s:18},{v:x.reduce((s,v)=>s+(+v.np||0),0),s:7},{v:x.length,s:7}])});
+    vr.push([{v:'TOTAL',s:13},{v:vs.reduce((s,v)=>s+(+v.np||0),0),s:8},{v:vs.length,s:8}]);vr.push([],[])});
+  sheets.push({n:'VIAJES MOTO NAVES',rows:vr,w:[30,14,28,18,14]});
+  compartirBlob(xlsx(sheets),'Informe-estadistico-'+ym+'.xlsx','Informe estadístico · '+mesTxt(ym))}
+/* ---- PDF ---- */
+function estPdf(){const {C,ym}=estCuadros(VIA_MES);const d=PDFW();const yR={y:0};let tit='';const nueva=()=>{d.page();yR.y=pdfHeader(d,'INFORME ESTADÍSTICO MENSUAL · GPBB',mesTxt(ym)+(tit?' · '+tit:''))};
+  const fmtC=(v,f)=>v==null?'—':typeof v!=='number'?String(v):f==='p'?fq(Math.round(v*10)/10)+' %':f==='n'?fq(v):fmt(v);
+  const ab=h=>h.replace('% AUMENTO Y/O DISMINUC.','% VAR.').replace(/^ACUMULADO ENE – (\w+) (\d+)$/,'ACUM. $2').replace('DIFERENCIA','DIF.').replace('TONELADAS EN DESEMBARQUE','DESEMB. TM').replace('TONELADAS EN EMBARQUE','EMB. TM').replace(' ACUMULADO',' ACUM.').replace('% DE LA CARGA','% CARGA').replace('% POR RUBRO','% RUBRO').replace('Nº DE BUQUES','Nº BUQUES').replace('CONVENCIONAL','CONV.').replace('REMOLCADOR','REMOLC.').replace('DESEMBARQUE','DESEMB.').replace('EMBARQUE','EMB.');
+  tit='';nueva();CUAD.forEach(([k,num],ix)=>{const c=C[k];const ws=c.h.map((h,i)=>i===0?150:Math.max(40,(532-150)/(c.h.length-1)));
+    const map=r=>r.map((v,i)=>fmtC(v,c.f[i]));let rows=[];if(c.sec)c.sec.forEach(([lab,rs,sub])=>{rows.push([lab,...Array(c.h.length-1).fill('')]);rows.push(...rs.map(map));rows.push(map(sub))});else rows=c.rows.filter(r=>r.slice(1).some(x=>typeof x==='number'&&x)||c.rows.length<=6).map(map);
+    let hh=c.h.map(ab),tt=map(c.tot);if(c.lbl){const sw=r=>[r[1],r[0],...r.slice(2)];hh=sw(hh);rows=rows.map(sw);tt=sw(tt)}
+    if(yR.y+40+rows.length*13>740)nueva();pdfTabla(d,yR,'CUADRO '+num+' · '+c.t,hh,ws,rows,tt,c.h.map(()=>''),nueva);yR.y+=8});
+  if(yR.y>600)nueva();const L=estMes(ym).arr;pdfTabla(d,yR,'BARCOS LLEGADOS AL PUERTO DEL BLUFF',['Buque / viaje','Llegada','Salida','Bandera','T.R.B.','T.R.N.','Eslora','Desemb. TM','Emb. TM'],[120,70,70,70,40,40,40,50,50],
+    L.map(a=>[(a.buque||'')+(a.viaje?' V'+a.viaje:''),a.hl?new Date(a.hl).toLocaleString('es-NI',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—',a.hs?new Date(a.hs).toLocaleString('es-NI',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—',a.ban||'',fq(+a.trb||0),fq(+a.trn||0),fq(+a.eslora||0),fmt((a.des||[]).reduce((s,x)=>s+(+x.tm||0),0)),fmt((a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0))]),null,Array(9).fill(''),nueva);
+  const MN=estMN(ym);pdfTabla(d,yR,'TRANSPORTE DE PASAJEROS EN MOTONAVES',['Fecha','Motonave','Ruta','Pasajeros'],[80,140,180,80],MN.L.map(v=>[new Date(v.f+'T12:00').toLocaleDateString('es-NI'),(COSTOS&&(COSTOS.emb.find(e=>e.id===v.emb)||{}).n)||'',v.dir==='ida'?'Bluefields – Corn Island':'Corn Island – Bluefields',fq(+v.np||0)]),['Total','','',fq(MN.L.reduce((s,v)=>s+(+v.np||0),0))],Array(4).fill(''),nueva);
+  pdfFooters(d,'Informe estadístico · Elaborado: Asistente Administrativo · Autorizado: Gerente Portuario · GPBB');abrirVisor(d,'Informe-estadistico-'+ym+'.pdf','Informe estadístico · '+mesTxt(ym))}
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
 const MEDIO_DIAS=[['06-23','Día del Padre'],['11-02','Día de los Difuntos'],['12-07','La Gritería'],['12-24','Víspera de Navidad'],['12-31','Víspera de Año Nuevo']];
