@@ -135,7 +135,7 @@ body[data-view="pf"] .toast{bottom:calc(196px + env(safe-area-inset-bottom,0px))
 .toast.on{opacity:1;transform:translate(-50%,0)}
 body.locked nav,body.locked main,body.locked .actions,body.locked #gear,body.locked #bell{display:none}
 #bell{position:relative;margin-right:6px}#bell i{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#d93025;color:#fff;font:700 11px/18px system-ui,sans-serif;font-style:normal;text-align:center;padding:0 4px;box-shadow:0 0 0 2px var(--hdr2)}#bell.anim svg{animation:ring 1.2s ease-in-out 2}@keyframes ring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
-body.solo-tar nav button:not([data-v="tar"]):not([data-v="acc"]),body.solo-tar .actions,body.solo-tar #btnTarPdf{display:none!important}
+body.solo-tar #btnTarPdf,body.sin-c nav button[data-v="pf"],body.sin-c .actions,body.sin-t nav button[data-v="tar"]{display:none!important}
 body.solo-tar #v-tar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;position:relative}
 #marca{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;display:none}
 body.solo-tar[data-view="tar"] #marca{display:block}
@@ -214,7 +214,7 @@ input::-webkit-date-and-time-value{text-align:left}
 details.rg{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 details.rg>summary{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;font-weight:600;list-style:none}
 details.rg>summary::-webkit-details-marker{display:none}
-body:not(.con-viajes) nav button[data-v="via"],body:not(.con-viajes) nav button[data-v="his"]{display:none}
+body:not(.con-viajes) nav button[data-v="via"],body:not(.con-mat) nav button[data-v="his"]{display:none}
 .via-dias{display:grid;grid-template-columns:1fr 1fr;gap:8px}.via-dias>div{border:1px solid var(--line);border-radius:12px;padding:8px 10px}.via-dias span{display:block;font-size:12px;color:var(--mut);font-weight:600}.via-dias b{display:block;font-size:15px}.via-dias small{display:block;font-size:11.5px;color:var(--mut)}.via-dias .ok{border-color:color-mix(in srgb,var(--ok,#1e8e3e) 45%,var(--line))}.via-dias .bad{border-color:color-mix(in srgb,#d93025 45%,var(--line))}
 .via-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}.via-it small{display:block;font-size:12px;color:var(--mut);margin-top:2px}.via-it b{font-size:15px;white-space:nowrap}.via-it>div:first-child{min-width:0}.via-it .neg{color:#c5221f}
 .pie{margin:12px 0 4px;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.pie-t{display:block;font-size:13.5px;margin-bottom:8px}.pie-w{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pie-w svg{flex:none}.pie-l{flex:1;min-width:170px;display:grid;gap:5px}.pie-l>div{display:grid;grid-template-columns:12px 1fr auto;column-gap:7px;align-items:center;font-size:13px}.pie-l i{width:12px;height:12px;border-radius:3px}.pie-l b{font-size:13px}.pie-l small{grid-column:2/4;color:var(--mut);font-size:11.5px;margin-top:-3px}
@@ -946,9 +946,21 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
    Cada código va ligado al ID del teléfono del colega; puede tener fecha o ser indefinido.
    Los datos de cada colega se guardan solo en su propio teléfono. */
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
-const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
-const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.03-49';
+/* ===== Permisos por módulo =====
+   c Cálculo · t Tarifas · m Matrículas · v Viajes · a Arqueo · s Estadísticas · k Costos (rentabilidad)
+   0 sin acceso · 1 ver · 2 registrar/editar (t: 1 solo Res. 003-2024, 2 todas) */
+const MODS=[['c','Cálculo de servicios',['Sin acceso','','Hacer cálculos y PDF']],['t','Tarifas',['Sin acceso','Solo Res. 003-2024','Todas las tarifas']],['m','Matrículas',['Sin acceso','Ver','Registrar y editar']],
+  ['v','Viajes regulares',['Sin acceso','Ver viajes y costos','Registrar viajes']],['a','Arqueo de caja',['Sin acceso','Ver arqueos','Registrar arqueos']],['s','Estadísticas',['Sin acceso','Ver informe','Registrar']],['k','Costos y rentabilidad',['Sin acceso','Ver','']]];
+const PERF=[['comp','Acceso completo',{c:2,t:2,m:2,v:2,a:2,s:2,k:1}],['rci','Solo tarifa Res. 003-2024',{c:0,t:1,m:0,v:0,a:0,s:0,k:0}],['tc','Tarifas y cálculo',{c:2,t:2,m:0,v:0,a:0,s:0,k:0}],
+  ['ope','Operaciones de motonaves',{c:0,t:2,m:1,v:2,a:2,s:0,k:0}],['sob','Sobrecargo',{c:0,t:2,m:1,v:2,a:0,s:0,k:0}],['est','Estadísticas',{c:0,t:2,m:0,v:0,a:0,s:2,k:0}],['con','Consulta / supervisión',{c:2,t:2,m:1,v:1,a:1,s:1,k:1}]];
+const PALL={c:2,t:2,m:2,v:2,a:2,s:2,k:1};
+const permDe=x=>{if(x&&x.m&&typeof x.m==='object')return{...PERF[1][2],...x.m};return x&&x.p==='rci'?{...PERF[1][2]}:{...PERF[0][2]}};
+const permLlave=m=>!!(m.m||m.v||m.a||m.s||m.k);
+const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).every(k=>(+q[k]||0)===(+m[k]||0)));return f?f[1]:'Personalizado'};
+const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
+function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
+const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
+const APP_VER='2026.11.04-50';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -971,7 +983,7 @@ async function verificar(code){try{
   if(REVOCADOS.includes(j.i)||REV.has(j.i))return{rev:true,n:j.n||''};
   if(j.d!==devId())return{dev:true,n:j.n||''};
   const o=COND[j.i];/* condición cambiada por el administrador, sin código nuevo */
-  return{n:j.n||'',e:o?(o.e||''):(j.e||''),i:j.i||'',p:o?(o.p||''):(j.p||''),k:j.k||'',code}}catch(e){return null}}
+  return{n:j.n||'',e:o?(o.e||''):(j.e||''),i:j.i||'',p:o?(o.p||''):(j.p||''),m:(o&&o.m)||(o&&'p' in o&&!o.m?null:j.m)||null,k:j.k||'',code}}catch(e){return null}}
 async function firmar(payload){
   const key=await crypto.subtle.importKey('jwk',{...PUB,d:MK,ext:true},{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
   const p=b64u(new TextEncoder().encode(JSON.stringify(payload)));
@@ -983,7 +995,7 @@ async function mkValida(d){try{if(!/^[A-Za-z0-9_-]{40,50}$/.test(d))return false
 const leerLic=()=>ls.get(LIC_KEY,null);
 function fechaRef(){const l=leerLic(),h=today();const v=l&&l.visto&&l.visto>h?l.visto:h;if(l&&l.visto!==v){l.visto=v;ls.set(LIC_KEY,l)}return v}
 const vigente=l=>!!(l&&(!l.e||l.e>=fechaRef()));
-function activar(p){const prev=leerLic()||{};ls.set(LIC_KEY,{n:p.n,e:p.e,i:p.i,p:p.p,code:p.code,visto:prev.visto&&prev.visto>today()?prev.visto:today()});LIC=p}
+function activar(p){const prev=leerLic()||{};ls.set(LIC_KEY,{n:p.n,e:p.e,i:p.i,p:p.p,m:p.m,code:p.code,visto:prev.visto&&prev.visto>today()?prev.visto:today()});LIC=p}
 const fLarga=s=>s?new Date(s+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'long',year:'numeric'}):'—';
 const diasA=s=>Math.round((new Date(s+'T12:00')-new Date(fechaRef()+'T12:00'))/864e5);
 const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
@@ -996,10 +1008,10 @@ function copiar(t,ok,el){let done=false;const fb=()=>{if(done)return;done=true;i
 
 function applyGate(){
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
-  $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';document.body.classList.toggle('con-viajes',!!(ok&&puedeVia()));if(!puedeVia()&&document.querySelector('#v-via.on'))show('pf');
+  $('#navAcc').textContent=OWNER?'Accesos':'Mi acceso';const pm=PM();document.body.classList.toggle('con-viajes',!!(ok&&puedeVia()));document.body.classList.toggle('con-mat',!!(ok&&pm.m>0));document.body.classList.toggle('sin-c',!pm.c);document.body.classList.toggle('sin-t',!pm.t);
+  {const vis={pf:pm.c>0,tar:pm.t>0,his:pm.m>0,via:puedeVia()};const cur=(document.querySelector('.view.on')||{}).id||'';const cv=cur.replace('v-','').replace('prev','pf');if(ok&&cv&&vis[cv]===false){const f=['pf','tar','his','via'].find(x=>vis[x]);show(f||'acc')}}
   {const dd=document.querySelector('details.acc[data-acc=cos]');if(dd)dd.hidden=!OWNER}
   const st=!!(ok&&soloTar());document.body.classList.toggle('solo-tar',st);if(st)pintarMarca();
-  if(st&&!document.querySelector('#v-tar.on,#v-acc.on'))show('tar');
   if(ok){$('#aviso').innerHTML=(!OWNER&&LIC&&LIC.e&&diasA(LIC.e)<=7)?`<div class="notice"><b>Su acceso vence ${diasA(LIC.e)===0?'hoy':'en '+diasA(LIC.e)+' día(s)'}</b> (${fLarga(LIC.e)}). Pida la renovación y cargue el código en “Mi acceso”.</div>`:'';return}
   const venc=GATE==='vencido',ret=GATE==='retirado';
   $('#gate').innerHTML=GATE==='cargando'?'<p class="mut">Verificando acceso…</p>':`<div class="card">
@@ -1049,22 +1061,34 @@ function mensaje(c){return `Hola ${c.n}, este es tu acceso a la app *Memoria de 
 2. Pegá este código en la pantalla de activación:
 ${c.code}
 
-Permiso: ${PERFILES[c.p||'']}. Acceso: ${c.e?'vence el '+fLarga(c.e):'sin vencimiento'}. El código solo funciona en tu teléfono (ID ${devFmt(c.d)}).
+Permiso: ${permNom(c)}. Acceso: ${c.e?'vence el '+fLarga(c.e):'sin vencimiento'}. El código solo funciona en tu teléfono (ID ${devFmt(c.d)}).
 Tus cálculos se guardan solo en tu teléfono; descargá un respaldo de vez en cuando desde Historial.`}
 function guardarCol(){ls.set(COL_KEY,COL);if(DB&&UID){try{DB.doc('data/users/'+UID+'/privado/colegas').set({lista:JSON.stringify(COL)})}catch(e){}}}
+const colLlave=c=>c.kk!=null?!!c.kk:!c.p;
+function permForm(px,m){return `<label>Permiso</label><select id="${px}Pf" data-pf="${px}">${PERF.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}<option value="x">Personalizado</option></select>
+  <details class="rg" data-ok="${px}mods" style="margin-top:6px"${ACC_OPEN.has(px+'mods')?' open':''}><summary><span>Módulos de este permiso</span><span class="chev">›</span></summary><div style="padding:2px 10px 8px">
+  ${MODS.map(([k,n,L])=>`<div class="rl" style="align-items:center"><div>${n}</div><select data-pm="${px}" data-k="${k}" style="max-width:56%">${L.map((t,i)=>t?`<option value="${i}" ${(+m[k]||0)===i?'selected':''}>${t}</option>`:'').join('')}</select></div>`).join('')}</div></details>
+  <p class="sm" id="${px}PfTxt" style="margin:4px 0 0">${esc(permLista(m))}</p>`}
+function permLeer(px){const m={};MODS.forEach(([k])=>{const el=document.querySelector(`[data-pm="${px}"][data-k="${k}"]`);m[k]=el?+el.value:0});return m}
+function permPoner(px,m){MODS.forEach(([k])=>{const el=document.querySelector(`[data-pm="${px}"][data-k="${k}"]`);if(el)el.value=String(+m[k]||0)});permSync(px)}
+function permSync(px){const m=permLeer(px);const f=PERF.find(([,,q])=>Object.keys(q).every(k=>(+q[k]||0)===(+m[k]||0)));const s=document.getElementById(px+'Pf');if(s)s.value=f?f[0]:'x';const t=document.getElementById(px+'PfTxt');if(t)t.textContent=permLista(m)}
+document.addEventListener('change',e=>{const el=e.target;if(!el.dataset)return;if(el.dataset.pf){const p=PERF.find(x=>x[0]===el.value);if(p)permPoner(el.dataset.pf,p[2]);else{const d=document.querySelector(`[data-ok="${el.dataset.pf}mods"]`);if(d)d.open=true}}else if(el.dataset.pm)permSync(el.dataset.pm)});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-pref]');if(!b)return;b.disabled=true;b.textContent='Buscando…';await refrescarAcceso();await buscarCostos();renderAcc();toast('Permisos actualizados')});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-renc]');if(!b||!OWNER)return;const c=COL[b.dataset.renc];if(c&&$('#gN'))prefill(c)});
 async function generar(f){const box=f.querySelector('.msg-bad');
-  const n=$('#gN').value.trim(),d=normDev($('#gD').value),pl=$('#gP').value,pr=$('#gR').value;let e='';
+  const n=$('#gN').value.trim(),d=normDev($('#gD').value),pl=$('#gP').value,pm=permLeer('g'),pr=permLlave(pm)?'':'rci';let e='';
+  if(!MODS.some(([k])=>pm[k])){box.textContent='Marque al menos un módulo.';return}
   if(!n){box.textContent='Escriba el nombre del colega.';return}
   if(!/^[A-Z0-9]{8}$/.test(d)){box.textContent='El ID del teléfono tiene 8 letras o números (ej.: AV2D-VGC2).';return}
   if(pl==='f'){e=$('#gF').value;if(!e||e<today()){box.textContent='Elija una fecha futura.';return}}else if(pl!=='i')e=addD(today(),+pl);
   const prev=Object.values(COL).find(c=>c.d===d);const i=newId();
-  let code;try{const kc=pr?'':b64u(await llaveOwner());code=await firmar({v:1,a:APP_ID,n,d,i,...(e?{e}:{}),...(pr?{p:pr}:{}),...(kc?{k:kc}:{})})}catch(x){box.textContent='No se pudo firmar el código en este navegador.';return}
+  let code;try{const kc=pr?'':b64u(await llaveOwner());code=await firmar({v:1,a:APP_ID,n,d,i,...(e?{e}:{}),...(pr?{p:pr}:{}),m:pm,...(kc?{k:kc}:{})})}catch(x){box.textContent='No se pudo firmar el código en este navegador.';return}
   let retAnt=false;if(prev&&prev.i!==i){REV.add(prev.i);delete COND[prev.i];ls.set(REV_KEY,[...REV]);ls.set('epn_cond_cache',COND);delete COL[prev.i];retAnt=true}
-  const inv=(ls.get('epn_inv',[])||[]).find(x=>norm(x.n)===norm(n));COL[i]={i,n,d,e,p:pr,code,creado:today(),tel:(inv&&inv.tel)||(prev&&prev.tel)||''};if(inv)ls.set('epn_inv',ls.get('epn_inv',[]).filter(x=>x!==inv&&norm(x.n)!==norm(n)));guardarCol();f.reset();$('#gFwrap').hidden=true;renderAcc();
-  const c=COL[i];$('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Código para ${esc(n)}</b> · ${e?'vence '+fLarga(e):'indefinido'} · ${PERFILES[pr]}<div class="codebox">${esc(code)}</div><div class="row"><button class="btn" data-wa="${i}">Enviar código por WhatsApp</button><button class="btn2" data-cm="${i}">Copiar mensaje</button><button class="btn2" data-cc="${i}">Copiar solo el código</button></div></div>`;
+  const inv=(ls.get('epn_inv',[])||[]).find(x=>norm(x.n)===norm(n));COL[i]={i,n,d,e,p:pr,m:pm,kk:!pr,code,creado:today(),tel:(inv&&inv.tel)||(prev&&prev.tel)||''};if(inv)ls.set('epn_inv',ls.get('epn_inv',[]).filter(x=>x!==inv&&norm(x.n)!==norm(n)));guardarCol();f.reset();$('#gFwrap').hidden=true;renderAcc();
+  const c=COL[i];$('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Código para ${esc(n)}</b> · ${e?'vence '+fLarga(e):'indefinido'} · ${permNom({p:pr,m:pm})}<div class="codebox">${esc(code)}</div><div class="row"><button class="btn" data-wa="${i}">Enviar código por WhatsApp</button><button class="btn2" data-cm="${i}">Copiar mensaje</button><button class="btn2" data-cc="${i}">Copiar solo el código</button></div></div>`;
   if(retAnt){if(!DB&&ghTok()){ls.set('epn_rev_pend',true);ghSync(true)}else if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND})}catch(x){}}else $('#genOut').insertAdjacentHTML('beforeend',`<div class="card"><b>El código anterior de ${esc(n)} quedó retirado.</b><p class="sm">Actualice revocados.json en GitHub con este texto para que deje de funcionar:</p><div class="codebox">${esc(accesosJSON())}</div><button class="btn2" data-copyrev>Copiar texto</button></div>`)}
   $('#genOut').scrollIntoView({behavior:'smooth',block:'center'})}
-function prefill(c){$('#gN').value=c.n;$('#gD').value=devFmt(c.d);$('#gR').value=c.p||'';$('#gN').scrollIntoView({behavior:'smooth',block:'center'});toast('Elija el plazo y genere el código renovado')}
+function prefill(c){$('#gN').value=c.n;$('#gD').value=devFmt(c.d);permPoner('g',permDe(COND[c.i]&&COND[c.i].m?{m:COND[c.i].m}:c));$('#gN').scrollIntoView({behavior:'smooth',block:'center'});toast('Elija el plazo y genere el código renovado')}
 async function toggleRev(i){if(REV.has(i))REV.delete(i);else REV.add(i);ls.set(REV_KEY,[...REV]);await publicarAccesos(REV.has(i)?'Acceso retirado':'Acceso restituido')}
 const accesosJSON=()=>JSON.stringify({ids:[...REV],cond:COND});
 function aplicarAccesos(o){const ids=Array.isArray(o&&o.ids)?o.ids:[];REV=new Set(ids);ls.set(REV_KEY,ids);COND=(o&&o.cond&&typeof o.cond==='object')?o.cond:{};ls.set('epn_cond_cache',COND)}
@@ -1110,21 +1134,23 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-ghnow],[da
 window.addEventListener('online',()=>ghSync(true));
 async function publicarAccesos(okMsg){if(!DB&&ghTok()){ls.set('epn_rev_pend',true);if(await ghSync(true)){toast(okMsg);renderAcc();return true}}if(DB){try{await DB.doc('config/revocados').set({ids:[...REV],cond:COND});toast(okMsg);renderAcc();return true}catch(e){toast('Guardado en este teléfono; no se pudo publicar')}}
   renderAcc();mostrarListaRev();return false}
+async function refrescarAcceso(){if(!PROPIA||OWNER)return;try{const r=await fetch('revocados.json?t='+Date.now(),{cache:'no-store'});if(r.ok){aplicarAccesos(await r.json());await revalidarLic()}}catch(e){}}
 async function revalidarLic(){if(OWNER||!LIC||!LIC.code)return;const p=await verificar(LIC.code);
   if(p&&p.rev){GATE='retirado'}else if(p&&!p.dev){LIC=p;GATE=vigente(p)?'ok':'vencido'}applyGate();if(document.querySelector('#v-acc.on'))renderAcc();if(document.querySelector('#v-tar.on'))renderTar()}
 function abrirCond(i){const c=COL[i];if(!c)return;cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
   v.innerHTML=`<form class="sheet" id="fCond" role="dialog" aria-modal="true"><div class="sh-h"><b>Cambiar condición</b><button type="button" class="pv-x" data-sh="close">✕</button></div>
-   <p class="sm" style="margin-top:0"><b>${esc(c.n)}</b> · ID ${devFmt(c.d)}<br>Actual: ${c.e?'vence el '+fLarga(c.e):'sin vencimiento'} · ${PERFILES[c.p||'']}</p>
+   <p class="sm" style="margin-top:0"><b>${esc(c.n)}</b> · ID ${devFmt(c.d)}<br>Actual: ${c.e?'vence el '+fLarga(c.e):'sin vencimiento'} · ${permNom(c)}</p>
    <div class="grid"><div><label>Nuevo plazo</label><select id="kP"><option value="i">Indefinido</option><option value="30">30 días</option><option value="90">90 días</option><option value="180">180 días</option><option value="365">1 año</option><option value="f">Hasta una fecha</option><option value="0">Vence hoy</option></select></div>
     <div id="kFw" hidden><label>Fecha</label><input id="kF" type="date"></div>
-    <div style="grid-column:1/-1"><label>Permiso</label><select id="kR"><option value="">Acceso completo</option><option value="rci">Solo tarifa Res. 003-2024 (Bluefields–Corn Island)</option></select></div></div>
+    <div style="grid-column:1/-1">${permForm('k',permDe(c))}</div></div><p class="msg-bad" id="kLl" hidden style="margin:6px 0 0"></p>
    <p class="sm">El colega no recibe ningún mensaje ni código: la condición se aplica en su teléfono la próxima vez que abra la app con señal.</p><div class="msg-bad"></div>
    <div class="row" style="margin-top:10px;flex-wrap:nowrap"><button type="button" class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" style="flex:2">Aplicar condición</button></div></form>`;
-  document.body.appendChild(v);document.body.classList.add('pv-on');$('#kP').value=c.e?'f':'i';$('#kF').value=c.e||'';$('#kFw').hidden=!c.e;$('#kR').value=c.p||'';
+  document.body.appendChild(v);document.body.classList.add('pv-on');$('#kP').value=c.e?'f':'i';$('#kF').value=c.e||'';$('#kFw').hidden=!c.e;
+  const chk=()=>{const w=$('#kLl');if(!w)return;const need=permLlave(permLeer('k'))&&!colLlave(c);w.hidden=!need;w.textContent=need?'El código de '+c.n+' no trae la llave de datos. Para estos módulos hay que enviarle un código nuevo una sola vez (botón «Código nuevo» en su ficha).':''};$('#fCond').addEventListener('change',chk);chk();
   $('#kP').onchange=()=>{$('#kFw').hidden=$('#kP').value!=='f'};
   $('#fCond').onsubmit=async e=>{e.preventDefault();const pl=$('#kP').value;let ne='';
     if(pl==='f'){ne=$('#kF').value;if(!ne){$('#fCond .msg-bad').textContent='Elija la fecha.';return}}else if(pl==='0')ne=addD(today(),-1);else if(pl!=='i')ne=addD(today(),+pl);
-    const np=$('#kR').value;COND[i]={e:ne,p:np};c.e=ne;c.p=np;c.mod=today();guardarCol();ls.set('epn_cond_cache',COND);cerrarSheet();
+    const nm=permLeer('k');if(!MODS.some(([k])=>nm[k])){$('#fCond .msg-bad').textContent='Marque al menos un módulo.';return}const np=permLlave(nm)?'':'rci';COND[i]={e:ne,p:np,m:nm};c.e=ne;c.m=nm;c.mod=today();guardarCol();ls.set('epn_cond_cache',COND);cerrarSheet();
     await publicarAccesos('Condición aplicada a '+c.n)}}
 function mostrarListaRev(){const txt=accesosJSON();
   $('#genOut').innerHTML=`<div class="card" style="border-color:var(--pri)"><b>Falta un paso para que el cambio llegue al teléfono del colega</b>
@@ -1133,7 +1159,9 @@ function mostrarListaRev(){const txt=accesosJSON();
   $('#genOut').scrollIntoView({behavior:'smooth',block:'center'})}
 const ACC_OPEN=new Set();document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.ok){d.open?ACC_OPEN.add(d.dataset.ok):ACC_OPEN.delete(d.dataset.ok)}},true);
 function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'')},0);
-  if(!OWNER){$('#accBox').innerHTML=LIC?`<div class="facts"><div><span>A nombre de</span><b>${esc(LIC.n||'—')}</b></div><div><span>Vence</span><b>${LIC.e?fLarga(LIC.e):'Sin vencimiento'}</b></div><div><span>Permiso</span><b>${PERFILES[LIC.p||'']}</b></div><div><span>ID del teléfono</span><b>${devFmt(devId())}</b></div></div>
+  if(!OWNER){$('#accBox').innerHTML=LIC?`<div class="facts"><div><span>A nombre de</span><b>${esc(LIC.n||'—')}</b></div><div><span>Vence</span><b>${LIC.e?fLarga(LIC.e):'Sin vencimiento'}</b></div><div><span>Permiso</span><b>${permNom(LIC)}</b></div><div><span>ID del teléfono</span><b>${devFmt(devId())}</b></div></div>
+   <div class="card" style="margin:10px 0 0;padding:8px 12px"><b style="font-size:13.5px">Lo que puede hacer</b>${(()=>{const m=PM();return MODS.map(([k,n,L])=>`<div class="rl"><div>${n}</div><span class="chip ${m[k]?'ok':''}">${m[k]?L[m[k]]:'Sin acceso'}</span></div>`).join('')})()}
+   ${!LIC.k&&permLlave(permDe(LIC))?'<p class="msg-bad" style="margin:6px 0 0">Para usar los módulos con datos internos necesita un código nuevo: pídalo al administrador.</p>':''}<button class="btn2" data-pref style="width:100%;margin-top:8px">Actualizar mis permisos</button></div>
    <form id="fRenov" style="margin-top:12px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><label style="margin:0">Cargar código nuevo (renovación)</label><button type="button" class="btn2" data-pegar="renIn" style="padding:6px 12px">Pegar</button></div><textarea id="renIn" rows="2" autocomplete="off" spellcheck="false" style="margin-top:6px"></textarea><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" type="submit">Activar código</button></div></form>`:'<p class="mut">Sin acceso activo.</p>';return}
   const arr=Object.values(COL).sort((a,b)=>a.n.localeCompare(b.n));
   $('#accBox').innerHTML=`<div class="pasos"><div><i>1</i><span>Invite al colega</span></div><div><i>2</i><span>Él le responde con su ID</span></div><div><i>3</i><span>Usted genera y envía el código</span></div></div>
@@ -1152,11 +1180,11 @@ function renderAcc(){setTimeout(()=>{const v=$('#verTxt');if(v)v.textContent='Ve
    <div><label>ID de su teléfono <button type="button" class="btn2" data-pegar="gD" style="padding:2px 9px;font-size:12px;margin-left:4px">Pegar</button></label><input id="gD" maxlength="400" placeholder="XXXX-XXXX" autocapitalize="characters" spellcheck="false"></div>
    <div><label>Plazo</label><select id="gP"><option value="i" selected>Indefinido</option><option value="30">30 días</option><option value="90">90 días</option><option value="180">180 días</option><option value="365">1 año</option><option value="f">Hasta una fecha</option></select></div>
    <div id="gFwrap" hidden><label>Fecha</label><input id="gF" type="date"></div>
-   <div style="grid-column:1/-1"><label>Permiso</label><select id="gR"><option value="">Acceso completo</option><option value="rci">Solo tarifa Res. 003-2024 (Bluefields–Corn Island)</option></select></div>
+   <div style="grid-column:1/-1">${permForm('g',PERF[0][2])}</div>
   </div><div class="msg-bad" style="margin-top:6px"></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" type="submit">Generar código</button></div></form>
   <div id="genOut"></div>`:''}
   <details class="rg colw" data-ok="lista" style="margin-top:16px"${ACC_OPEN.has('lista')?' open':''}><summary><span>Colegas con acceso (${arr.length})${arr.filter(c=>REV.has(c.i)).length?' · '+arr.filter(c=>REV.has(c.i)).length+' retirado(s)':''}</span><span class="chev">›</span></summary><div style="padding:4px 10px 8px">
-  ${arr.length?arr.map(c=>{const [t,k]=estadoCol(c);return `<details class="rg colx" data-ok="${c.i}"${ACC_OPEN.has(c.i)?' open':''}><summary><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.n)}</span><span style="display:flex;gap:6px;align-items:center;flex:none"><span class="chip ${k}">${t}</span><span class="chev">›</span></span></summary><div style="padding:0 11px 10px"><div class="sm">ID ${devFmt(c.d)} · ${c.e?'vence '+fLarga(c.e):'sin vencimiento'} · ${PERFILES[c.p||'']}${c.mod?' · condición cambiada el '+fLarga(c.mod):''}</div><div class="row" style="margin-top:8px"><button class="btn2" data-wa="${c.i}">WhatsApp</button>${REV.has(c.i)?'':`<button class="btn2" data-cond="${c.i}">Cambiar condición</button>`}<button class="${REV.has(c.i)?'btn2':'btnd'}" data-rv="${c.i}">${REV.has(c.i)?'Restituir':'Retirar'}</button>${REV.has(c.i)?`<button class="btnd" data-delc="${c.i}">Quitar</button>`:''}</div></div></details>`}).join(''):'<p class="mut">Todavía no ha dado acceso a nadie.</p>'}</div></details>
+  ${arr.length?arr.map(c=>{const [t,k]=estadoCol(c);return `<details class="rg colx" data-ok="${c.i}"${ACC_OPEN.has(c.i)?' open':''}><summary><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.n)}</span><span style="display:flex;gap:6px;align-items:center;flex:none"><span class="chip ${k}">${t}</span><span class="chev">›</span></span></summary><div style="padding:0 11px 10px"><div class="sm">ID ${devFmt(c.d)} · ${c.e?'vence '+fLarga(c.e):'sin vencimiento'} · ${permNom(COND[c.i]&&COND[c.i].m?{m:COND[c.i].m}:c)}${c.mod?' · condición cambiada el '+fLarga(c.mod):''}</div><div class="row" style="margin-top:8px"><button class="btn2" data-wa="${c.i}">WhatsApp</button>${REV.has(c.i)?'':`<button class="btn2" data-cond="${c.i}">Cambiar condición</button><button class="btn2" data-renc="${c.i}">Código nuevo</button>`}<button class="${REV.has(c.i)?'btn2':'btnd'}" data-rv="${c.i}">${REV.has(c.i)?'Restituir':'Retirar'}</button>${REV.has(c.i)?`<button class="btnd" data-delc="${c.i}">Quitar</button>`:''}</div></div></details>`}).join(''):'<p class="mut">Todavía no ha dado acceso a nadie.</p>'}</div></details>
   <p class="sm">“Cambiar condición” modifica plazo o permiso sin enviar código nuevo. “Retirar” bloquea la app. Ambos se aplican en el teléfono del colega la próxima vez que la abra con señal; sus cálculos no se borran.${DB?'':' En la versión instalada se completan actualizando revocados.json en GitHub (la app le muestra el texto).'}</p>
   ${!DB&&(REV.size||Object.keys(COND).length)?'<button class="btn2" data-copyrev style="margin-bottom:8px">Copiar contenido de revocados.json</button>':''}
   ${MK&&!ISOWN?'<button class="btn2" id="mkOut">Quitar clave maestra de este teléfono</button>':''}`;
@@ -1228,7 +1256,7 @@ async function initAcceso(){
   cargarCostos();
   if(PROPIA&&!OWNER&&LIC&&LIC.k){await buscarCostos();viaRecibir()}
   if(OWNER)setTimeout(()=>ghSync(true),1500);
-  setTimeout(()=>arqSync(true),2500);setTimeout(()=>matSync(true),4000);setTimeout(()=>estSync(true),5500);
+  setTimeout(()=>arqSync(true),2500);setTimeout(()=>matSync(true),4000);setTimeout(()=>estSync(true),5500);setTimeout(()=>viaIssSync(true),7000);
   renderAvMat();renderHis();pfSum();
   renderRent();
   const cl=window.claude;
@@ -1481,7 +1509,7 @@ function cargarCostos(){const own=ls.get('epn_costos',null);COSTOS=OWNER?(own||J
   if(OWNER&&COSTOS&&!ls.get('epn_mat_pub_v1',false)){ls.set('epn_mat_pub_v1',true);ls.set('epn_costos_pend',true)}
   if(OWNER&&COSTOS&&!ls.get('epn_gen_v1',false)){COSTOS.emb.forEach(e=>{if(e.tipo==='mot'&&!+e.gen)e.gen=1});ls.set('epn_gen_v1',true);ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}return COSTOS}
 const guardarCostos=()=>{if(OWNER){ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true);ghProgramar()}if(typeof renderAvMat==='function')renderAvMat()};
-const puedeCostos=()=>OWNER||(!!LIC&&!LIC.p);
+const puedeCostos=()=>OWNER||(!!LIC&&!!LIC.k&&PM().k>0);
 const salTot=p=>(+p.sal||0)+(+p.ant||0);
 
 /* --- Cifrado: la llave sale de la clave maestra y viaja dentro de los códigos de acceso completo --- */
@@ -1522,7 +1550,9 @@ async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publ
 const VIA_DIAS_PROG=[0,3,4,6];// dom, mié, jue, sáb
 const VIA_DIR={ida:'Bluefields → Corn Island',vue:'Corn Island → Bluefields'};
 let VIA_MES=today().slice(0,7),VIA_EDIT=null;
-const puedeVia=()=>OWNER||!!(LIC&&LIC.k&&!LIC.p);
+const puedeVia=()=>OWNER||!!(LIC&&LIC.k&&(PM().v||PM().a||PM().s));
+const viaPuedeReg=()=>OWNER||PM().v===2;
+const yoNombre=()=>OWNER?'Administrador':((LIC&&LIC.n)||'Colega');
 function muTarifa(f){const l=((COSTOS&&COSTOS.par.mu)||[]).filter(x=>x&&x.f).slice().sort((a,b)=>a.f.localeCompare(b.f));if(!l.length)return{B:0,C:0,f:''};let t=l[0];l.forEach(x=>{if(x.f<=f)t=x});return t}
 const viaNuevoId=()=>'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function viaPlantilla(f,dir){const vu=dir==='vue';
@@ -1530,7 +1560,7 @@ function viaPlantilla(f,dir){const vu=dir==='vue';
            :[{de:'Muelle EPN',a:'Muelle municipal Bluefields',sal:'07:00',lle:'07:15',cd:0},{de:'Muelle municipal Bluefields',a:'Muelle Corn Island',sal:'09:00',lle:'',cd:2}]}
 function viaDirDe(f){const d=new Date(f+'T12:00').getDay();return d===4||d===0?'vue':'ida'}
 function viaNuevo(){const f=today(),dir=viaDirDe(f);const embs=(COSTOS&&COSTOS.emb||[]).filter(e=>e.tipo==='mot');const eid=ls.get('epn_via_emb','')||(embs[0]&&embs[0].id)||'';
-  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',eq:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:'Administrador',nuevo:true}}
+  const par=COSTOS.par;return{id:viaNuevoId(),f,dir,emb:eid,crew:null,tr:viaPlantilla(f,dir),bol:'',np:'',tb:'',car:'',eq:'',oi:[],muB:'',muC:'',og:[],hx:'',obs:'',autor:yoNombre(),nuevo:true}}
 const addMin=(hhmm,m)=>{if(!hhmm)return'';const t=hm2m(hhmm)+m;const x=((t%1440)+1440)%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')};
 function viaAuto(v){const t=v.tr;if(v.dir==='vue'&&t[1]&&t[1].auto&&t[0].lle){t[1].sal=addMin(t[0].lle,Math.round((+t[0].cd||0)*60));t[1].lle=addMin(t[1].sal,15)}}
 /* Convierte los tramos en fechas reales (si una hora es menor que la anterior, pasa al día siguiente) */
@@ -1662,9 +1692,10 @@ function pieBloque(R,ing,gas,ut){const it=pieDatos(R,ut);if(!it.length)return'';
 
 /* ---------- Pantalla ---------- */
 function renderVia(){const box=$('#viaBox');if(!box)return;
-  if(!puedeVia()){box.innerHTML='<p class="mut">Esta sección es solo para usuarios con acceso completo.</p>';return}
-  if(VIA_SEC==='arq'&&puedeVia())return renderArq();
-  if(VIA_SEC==='est'&&puedeVia())return renderEst();
+  if(!puedeVia()){box.innerHTML='<p class="mut">Su acceso no incluye esta sección.</p>';return}
+  {const S=viaSecs();if(!S.includes(VIA_SEC))VIA_SEC=S[0]}
+  if(VIA_SEC==='arq')return renderArq();
+  if(VIA_SEC==='est')return renderEst();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
   if(VIA_EDIT)return renderViaForm();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
@@ -1676,7 +1707,7 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
     <h3 class="sub">Por día de salida</h3><div class="via-dias">${DN.map(k=>{const r=R.porDia[k];return `<div class="${r?(r.ut>=0?'ok':'bad'):''}"><span>${DIAS[k]}</span><b>${r?money(r.ut,'NIO'):'—'}</b><small>${r?r.n+' viaje(s) · '+(r.np?r.np+' boletos':money(r.ing,'NIO')):'sin viajes'}</small></div>`}).join('')}</div>
     ${Object.keys(R.porEmb).length>1?`<h3 class="sub">Por embarcación</h3>${Object.entries(R.porEmb).map(([k,r])=>`<div class="rl"><div>${esc(k)}<small>${r.n} viaje(s) · ingresos ${money(r.ing,'NIO')}</small></div><b>${money(r.ut,'NIO')}</b></div>`).join('')}`:''}
     <div class="row" style="flex-wrap:nowrap;margin-top:12px"><button class="btn2" data-vpdf style="flex:1">Informe PDF</button><button class="btn2" data-vxls style="flex:1">Excel</button></div></div>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay viajes registrados en este mes.</p>'}
-   ${OWNER?'<button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>':'<p class="sm" style="margin-top:10px">Los viajes los registra el administrador; aquí puede consultarlos y descargar los informes.</p>'}
+   ${viaPuedeReg()?'<button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>'+(!OWNER?`<p class="sm" style="margin-top:6px">Sus viajes se envían solos al administrador${(ls.get('epn_viajes_mios',[])||[]).some(x=>x._p)?' · <b>hay viajes pendientes de enviar</b> (se envían al tener señal)':''}.</p>`:''):'<p class="sm" style="margin-top:10px">Aquí puede consultar los viajes y descargar los informes.</p>'}
    ${OWNER?`<details class="rg" data-ok="vaj" style="margin-top:12px"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Precio del boleto (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="pasaje" value="${COSTOS.par.pasaje||310}"></div></div>
      <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">El muellaje se configura en Ajustes → Estructura de costos (tarifas con fecha de vigencia).</p></div></details>`:''}
    ${R.cs.length?`<details class="rg colw" data-ok="vlist" style="margin-top:12px"${ACC_OPEN.has('vlist')?' open':''}><summary><span>Viajes de ${mesTxt(VIA_MES).toLowerCase()} (${R.cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${R.cs.map(({v,c})=>`<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(c.emb?c.emb.n.replace(/^Motonave /,''):'—')}${+v.np?' · '+v.np+' boletos':''}</small></div><div style="text-align:right"><b class="${c.ut<0?'neg':''}">${money(c.ut,'NIO')}</b><small>${fq(c.mg)} %</small></div></button>`).join('')}</div></details>`:''}`}
@@ -1694,7 +1725,8 @@ function viaRefrescar(){const v=VIA_EDIT;if(!v)return;viaAuto(v);const c=viaCalc
   if(q('viaBol'))q('viaBol').textContent=money(c.bolC,'NIO');if(q('viaFalta'))q('viaFalta').hidden=!viaFalta(v);
   const hx=document.querySelector('#viaBox [data-vf=hx]');if(hx)hx.placeholder='auto: '+c.hxA;
   if(v.dir==='vue'&&v.tr[1]){['sal','lle'].forEach(k=>{const el=document.querySelector(`#viaBox [data-vt="1"][data-k="${k}"]`);if(el&&document.activeElement!==el)el.value=v.tr[1][k]||''})}}
-function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=viaCalcEdit();const ro=!OWNER;
+const viaEditable=v=>!!v&&(OWNER||(PM().v===2&&(v.nuevo||v.autor===yoNombre())));
+function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=viaCalcEdit();const ro=!viaEditable(v);
   const embs=COSTOS.emb.filter(e=>e.tipo==='mot');const crewIds=new Set(c.crew.map(x=>x.pid));
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${ro?'Detalle del viaje':v.nuevo?'Registrar viaje':'Editar viaje'}</b><button class="btn2" data-vcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">
@@ -1729,28 +1761,29 @@ function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;let full=false;
   if(full)renderViaForm();else viaRefrescar()}
 function viaGuardar(){const v=VIA_EDIT;if(viaFalta(v)&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
   const x={...v};delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
-  const l=(ls.get('epn_viajes',[])||[]).filter(y=>y.id!==x.id);l.push(x);viaGuardarLista(l);
+  if(!OWNER){x._p=true;ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==x.id).concat([x]));setTimeout(()=>viaIssSync(true),300)}
+  else{const l=(ls.get('epn_viajes',[])||[]).filter(y=>y.id!==x.id);l.push(x);viaGuardarLista(l)}
   VIA_MES=x.f.slice(0,7);VIA_EDIT=null;ACC_OPEN.delete('vcrew');toast('Viaje guardado');renderVia();window.scrollTo(0,0)}
 function viaEliminar(){const v=VIA_EDIT;if(!confirm('¿Eliminar este viaje?'))return;
   viaGuardarLista((ls.get('epn_viajes',[])||[]).filter(y=>y.id!==v.id));const d=ls.get('epn_viajes_del',[])||[];if(!d.includes(v.id)){d.push(v.id);ls.set('epn_viajes_del',d)}
   VIA_EDIT=null;renderVia()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-vmes],[data-vnew],[data-vedit],[data-vcancel],[data-vsave],[data-vdel],[data-voiadd],[data-voidel],[data-vogadd],[data-vogdel],[data-vpdf],[data-vxls],[data-vcrewok]');if(!b||!b.closest('#viaBox'))return;
   if(b.dataset.vmes){const [y,m]=VIA_MES.split('-').map(Number);const d=new Date(y,m-1+(+b.dataset.vmes),1);VIA_MES=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return renderVia()}
-  if(b.hasAttribute('data-vnew')){if(!OWNER)return;VIA_EDIT=viaNuevo();ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-vnew')){if(!viaPuedeReg())return;VIA_EDIT=viaNuevo();ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0);return}
   if(b.dataset.vedit){const x=viaLista().find(y=>y.id===b.dataset.vedit);if(x){VIA_EDIT=JSON.parse(JSON.stringify(x));if(VIA_EDIT.eq==null){const q=(VIA_EDIT.oi||[]).filter(o=>/equipaje/i.test(o.d||''));VIA_EDIT.eq=q.length?String(q.reduce((s,o)=>s+(+o.m||0),0)):'';VIA_EDIT.oi=(VIA_EDIT.oi||[]).filter(o=>!/equipaje/i.test(o.d||''))}ACC_OPEN.delete('vcrew');renderVia();window.scrollTo(0,0)}return}
   if(b.hasAttribute('data-vcancel')){VIA_EDIT=null;return renderVia()}
   if(b.hasAttribute('data-vcrewok')){ACC_OPEN.delete('vcrew');const d=b.closest('details');if(d)d.open=false;return}
-  if(!OWNER&&!b.hasAttribute('data-vpdf')&&!b.hasAttribute('data-vxls'))return;
+  if(!viaEditable(VIA_EDIT)&&!b.hasAttribute('data-vpdf')&&!b.hasAttribute('data-vxls'))return;
   if(b.hasAttribute('data-vsave'))return viaGuardar();
-  if(b.hasAttribute('data-vdel'))return viaEliminar();
+  if(b.hasAttribute('data-vdel')){if(OWNER)viaEliminar();return}
   if(b.hasAttribute('data-voiadd')){(VIA_EDIT.oi=VIA_EDIT.oi||[]).push({d:'',m:''});return renderViaForm()}
   if(b.dataset.voidel!=null){VIA_EDIT.oi.splice(+b.dataset.voidel,1);return renderViaForm()}
   if(b.hasAttribute('data-vogadd')){(VIA_EDIT.og=VIA_EDIT.og||[]).push({d:'',m:''});return renderViaForm()}
   if(b.dataset.vogdel!=null){VIA_EDIT.og.splice(+b.dataset.vogdel,1);return renderViaForm()}
   if(b.hasAttribute('data-vpdf'))return viaPdf();
   if(b.hasAttribute('data-vxls'))return viaExcel()});
-document.addEventListener('change',e=>{const el=e.target;if(!el.closest||!el.closest('#viaBox')||!OWNER)return;
-  if(el.dataset.vpar){const k=el.dataset.vpar;COSTOS.par[k]=el.type==='checkbox'?el.checked:(+el.value||0);guardarCostos();return renderVia()}
+document.addEventListener('change',e=>{const el=e.target;if(!el.closest||!el.closest('#viaBox')||!(OWNER||viaEditable(VIA_EDIT)))return;
+  if(el.dataset.vpar){if(!OWNER)return;const k=el.dataset.vpar;COSTOS.par[k]=el.type==='checkbox'?el.checked:(+el.value||0);guardarCostos();return renderVia()}
   if(!VIA_EDIT)return;const v=VIA_EDIT;
   if(el.dataset.vf)return viaSetCampo(el.dataset.vf,el.value);
   if(el.dataset.vt!=null){const g=v.tr[+el.dataset.vt];const k=el.dataset.k;g[k]=el.value;if(v.dir==='vue'&&+el.dataset.vt===1&&k!=='cd')g.auto=false;return viaRefrescar()}
@@ -1808,7 +1841,7 @@ function viaExcel(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay v
 /* ---------- Compartir entre el administrador y los colegas ---------- */
 async function cifrarCon(raw,obj){const k=await aesKey(raw);const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(obj)));return{v:1,f:today(),iv:b64u(iv),data:b64u(new Uint8Array(ct))}}
 async function viaPublicar(){if(!OWNER||!MK)return;if(DB){try{const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await DB.doc('config/viajes').set(pub);ls.set('epn_viajes_pend',false)}catch(e){}return}ghProgramar()}
-async function viaRecibir(){if(OWNER||!LIC||!LIC.k||LIC.p)return;let pub=null;
+async function viaRecibir(){if(OWNER||!LIC||!LIC.k||!(PM().v||PM().s))return;let pub=null;
   try{if(DB){const s=await DB.doc('config/viajes').get();pub=s.exists?s.data():null}else{const r=await fetch('viajes.json?t='+Date.now(),{cache:'no-store'});if(r.ok)pub=await r.json()}}catch(e){return}
   if(!pub||!pub.data)return;try{const o=await descifrarCostos(pub,LIC.k);ls.set('epn_viajes_rx',o);const ids={};(o.l||[]).forEach(x=>ids[x.id]=x.u);const del=new Set(o.del||[]);
     ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(x=>!del.has(x.id)&&!(ids[x.id]&&String(ids[x.id])>=String(x.u))));if(document.querySelector('#v-via.on'))renderVia()}catch(e){}}
@@ -1867,10 +1900,11 @@ function renderArq(){const box=$('#viaBox');if(ARQ_EDIT)return renderArqForm();
   box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:10px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
    ${cs.length?`<div class="rent-k" style="margin-top:10px"><div><span>Total general (${cs.length} arqueo${cs.length===1?'':'s'})</span><b>${money(tot('gen'),'NIO')}</b><small>córdobas ${money(tot('nio'),'NIO')} · dólares US$ ${fmt(tot('usd'))}</small></div><div><span>Fondo de cambio</span><b>${money(tot('cam'),'NIO')}</b></div><div class="ok"><span>Dinero recibido</span><b>${money(tot('rec'),'NIO')}</b></div></div>
     <button class="btn2" data-qxls style="width:100%;margin-top:10px">Excel de arqueos del mes</button>`:'<p class="mut" style="text-align:center;margin:14px 0">No hay arqueos en este mes.</p>'}
-   <button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>
+   ${OWNER||PM().a===2?'<button class="btn" data-qnew style="width:100%;margin-top:10px;padding:13px">+ Nuevo arqueo</button>':''}
    ${cs.length?`<details class="rg colw" data-ok="qlist" style="margin-top:12px"${ACC_OPEN.has('qlist')?' open':''}><summary><span>Arqueos de ${mesTxt(VIA_MES).toLowerCase()} (${cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${cs.map(({a,c})=>`<button class="via-it" data-qedit="${a.id}"><div><b>${viaFecha(a.f)}</b><small>Entregó: ${esc(a.enc||'—')} · registró: ${esc(a.autor||'Administrador')}${a.mods&&a.mods.length?' · modificado':''}${a._p?' · <span class="chip warnc">sin enviar</span>':''}</small></div><div style="text-align:right"><b>${money(c.rec,'NIO')}</b><small>recibido</small></div></button>`).join('')}</div></details>`:''}
    ${OWNER?arqTokPanel():arqTok()?'':'<p class="sm" style="margin-top:10px">Sus arqueos quedan en este teléfono hasta que el administrador active los arqueos compartidos.</p>'}`}
-const segVia=()=>`<div class="seg"><button data-vsec="via" class="${VIA_SEC==='via'?'on':''}">Viajes</button>${puedeVia()?`<button data-vsec="arq" class="${VIA_SEC==='arq'?'on':''}">Arqueo</button><button data-vsec="est" class="${VIA_SEC==='est'?'on':''}">Estadísticas</button>`:''}</div>`;
+const viaSecs=()=>{const p=PM();return [['via',p.v],['arq',p.a],['est',p.s]].filter(x=>x[1]>0).map(x=>x[0])};
+const segVia=()=>{const S=viaSecs();if(S.length<2)return'';const N={via:'Viajes',arq:'Arqueo',est:'Estadísticas'};return `<div class="seg">${S.map(k=>`<button data-vsec="${k}" class="${VIA_SEC===k?'on':''}">${N[k]}</button>`).join('')}</div>`};
 function denFila(grp,d,val,pre){const n=+val||0;return `<div class="den"><span>${pre} ${d<1?d.toFixed(2):fmt(d,0)}</span><input type="number" min="0" step="1" inputmode="numeric" data-qd="${grp}" data-den="${d}" value="${val||''}" placeholder="0"><b data-qm="${grp}-${d}">${pre} ${fmt(n*d)}</b></div>`}
 function arqResHTML(a,c){return `<div class="arq-r"><div><span>Efectivo en córdobas</span><b>${money(c.nio,'NIO')}</b></div><div><span>Efectivo en dólares (US$ ${fmt(c.usd)} × ${fq(c.tc)})</span><b>${money(c.usdC,'NIO')}</b></div>${c.otros?`<div><span>Otros (transferencias)</span><b>${money(c.otros,'NIO')}</b></div>`:''}
    <div class="t"><span>Total general</span><b>${money(c.gen,'NIO')}</b></div><div><span>(−) Dinero para cambio</span><b>${money(c.cam,'NIO')}</b></div>
@@ -1903,7 +1937,7 @@ document.addEventListener('input',e=>{const el=e.target;if(!ARQ_EDIT||!el.closes
   if(el.dataset.qd){const g=el.dataset.qd,d=el.dataset.den;(a[g]=a[g]||{})[d]=el.value;const m=document.querySelector(`[data-qm="${g}-${d}"]`);if(m)m.textContent=(g==='usd'?'US$ ':'C$ ')+fmt((+el.value||0)*(+d));return arqRefrescar()}
   if(el.dataset.qf){a[el.dataset.qf]=el.value;if(['cam','tc','otros'].includes(el.dataset.qf))arqRefrescar()}});
 document.addEventListener('change',e=>{const el=e.target;if(ARQ_EDIT&&el.dataset&&el.dataset.qf&&el.tagName==='SELECT')ARQ_EDIT[el.dataset.qf]=el.value});
-function arqGuardar(){const a=ARQ_EDIT,c=arqCalc(a);if(!(c.gen>0)){toast('Anote la cantidad de billetes recibidos');return}if(!a.enc){toast('Seleccione quién entrega');return}
+function arqGuardar(){if(!(OWNER||PM().a===2))return;const a=ARQ_EDIT,c=arqCalc(a);if(!(c.gen>0)){toast('Anote la cantidad de billetes recibidos');return}if(!a.enc){toast('Seleccione quién entrega');return}
   const x={...a};const nuevo=x.nuevo;delete x.nuevo;x.u=new Date().toISOString();if(!nuevo)x.mods=(x.mods||[]).concat([x.u]);const yo=OWNER?'Administrador':((LIC&&LIC.n)||'Colega');if(nuevo)x.autor=yo;else x.editor=yo;x._p=true;
   ls.set('epn_arqueos',arqLista().filter(y=>y.id!==x.id).concat([x]));ls.set('epn_arq_enc',x.enc||'');ls.set('epn_arq_rec',x.rec||'');ls.set('epn_arq_cam',x.cam||'');ls.set('epn_arq_tc',+x.tc||36);
   VIA_MES=x.f.slice(0,7);ARQ_EDIT=null;toast(arqTok()?'Arqueo guardado; enviando…':'Arqueo guardado en este teléfono');renderVia();arqPdf(x);arqSync(true)}
@@ -1932,7 +1966,7 @@ function arqExcel(){const l=arqLista().filter(a=>a.f.slice(0,7)===VIA_MES).sort(
 document.addEventListener('click',e=>{const v=e.target.closest('[data-vsec]');if(v&&v.closest('#viaBox')){VIA_SEC=v.dataset.vsec;VIA_EDIT=null;ARQ_EDIT=null;MAT_EDIT=null;EST_EDIT=null;renderVia();if(VIA_SEC==='arq')arqSync(true);if(VIA_SEC==='est')estSync(true);return}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[data-qnew],[data-qedit],[data-qcancel],[data-qsave],[data-qdel],[data-qpdf],[data-qxls]');if(!b||!b.closest('#viaBox')||!puedeVia())return;
   if(b.hasAttribute('data-qrecadd')){const n=(prompt('Nombre de quien recibe el dinero:')||'').trim();if(!n)return;const l=receptores();if(!l.includes(n)){l.push(n);l.sort();ls.set('epn_arq_recs',l)}ARQ_EDIT.rec=n;return renderArqForm()}
-  if(b.hasAttribute('data-qnew')){ARQ_EDIT=arqNuevo();renderVia();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-qnew')){if(!(OWNER||PM().a===2))return;ARQ_EDIT=arqNuevo();renderVia();window.scrollTo(0,0);return}
   if(b.dataset.qedit){const x=arqLista().find(y=>y.id===b.dataset.qedit);if(x){ARQ_EDIT=JSON.parse(JSON.stringify(x));renderVia();window.scrollTo(0,0)}return}
   if(b.hasAttribute('data-qcancel')){ARQ_EDIT=null;return renderVia()}
   if(b.hasAttribute('data-qsave'))return arqGuardar();
@@ -1950,9 +1984,9 @@ function matBase(){return (COSTOS&&COSTOS.mat)||[]}
 function matLista(){const m={};const ord=[];matBase().forEach(x=>{m[x.id]=x;ord.push(x.id)});
   [...(ls.get('epn_mat_rx',[])||[]),...(ls.get('epn_mat_loc',[])||[])].forEach(x=>{if(!x||!x.id)return;if(!m[x.id])ord.push(x.id);if(!m[x.id]||String(x.u||'')>String(m[x.id].u||''))m[x.id]=x});
   return ord.filter((id,i)=>ord.indexOf(id)===i).map(id=>m[id])}
-const matPuedeEditar=()=>OWNER||!!(LIC&&COSTOS&&(((COSTOS.matEd||[]).includes(LIC.i))||((COSTOS.matEdD||[]).includes(devId()))||((COSTOS.matEdN||[]).includes(norm(LIC.n||'')))));
+const matPuedeEditar=()=>OWNER||PM().m===2;
 let _mqBusy=false;
-async function matSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_mqBusy||!puedeVia())return;_mqBusy=true;let err=null,cambio=false;
+async function matSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_mqBusy||!(OWNER||(LIC&&LIC.k&&PM().m>0)))return;_mqBusy=true;let err=null,cambio=false;
   try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const raw=await arqKeyRaw();const k=await aesKey(raw);
     for(const x of (ls.get('epn_mat_loc',[])||[])){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(x)));
       const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:'matricula '+x.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
@@ -1965,12 +1999,12 @@ async function matSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_m
     else{const b={};matBase().forEach(x=>b[x.id]=x);ls.set('epn_mat_rx',Object.values(got).filter(a=>!b[a.id]||String(a.u||'')>String(b[a.id].u||'')));cambio=true}}catch(e){err=e.message}
   _mqBusy=false;if(err&&!silent)toast('Sin conexión con GitHub; se enviará al tener señal');if(cambio||!err){renderAvMat();if(document.querySelector('#v-his.on')&&!MAT_EDIT)renderMat()}}
 window.addEventListener('online',()=>matSync(true));
-function matPermPanel(){if(!OWNER)return'';const cs=Object.values(COL).filter(c=>!c.p&&!REV.has(c.i)).sort((a,b)=>a.n.localeCompare(b.n));const ed=COSTOS.matEd||[];
+function matPermPanel(){return'';const cs=Object.values(COL).filter(c=>!c.p&&!REV.has(c.i)).sort((a,b)=>a.n.localeCompare(b.n));const ed=COSTOS.matEd||[];
   return `<details class="rg" data-ok="mperm" style="margin-top:12px"${ACC_OPEN.has('mperm')?' open':''}><summary><span>Quién puede registrar matrículas</span><span class="chev">›</span></summary><div style="padding:0 11px 11px">
    ${arqTok()?'':'<p class="msg-bad" style="margin-top:0">Primero active la llave de arqueos (Viajes → Arqueo): los cambios de los colegas viajan por ella.</p>'}
    ${cs.length?cs.map(c=>`<label class="chk" style="margin:6px 0"><input type="checkbox" data-mperm="${c.i}" ${ed.includes(c.i)?'checked':''}> ${esc(c.n)}</label>`).join(''):'<p class="sm">No hay colegas con acceso completo.</p>'}
    <p class="sm" style="margin:6px 0 0">Los marcados pueden agregar, actualizar y renovar matrículas. Solo usted puede eliminarlas.</p></div></details>`}
-document.addEventListener('click',async e=>{const b=e.target.closest('[data-mref]');if(!b)return;b.disabled=true;b.textContent='Buscando…';await buscarCostos();await matSync(true);renderMat();toast(matPuedeEditar()?'Ya puede registrar y editar matrículas':'Todavía sin permiso: pida al administrador que abra su app con señal')});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-mref]');if(!b)return;b.disabled=true;b.textContent='Buscando…';await refrescarAcceso();await buscarCostos();await matSync(true);renderMat();toast(matPuedeEditar()?'Ya puede registrar y editar matrículas':'Todavía sin permiso: pida al administrador que abra su app con señal')});
 document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.mperm||!OWNER)return;const ed=new Set(COSTOS.matEd||[]);el.checked?ed.add(el.dataset.mperm):ed.delete(el.dataset.mperm);COSTOS.matEd=[...ed];const sel=Object.values(COL).filter(c=>ed.has(c.i));COSTOS.matEdD=sel.map(c=>c.d).filter(Boolean);COSTOS.matEdN=sel.map(c=>norm(c.n||''));guardarCostos();toast(el.checked?'Permiso otorgado':'Permiso retirado')});
 function matInit(){if(!COSTOS||!OWNER||Array.isArray(COSTOS.mat))return;COSTOS.mat=MAT_DEF.map(([n,t,e],i)=>({id:'m'+i+Date.now().toString(36),n,t,e,doc:MAT_DOC[t],num:'',obs:'',pagos:[]}));ls.set('epn_costos',COSTOS);ls.set('epn_costos_pend',true)}
 const matUlt=m=>(m.pagos||[]).slice().sort((a,b)=>String(a.v).localeCompare(String(b.v))).pop()||null;
@@ -1981,7 +2015,7 @@ function matEstado(m){const u=matUlt(m);if(!u||!u.v)return{k:'',t:'Sin registrar
 function matPagoEn(m,f){const ps=(m.pagos||[]).filter(p=>+p.m>0&&p.f).slice().sort((a,b)=>a.f.localeCompare(b.f));if(!ps.length)return 0;let x=ps[0];ps.forEach(p=>{if(p.f<=f)x=p});return +x.m||0}
 function matAnualEmb(embId,f){if(!COSTOS||!embId)return{own:0,pue:0,n:0};const L=matLista();const own=L.filter(m=>m.e===embId).reduce((s,m)=>s+matPagoEn(m,f),0);
   const nE=Math.max(1,(COSTOS.emb||[]).length);const pue=L.filter(m=>m.t==='pue').reduce((s,m)=>s+matPagoEn(m,f),0)/nE;return{own,pue,n:nE}}
-function renderAvMat(){const el=$('#avMat');if(!el)return;const bell=$('#bell');if(!COSTOS||!puedeVia()){el.innerHTML='';if(bell)bell.hidden=true;return}
+function renderAvMat(){const el=$('#avMat');if(!el)return;const bell=$('#bell');if(!COSTOS||!(OWNER||PM().m>0)){el.innerHTML='';if(bell)bell.hidden=true;return}
   const al=matLista().map(m=>({m,e:matEstado(m)})).filter(x=>x.e.d!=null&&x.e.d<=30).sort((a,b)=>a.e.d-b.e.d);
   if(bell){bell.hidden=!al.length;$('#bellN').textContent=al.length;bell.style.color=al.some(x=>x.e.d<0)?'#ffb4ab':'';if(al.length&&!bell._an){bell._an=1;bell.classList.add('anim')}}
   if(!al.length||ls.get('epn_avmat_oc','')===today()+':'+al.length){el.innerHTML='';return}
@@ -2063,7 +2097,7 @@ function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');r
 const arqTok=()=>(COSTOS&&COSTOS.arqTok)||'';
 const arqKeyRaw=async()=>OWNER?await llaveOwner():(LIC&&LIC.k?b64uToBytes(LIC.k):null);
 let _aqBusy=false;
-async function arqSync(silent){if(!puedeVia()||_aqBusy)return;const tok=arqTok();if(!tok||!navigator.onLine)return;_aqBusy=true;let err=null;
+async function arqSync(silent){if(!(OWNER||PM().a>0)||_aqBusy)return;const tok=arqTok();if(!tok||!navigator.onLine)return;_aqBusy=true;let err=null;
   try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const raw=await arqKeyRaw();if(!raw)throw new Error('sin llave');const k=await aesKey(raw);
     /* 1) subir pendientes */
     for(const a of arqLista().filter(x=>x._p)){const y={...a};delete y._p;delete y._n;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
@@ -2081,6 +2115,23 @@ async function arqSync(silent){if(!puedeVia()||_aqBusy)return;const tok=arqTok()
   _aqBusy=false;if(err&&!silent)toast(err==='401'||err==='403'?'La llave de arqueos no es válida; avise al administrador':'Sin conexión con GitHub; se enviará al tener señal');
   if(document.querySelector('#v-via.on')&&VIA_SEC==='arq'&&!ARQ_EDIT)renderArq()}
 window.addEventListener('online',()=>arqSync(true));
+/* Viajes registrados por colegas (sobrecargos): se envían cifrados como "issues"; el administrador los recibe, los publica en viajes.json y cierra el issue */
+let _viBusy=false;
+async function viaIssSync(silent){const tok=arqTok();if(_viBusy||!tok||!navigator.onLine)return;if(!OWNER&&!(LIC&&LIC.k&&PM().v===2))return;_viBusy=true;let err=null,n=0;
+  try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const k=await aesKey(await arqKeyRaw());
+    if(!OWNER){for(const a of (ls.get('epn_viajes_mios',[])||[]).filter(x=>x._p)){const y={...a};delete y._p;delete y.env;delete y.local;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
+      const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:'viaje '+y.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
+      ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).map(z=>z.id===a.id&&z.u===a.u?{...z,_p:false,env:true}:z));n++}
+      if(n&&!silent)toast(n+' viaje(s) enviado(s) al administrador')}
+    else{const l=ls.get('epn_viajes',[])||[];const m={};l.forEach(x=>m[x.id]=x);const cerrar=[];
+      for(let pg=1;pg<20;pg++){const r=await fetch(base+'?state=open&per_page=100&page='+pg+'&t='+Date.now(),{headers:H,cache:'no-store'});if(!r.ok)throw new Error(String(r.status));const L=await r.json();
+        for(const it of L){if(it.pull_request||!/^viaje /.test(it.title||''))continue;try{const o=JSON.parse(it.body);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64uToBytes(o.iv)},k,b64uToBytes(o.data));const v=JSON.parse(new TextDecoder().decode(pt));
+          if(v&&v.id&&!(ls.get('epn_viajes_del',[])||[]).includes(v.id)&&(!m[v.id]||String(v.u)>String(m[v.id].u))){m[v.id]=v;n++}cerrar.push(it.number)}catch(e){}}if(L.length<100)break}
+      if(n)viaGuardarLista(Object.values(m));
+      for(const num of cerrar)await fetch(base+'/'+num,{method:'PATCH',headers:H,body:JSON.stringify({state:'closed'})});
+      if(n)toast(n+' viaje(s) recibido(s) de colegas')}}catch(e){err=e.message}
+  _viBusy=false;if(err&&!silent)toast('Sin conexión con GitHub; se enviará al tener señal');if(document.querySelector('#v-via.on')&&VIA_SEC==='via'&&!VIA_EDIT)renderVia()}
+window.addEventListener('online',()=>viaIssSync(true));
 function arqTokPanel(){if(!OWNER)return'';const t=arqTok();return `<details class="rg" data-ok="aqk" style="margin-top:12px"${ACC_OPEN.has('aqk')||!t?' open':''}><summary><span>Arqueos compartidos con los colegas</span><span style="display:flex;gap:6px;align-items:center"><span class="chip ${t?'ok':'warnc'}">${t?'Activo':'Sin configurar'}</span><span class="chev">›</span></span></summary><div style="padding:0 11px 11px">
   ${t?`<p class="sm" style="margin-top:0">Lesbia, Osman y usted registran arqueos; todos los ven al abrir la app con señal.${ls.get('epn_arq_sync','')?' Última sincronización: '+new Date(ls.get('epn_arq_sync','')).toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'})+'.':''}</p><div class="row"><button class="btn2" data-aqsync>Sincronizar ahora</button><button class="btnd" data-aqdel>Quitar llave</button></div>`
   :`<p class="sm" style="margin-top:0">Para que los colegas con acceso completo registren arqueos y usted los reciba solo, cree una <b>segunda llave</b> que únicamente permite publicar arqueos (no puede tocar la app ni los costos):</p>
@@ -2115,7 +2166,7 @@ function buqCatalogo(){const m={};BUQ_DEF.forEach(b=>m[nBuq(b.buque)]={...b,_u:'
 function buqAplicar(a,nombre){const b=buqCatalogo().find(x=>nBuq(x.buque)===nBuq(nombre));if(!b)return false;a.buque=b.buque;BUQ_CAMPOS.forEach(c=>{if(b[c]!==''&&b[c]!=null)a[c]=b[c]});if(b.ult&&!a.viaje)a.viaje=String(b.ult+1);return true}
 const estArr=()=>ls.get('epn_est_arr',[])||[];
 const estSal=()=>ls.get('epn_est_sal',[])||[];
-const estPuedeEditar=()=>OWNER||!!(LIC&&COSTOS&&(((COSTOS.estEd||[]).includes(LIC.i))||((COSTOS.estEdD||[]).includes(devId()))||((COSTOS.estEdN||[]).includes(norm(LIC.n||'')))));
+const estPuedeEditar=()=>OWNER||PM().s===2;
 const ymPrev=(ym,n=1)=>{const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1-n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const mesUp=ym=>mesTxt(ym).toUpperCase();
 const lista=(base,k)=>[...new Set([...base,...(ls.get(k,[])||[])])].sort((a,b)=>a.localeCompare(b));
@@ -2136,7 +2187,7 @@ const pct=(a,b)=>b?((a-b)/b*100):null;
 function estMN(ym){const L=viaLista().filter(v=>v.f.slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const por={};L.forEach(v=>{(por[v.emb]=por[v.emb]||[]).push(v)});return{L,por}}
 /* ---- Sincronización (mismo canal que arqueos) ---- */
 let _esBusy=false;const EST_KINDS=[['arribo','epn_est_arr'],['saldo','epn_est_sal'],['semana','epn_est_sem'],['cabot','epn_est_cab'],['cnota','epn_est_cno']];
-async function estSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_esBusy||!puedeVia())return;_esBusy=true;let err=null;
+async function estSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_esBusy||!(OWNER||PM().s>0))return;_esBusy=true;let err=null;
   try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const k=await aesKey(await arqKeyRaw());
     for(const [kind,key] of EST_KINDS){for(const a of (ls.get(key,[])||[]).filter(x=>x._p)){const y={...a};delete y._p;delete y._n;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
       const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:kind+' '+y.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
@@ -2170,7 +2221,7 @@ function renderEst(){const box=$('#viaBox');if(EST_EDIT)return EST_EDIT._sem?ren
      ${Array.from({length:12},(_,i)=>y+'-'+String(i+1).padStart(2,'0')).filter(m=>m<=today().slice(0,7)).map(m=>{const s=estSal().find(x=>x.ym===m),r=estArr().some(a=>(a.f||'').slice(0,7)===m);const z=estMes(m);
        return `<button class="via-it" data-esal="${m}" ${r?'disabled style="opacity:.6"':''}><div><b>${mesTxt(m)}</b><small>${r?'Con arribos registrados':s?z.n+' buques · '+fq(z.d+z.e)+' TM':'Sin datos'}</small></div><div><span class="chip ${r||s?'ok':'warnc'}">${r?'Registros':s?'Saldo':'Falta'}</span></div></button>`}).join('')}`}
   box.innerHTML=segVia()+mes+sub+body}
-function estPermPanel(){const cs=Object.values(COL).filter(c=>!c.p&&!REV.has(c.i)).sort((a,b)=>a.n.localeCompare(b.n));const ed=COSTOS&&COSTOS.estEd||[];
+function estPermPanel(){return'';const cs=Object.values(COL).filter(c=>!c.p&&!REV.has(c.i)).sort((a,b)=>a.n.localeCompare(b.n));const ed=COSTOS&&COSTOS.estEd||[];
   return `<details class="rg" data-ok="eperm" style="margin-top:12px"${ACC_OPEN.has('eperm')?' open':''}><summary><span>Quién puede registrar estadísticas</span><span class="chev">›</span></summary><div style="padding:0 11px 11px">${arqTok()?'':'<p class="msg-bad" style="margin-top:0">Primero active la llave de arqueos (Viajes → Arqueo).</p>'}
    ${cs.length?cs.map(c=>`<label class="chk" style="margin:6px 0"><input type="checkbox" data-eperm="${c.i}" ${ed.includes(c.i)?'checked':''}> ${esc(c.n)}</label>`).join(''):'<p class="sm">No hay colegas con acceso completo. Dé primero acceso completo al compañero que registrará.</p>'}</div></details>`}
 document.addEventListener('change',e=>{const el=e.target;if(!el.dataset||!el.dataset.eperm||!OWNER)return;const ed=new Set(COSTOS.estEd||[]);el.checked?ed.add(el.dataset.eperm):ed.delete(el.dataset.eperm);COSTOS.estEd=[...ed];const sel=Object.values(COL).filter(c=>ed.has(c.i));COSTOS.estEdD=sel.map(c=>c.d).filter(Boolean);COSTOS.estEdN=sel.map(c=>norm(c.n||''));guardarCostos();toast(el.checked?'Permiso otorgado':'Permiso retirado')});
