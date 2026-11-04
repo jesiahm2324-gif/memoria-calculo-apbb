@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.03-43';
+const APP_VER='2026.11.03-44';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2101,13 +2101,13 @@ const EST_PD=['Merc. en general','Vehículo','Combustible','Madera'];
 const EST_PE=['Madera','Mariscos','Vehículo','Combustible','Agua','Merc. en general'];
 const EST_LIQ=p=>/combustible|agua/i.test(p);
 const EST_BAND=['Colombia','Dinamarca','Russo','Togo','Tanzania','Bolivia','Británica','Nicaragüense','Hondureña','Antigua & Barbuda','Costa Rica','Bahamas','Canadiense','Cook Island','United Kingdom','USA','Turquía','Gibraltar','Guatemala','Panamá','St. Vicent'];
-const EST_AGE=['Transtainer','AMINSA','J F Griffith Sucesors','Nicaragua Marítima S.A.','Nicaraguan Shipping Enterprise','Humberto Álvarez Sucs','EMPREMAR','ARTEMAR','ANATLAN','Puerto Cabeza Power','COMANICSA (Transtainer S.A)','AVASA','Agent S','ANAKOSTA'];
+const EST_AGE=['AMINSA','J F Griffith Sucesors','Nicaragua Marítima S.A.','Nicaraguan Shipping Enterprise','Humberto Álvarez Sucs','EMPREMAR','ARTEMAR','ANATLAN','Puerto Cabeza Power','COMANICSA (Transtainer S.A)','AVASA','Agent S','ANAKOSTA'];
 const EST_LIN=['King Ocean','Vandale Campbell S.A','Caytrans BBC Inc','Trans Petrol Ltda.','Transp. Marítimo Lamol','Ocean Marine Management','COMANICSA','Marítima Makaira C.A.','ATS Denizcilik ve Nakliyat','Intermarine','BBC Chartering & Logistic GmbH','ILG Logistic S.A','Pritchard Gordon Tankers Ltd','Tide Water Marine','Dan-Gulf Shipping, Inc'];
 let EST_SEC='res',EST_EDIT=null;
 /* Catálogo de buques: datos fijos que se llenan solos al escoger el buque */
 const BUQ_CAMPOS=['ban','tipo','trb','trn','eslora','manga','puntal','age','lin','proc','dest'];
-const BUQ_DEF=[{buque:'BM Charlotte',ban:'Antigua & Barbuda',tipo:'conv',trb:2035,trn:1168,eslora:84.64,manga:13.75,puntal:5.55,age:'Transtainer',lin:'COMANICSA',proc:'Isla San Andrés, Colombia',dest:'Puerto Moín, Costa Rica'},
-  {buque:'BM Pionner',ban:'',tipo:'conv',trb:2615,trn:1226,eslora:92.85,manga:15.85,puntal:4.92,age:'Transtainer',lin:'',proc:'',dest:''}];
+const BUQ_DEF=[{buque:'BM Charlotte',ban:'Antigua & Barbuda',tipo:'conv',trb:2035,trn:1168,eslora:84.64,manga:13.75,puntal:5.55,age:'COMANICSA (Transtainer S.A)',lin:'COMANICSA',proc:'Isla San Andrés, Colombia',dest:'Puerto Moín, Costa Rica'},
+  {buque:'BM Pionner',ban:'',tipo:'conv',trb:2615,trn:1226,eslora:92.85,manga:15.85,puntal:4.92,age:'COMANICSA (Transtainer S.A)',lin:'COMANICSA',proc:'',dest:''}];
 const nBuq=n=>norm(String(n||'').replace(/^(m\/n|bm|b\/m|mn)\s+/i,'').trim());
 function buqCatalogo(){const m={};BUQ_DEF.forEach(b=>m[nBuq(b.buque)]={...b,_u:'2026-11-03T23:59:00Z'});(ls.get('epn_est_buq',[])||[]).forEach(b=>{const k=nBuq(b.buque);m[k]={...(m[k]||{}),...b}});
   estArr().slice().sort((a,b)=>String(a.u||'').localeCompare(String(b.u||''))).forEach(a=>{const k=nBuq(a.buque);if(!k)return;const o=m[k]||{buque:a.buque};if(String(a.u||'')>=String(o._u||'')){BUQ_CAMPOS.forEach(c=>{if(a[c]!==''&&a[c]!=null)o[c]=a[c]});o._u=a.u}o.ult=Math.max(+o.ult||0,/^\d+$/.test(a.viaje||'')?+a.viaje:0);m[k]=o});
@@ -2124,7 +2124,7 @@ function estMes(ym){const L=estArr().filter(a=>(a.f||'').slice(0,7)===ym);const 
   EST_PD.forEach(p=>z.pd[p]=0);EST_PE.forEach(p=>z.pe[p]=0);Object.keys(EST_TIPOS).forEach(k=>z.tipo[k]=0);
   if(L.length){L.forEach(a=>{z.n++;z.trb+=+a.trb||0;z.trn+=+a.trn||0;z.tipo[a.tipo||'conv']++;(+a.eslora>100?z.esl.a++:z.esl.b++);
     const d=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0),e=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0);(a.des||[]).forEach(x=>z.pd[x.p]=(z.pd[x.p]||0)+(+x.tm||0));(a.emb||[]).forEach(x=>z.pe[x.p]=(z.pe[x.p]||0)+(+x.tm||0));
-    const B=a.ban||'—',A=a.age||'—',N=a.lin||'—';const bb=z.ban[B]||(z.ban[B]={n:0,t:{},d:0,e:0});bb.n++;bb.t[a.tipo||'conv']=(bb.t[a.tipo||'conv']||0)+1;bb.d+=d;bb.e+=e;
+    const B=a.ban||'—',A=/transtainer/i.test(a.age||'')?'COMANICSA (Transtainer S.A)':(a.age||'—'),N=a.lin||'—';const bb=z.ban[B]||(z.ban[B]={n:0,t:{},d:0,e:0});bb.n++;bb.t[a.tipo||'conv']=(bb.t[a.tipo||'conv']||0)+1;bb.d+=d;bb.e+=e;
     const aa=z.age[A]||(z.age[A]={n:0,trb:0,trn:0,d:0,e:0});aa.n++;aa.trb+=+a.trb||0;aa.trn+=+a.trn||0;aa.d+=d;aa.e+=e;const ll=z.lin[N]||(z.lin[N]={d:0,e:0});ll.d+=d;ll.e+=e})}
   else{const s=estSal().find(x=>x.ym===ym);if(s){Object.keys(EST_TIPOS).forEach(k=>{z.tipo[k]=+(s.tipo||{})[k]||0;z.n+=z.tipo[k]});z.esl.b=+s.eb||0;z.esl.a=+s.ea||0;z.trb=+s.trb||0;z.trn=+s.trn||0;
     EST_PD.forEach(p=>z.pd[p]=+(s.pd||{})[p]||0);EST_PE.forEach(p=>z.pe[p]=+(s.pe||{})[p]||0);z.sal=true}}
