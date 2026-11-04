@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.03-47';
+const APP_VER='2026.11.03-49';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1630,7 +1630,7 @@ function pdfTabla(d,yRef,tit,head,ws,rows,tot,tipos,nueva){let y=yRef.y;const W=
   const hdr=()=>{d.rect(X0,y,532,15,NAVY);let x=X0;head.forEach((h,i)=>{d.text(i?x+w[i]-4:x+4,y+10.5,h,{size:7,bold:true,color:'#ffffff',align:i?'r':undefined});x+=w[i]});y+=15};
   if(y+60>740){nueva();y=yRef.y}d.text(X0,y+8,tit,{size:9.5,bold:true,color:NAVY});y+=13;hdr();
   const fila=(r,b,ix)=>{if(y+13>745){nueva();y=yRef.y;hdr()}if(ix%2)d.rect(X0,y,532,13,'#f6f8fb');let x=X0;r.forEach((c,i)=>{const s=typeof c==='number'?nf(c,tipos[i]):String(c??'');d.text(i?x+w[i]-4:x+4,y+9.5,d.wrap(s,7.5,b,w[i]-6)[0],{size:7.5,bold:b,color:'#1a1a1a',align:i?'r':undefined});x+=w[i]});y+=13};
-  rows.forEach((r,i)=>fila(r,false,i));if(tot){d.line(X0,y,X0+532,y,'#333333',.5);fila(tot,true,0)}y+=10;yRef.y=y}
+  rows.forEach((r,i)=>fila(r,!!(r&&r._b),i));if(tot){d.line(X0,y,X0+532,y,'#333333',.5);fila(tot,true,0)}y+=10;yRef.y=y}
 function viaPdfDetalle(d,R){const X=viaDetalle(R);const yR={y:0};const nueva=()=>{d.page();yR.y=pdfHeader(d,'DETALLE DE GASTOS POR RUBRO · VIAJES REGULARES',mesTxt(VIA_MES))};nueva();
   d.text(40,yR.y+6,'Diésel a C$ '+fmt(X.precio)+' el galón · costos fijos repartidos entre '+Math.max(X.prog,X.reg)+' viajes del mes ('+X.reg+' registrados).',{size:8,color:GRY});yR.y+=16;
   pdfTabla(d,yR,'Combustible y lubricantes · '+fq(Math.round(X.cT[4]*100)/100)+' galones',['Viaje','Horas nav.','Gal. motores','Gal. generador','Total gal.','Diésel C$','Lubric./filtros C$','Total C$'],[70,48,52,56,50,62,62,62],X.comb,X.cT,['','g','g','g','g','m','m','m'],nueva);
@@ -2314,10 +2314,13 @@ function estPdf(){const {C,ym}=estCuadros(VIA_MES);const d=PDFW();const yR={y:0}
    pdfTabla(d,yR,'CARGA MOVILIZADA EN CONTENEDORES',['Concepto','TM','% de la carga'],[260,120,120],[['Importación en contenedor',fmt(M.tmImp),pp(M.tmImp)],['Exportación en contenedor',fmt(M.tmExp),pp(M.tmExp)]],['Total en contenedor (de '+fmt(tot)+' TM en puerto)',fmt(cc),pp(cc)],Array(3).fill(''),nueva);yR.y+=8}
   {const W=semanasMes(ym),S=W.map((w,i)=>semDe(ym,i));const sm=k=>S.reduce((s,x)=>s+(+x[k]||0),0);if(yR.y>560)nueva();
    pdfTabla(d,yR,'BARCOS DE PESCA Y CABOTAJE · EMBARCACIONES POR SEMANA',['Periodo','Flotante pesq.','Flotante cabot.','Cabotaje pesq.','Cabotaje cabot.','Total'],[132,80,80,80,80,80],S.map((s,i)=>[semTxt(W[i]),fq(s.fp),fq(s.fc),fq(s.cp),fq(s.cc),fq((+s.fp||0)+(+s.fc||0)+(+s.cp||0)+(+s.cc||0))]),['Total',fq(sm('fp')),fq(sm('fc')),fq(sm('cp')),fq(sm('cc')),fq(sm('fp')+sm('fc')+sm('cp')+sm('cc'))],Array(6).fill(''),nueva);yR.y+=4;
-   const R=[];PES_CAT.forEach(([c,f,n])=>{const rs=S.flatMap((s,i)=>(s.rows||[]).filter(r=>r.c===c).map(r=>({...r,w:i})));if(!rs.length)return;const g={};rs.forEach(r=>{const k=(r.emp||'')+'|'+(r.dest||'');g[k]=(g[k]||0)+(+r.tm||0)});Object.entries(g).forEach(([k,v])=>{const [e,de]=k.split('|');R.push([n,f,e,de,fmt(v)])})});
-   pdfTabla(d,yR,'TONELADAS MOVILIZADAS POR FLOTA (MES)',['Embarcación / carga','Flota','Empresa','Destino','TM'],[150,80,90,142,70],R.length?R:[['Sin registros','','','','']],['Total','','','',fmt(S.reduce((s,x)=>s+(x.rows||[]).reduce((a,r)=>a+(+r.tm||0),0),0))],Array(5).fill(''),nueva);yR.y+=8}
+   const R=[];S.forEach((s,i)=>{const rs=(s.rows||[]).filter(r=>+r.tm);const st=rs.reduce((a,r)=>a+(+r.tm||0),0);const hd=['Semana del '+semTxt(W[i]),'','','',rs.length?fmt(st):'Sin carga'];hd._b=true;R.push(hd);
+     PES_CAT.forEach(([c,f,n])=>rs.filter(r=>r.c===c).forEach(r=>R.push(['   '+n,f,r.emp||'',(r.dest||'').replace(/Puerto /g,'Pto. ').replace(' · ',' / '),fmt(+r.tm||0)])))});
+   pdfTabla(d,yR,'TONELADAS MOVILIZADAS POR SEMANA Y FLOTA',['Semana / embarcación','Flota','Empresa','Destino','TM'],[150,70,105,150,57],R,['Total del mes','','','',fmt(S.reduce((s,x)=>s+(x.rows||[]).reduce((a,r)=>a+(+r.tm||0),0),0))],Array(5).fill(''),nueva);yR.y+=4;
+   const RF=PES_CAT.map(([c,f,n])=>[n,f,...S.map(s=>(s.rows||[]).filter(r=>r.c===c).reduce((a,r)=>a+(+r.tm||0),0)),S.reduce((t,s)=>t+(s.rows||[]).filter(r=>r.c===c).reduce((a,r)=>a+(+r.tm||0),0),0)]).filter(r=>r[r.length-1]).map(r=>r.map((v,k)=>k<2?v:fmt(v)));
+   pdfTabla(d,yR,'RESUMEN DE TONELADAS POR FLOTA Y SEMANA',['Embarcación / carga','Flota',...W.map(w=>{const a=new Date(w[0]+'T12:00').getDate(),b=new Date(w[1]+'T12:00').getDate();return String(a).padStart(2,'0')+'–'+String(b).padStart(2,'0')}),'Total'],[150,70,...W.map(()=>52),62],RF,['Total','',...S.map(s=>fmt((s.rows||[]).reduce((a,r)=>a+(+r.tm||0),0))),fmt(S.reduce((s,x)=>s+(x.rows||[]).reduce((a,r)=>a+(+r.tm||0),0),0))],Array(W.length+3).fill(''),nueva);yR.y+=8}
   {const L=estCab().filter(x=>(x.f||'').slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const nota=(estNot().find(q=>q.ym===ym)||{}).t||'';if(yR.y>620)nueva();const t=x=>(+x.mg||0)+(+x.veh||0)+(+x.cha||0);
-   pdfTabla(d,yR,'CARGA MOVILIZADA (CABOTAJE)',['Fecha','M/N','Descripción','Merc. gral.','Vehículo','Chatarra','Desemb.','Emb.'],[56,84,112,56,56,56,56,56],L.length?L.map(x=>[new Date(x.f+'T12:00').toLocaleDateString('es-NI'),x.nom||'',x.desc||'',fmt(+x.mg||0),fmt(+x.veh||0),fmt(+x.cha||0),fmt(x.dir==='emb'?0:t(x)),fmt(x.dir==='emb'?t(x):0)]):[[nota?'Nota: '+nota.slice(0,95):'Sin movimientos en el mes','','','','','','','']],L.length?['Total','','',fmt(L.reduce((s,x)=>s+(+x.mg||0),0)),fmt(L.reduce((s,x)=>s+(+x.veh||0),0)),fmt(L.reduce((s,x)=>s+(+x.cha||0),0)),fmt(L.filter(x=>x.dir!=='emb').reduce((s,x)=>s+t(x),0)),fmt(L.filter(x=>x.dir==='emb').reduce((s,x)=>s+t(x),0))]:null,Array(8).fill(''),nueva)}
+   pdfTabla(d,yR,'CARGA MOVILIZADA (CABOTAJE)',['Fecha','M/N','Descripción','Merc. gral.','Vehículo','Chatarra','Desemb.','Emb.'],[56,84,112,56,56,56,56,56],L.length?L.map(x=>[new Date(x.f+'T12:00').toLocaleDateString('es-NI'),x.nom||'',x.desc||'',fmt(+x.mg||0),fmt(+x.veh||0),fmt(+x.cha||0),fmt(x.dir==='emb'?0:t(x)),fmt(x.dir==='emb'?t(x):0)]):[['Sin movimientos en el mes','','','','','','','']],L.length?['Total','','',fmt(L.reduce((s,x)=>s+(+x.mg||0),0)),fmt(L.reduce((s,x)=>s+(+x.veh||0),0)),fmt(L.reduce((s,x)=>s+(+x.cha||0),0)),fmt(L.filter(x=>x.dir!=='emb').reduce((s,x)=>s+t(x),0)),fmt(L.filter(x=>x.dir==='emb').reduce((s,x)=>s+t(x),0))]:null,Array(8).fill(''),nueva);if(nota){const ls2=d.wrap('Nota: '+nota,8,false,532);if(yR.y+ls2.length*11>745)nueva();ls2.forEach(l=>{d.text(40,yR.y+8,l,{size:8,color:'#333333'});yR.y+=11})}}
   pdfFooters(d,'Informe estadístico · Elaborado: Asistente Administrativo · Autorizado: Gerente Portuario · GPBB');abrirVisor(d,'Informe-estadistico-'+ym+'.pdf','Informe estadístico · '+mesTxt(ym))}
 
 /*EST2*/
@@ -2327,6 +2330,7 @@ const estSem=()=>ls.get('epn_est_sem',[])||[];
 const estCab=()=>ls.get('epn_est_cab',[])||[];
 const estNot=()=>ls.get('epn_est_cno',[])||[];
 /* Semanas del mes: del día 1 al primer domingo, luego lunes a domingo, la última hasta fin de mes */
+/* Semanas calendario: la primera va del día 1 al primer domingo; luego semanas completas de lunes a domingo; la última hasta fin de mes */
 function semanasMes(ym){const [y,m]=ym.split('-').map(Number);const out=[];let d=new Date(y,m-1,1);while(d.getMonth()===m-1){const ini=new Date(d);while(d.getDay()!==0&&new Date(d.getTime()+864e5).getMonth()===m-1)d.setDate(d.getDate()+1);out.push([kd(ini),kd(d)]);d.setDate(d.getDate()+1)}return out}
 const semTxt=([a,b])=>{const A=new Date(a+'T12:00'),B=new Date(b+'T12:00');return String(A.getDate()).padStart(2,'0')+' – '+String(B.getDate()).padStart(2,'0')+' '+MESES[B.getMonth()]+' '+B.getFullYear()};
 function semDe(ym,i){const id='w'+ym+'-'+(i+1);return estSem().find(x=>x.id===id)||{id,ym,i,fp:'',fc:'',cp:'',cc:'',rows:[]}}
