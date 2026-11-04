@@ -948,7 +948,7 @@ function paintLogo(){$('#logoBox').innerHTML=`<img src="${LOGO}" alt="Empresa Po
 const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KEY='epn_colegas',REV_KEY='epn_rev_cache';
 const PERFILES={'':'Acceso completo','rci':'Solo consulta: Res. DGTA 003-2024 (Bluefields–Corn Island)'};
 const soloTar=()=>!OWNER&&LIC&&LIC.p==='rci';
-const APP_VER='2026.11.03-44';
+const APP_VER='2026.11.03-45';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2105,11 +2105,11 @@ const EST_AGE=['AMINSA','J F Griffith Sucesors','Nicaragua Marítima S.A.','Nica
 const EST_LIN=['King Ocean','Vandale Campbell S.A','Caytrans BBC Inc','Trans Petrol Ltda.','Transp. Marítimo Lamol','Ocean Marine Management','COMANICSA','Marítima Makaira C.A.','ATS Denizcilik ve Nakliyat','Intermarine','BBC Chartering & Logistic GmbH','ILG Logistic S.A','Pritchard Gordon Tankers Ltd','Tide Water Marine','Dan-Gulf Shipping, Inc'];
 let EST_SEC='res',EST_EDIT=null;
 /* Catálogo de buques: datos fijos que se llenan solos al escoger el buque */
-const BUQ_CAMPOS=['ban','tipo','trb','trn','eslora','manga','puntal','age','lin','proc','dest'];
-const BUQ_DEF=[{buque:'BM Charlotte',ban:'Antigua & Barbuda',tipo:'conv',trb:2035,trn:1168,eslora:84.64,manga:13.75,puntal:5.55,age:'COMANICSA (Transtainer S.A)',lin:'COMANICSA',proc:'Isla San Andrés, Colombia',dest:'Puerto Moín, Costa Rica'},
+const BUQ_CAMPOS=['ban','tipo','trb','trn','eslora','manga','puntal','age','lin','proc','dest','tran'];
+const BUQ_DEF=[{buque:'BM Charlotte',ban:'Antigua & Barbuda',tipo:'conv',trb:2035,trn:1168,eslora:84.64,manga:13.75,puntal:5.55,age:'COMANICSA (Transtainer S.A)',lin:'COMANICSA',proc:'Puerto San Andrés, Colombia',dest:'Puerto Moín, Costa Rica',tran:'Puerto Arlen Siú, El Rama'},
   {buque:'BM Pionner',ban:'',tipo:'conv',trb:2615,trn:1226,eslora:92.85,manga:15.85,puntal:4.92,age:'COMANICSA (Transtainer S.A)',lin:'COMANICSA',proc:'',dest:''}];
 const nBuq=n=>norm(String(n||'').replace(/^(m\/n|bm|b\/m|mn)\s+/i,'').trim());
-function buqCatalogo(){const m={};BUQ_DEF.forEach(b=>m[nBuq(b.buque)]={...b,_u:'2026-11-03T23:59:00Z'});(ls.get('epn_est_buq',[])||[]).forEach(b=>{const k=nBuq(b.buque);m[k]={...(m[k]||{}),...b}});
+function buqCatalogo(){const m={};BUQ_DEF.forEach(b=>m[nBuq(b.buque)]={...b,_u:'2026-11-04T23:59:00Z'});(ls.get('epn_est_buq',[])||[]).forEach(b=>{const k=nBuq(b.buque);m[k]={...(m[k]||{}),...b}});
   estArr().slice().sort((a,b)=>String(a.u||'').localeCompare(String(b.u||''))).forEach(a=>{const k=nBuq(a.buque);if(!k)return;const o=m[k]||{buque:a.buque};if(String(a.u||'')>=String(o._u||'')){BUQ_CAMPOS.forEach(c=>{if(a[c]!==''&&a[c]!=null)o[c]=a[c]});o._u=a.u}o.ult=Math.max(+o.ult||0,/^\d+$/.test(a.viaje||'')?+a.viaje:0);m[k]=o});
   return Object.values(m).sort((a,b)=>a.buque.localeCompare(b.buque))}
 function buqAplicar(a,nombre){const b=buqCatalogo().find(x=>nBuq(x.buque)===nBuq(nombre));if(!b)return false;a.buque=b.buque;BUQ_CAMPOS.forEach(c=>{if(b[c]!==''&&b[c]!=null)a[c]=b[c]});if(b.ult&&!a.viaje)a.viaje=String(b.ult+1);return true}
@@ -2184,7 +2184,7 @@ function renderArrForm(){const a=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">${dl('dlBan',lista(EST_BAND,'epn_est_ban'))}${dl('dlAge',lista(EST_AGE,'epn_est_age'))}${dl('dlLin',lista(EST_LIN,'epn_est_lin'))}${dl('dlBuq',[...new Set(estArr().map(x=>x.buque).filter(Boolean))])}
    <div class="grid" style="margin-top:8px">${(()=>{const cat=buqCatalogo();const en=cat.some(x=>nBuq(x.buque)===nBuq(a.buque));return `<div style="grid-column:1/-1"><label>Buque</label><select data-ebq>${a.buque?'':'<option value="">— Seleccione el buque —</option>'}${cat.map(x=>`<option ${nBuq(x.buque)===nBuq(a.buque)?'selected':''}>${esc(x.buque)}</option>`).join('')}${a.buque&&!en?`<option selected>${esc(a.buque)}</option>`:''}<option value="__nuevo">+ Buque nuevo…</option></select><p class="sm" style="margin:4px 0 0">Al escoger el buque se llenan solos bandera, T.R.B., T.R.N., eslora, manga, puntal, agencia y línea.</p></div>`})()}${I('viaje','N.º de viaje')}
     <div><label>Bandera</label><input data-ef="ban" list="dlBan" value="${esc(a.ban||'')}" placeholder="Escoja o escriba"></div><div><label>Tipo de buque</label><select data-ef="tipo">${Object.entries(EST_TIPOS).map(([k,l])=>`<option value="${k}" ${a.tipo===k?'selected':''}>${l}</option>`).join('')}</select></div>
-    ${I('trb','T.R.B.','number','inputmode="decimal"')}${I('trn','T.R.N.','number','inputmode="decimal"')}${I('eslora','Eslora (m)','number','inputmode="decimal"')}${I('manga','Manga (m)','number','inputmode="decimal"')}${I('puntal','Puntal (m)','number','inputmode="decimal"')}${I('tran','En tránsito','text','placeholder="—"')}
+    ${I('trb','T.R.B.','number','inputmode="decimal"')}${I('trn','T.R.N.','number','inputmode="decimal"')}${I('eslora','Eslora (m)','number','inputmode="decimal"')}${I('manga','Manga (m)','number','inputmode="decimal"')}${I('puntal','Puntal (m)','number','inputmode="decimal"')}${I('tran','En tránsito','text','placeholder="Ej.: Puerto Arlen Siú, El Rama"')}
     <div><label>Agencia naviera</label><input data-ef="age" list="dlAge" value="${esc(a.age||'')}"></div><div><label>Línea naviera</label><input data-ef="lin" list="dlLin" value="${esc(a.lin||'')}"></div>
     ${I('proc','Puerto de procedencia')}${I('dest','Puerto de destino')}</div>
    <h3 class="sub">Llegada</h3><div class="grid">${I('hl','Fecha y hora de llegada','datetime-local')}${I('cal1','Calado (m)','number','inputmode="decimal"')}${I('fon1','Hora de fondeo','time')}${I('lev1','Hora de leva ancla','time')}</div>
