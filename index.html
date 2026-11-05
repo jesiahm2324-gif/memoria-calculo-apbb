@@ -960,7 +960,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.04-54';
+const APP_VER='2026.11.04-55';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1109,7 +1109,7 @@ function ghProgramar(){if(!OWNER||DB||!ghTok())return;clearTimeout(_ghT);_ghT=se
 async function ghSync(silent){if(!OWNER||DB||!ghTok())return false;if(_ghBusy){ghProgramar();return false}
   const pc=ls.get('epn_costos_pend',false)&&MK&&COSTOS,pr=ls.get('epn_rev_pend',false),pv=ls.get('epn_viajes_pend',false)&&MK;if(!pc&&!pr&&!pv)return true;
   _ghBusy=true;let err=null,hecho=[];
-  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],estEd:COSTOS.estEd||[],estEdD:COSTOS.estEdD||[],estEdN:COSTOS.estEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
+  try{if(pc){const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matTipos:COSTOS.matTipos||[],matDocs:COSTOS.matDocs||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],estEd:COSTOS.estEd||[],estEdD:COSTOS.estEdD||[],estEdN:COSTOS.estEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});await ghPut('costos.json',JSON.stringify(pub),'Actualizar estructura de costos (app)');ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());hecho.push('costos')}
     if(pr){await ghPut('revocados.json',accesosJSON(),'Actualizar accesos de colegas (app)');ls.set('epn_rev_pend',false);hecho.push('accesos')}
     if(pv){const pub=await cifrarCon(await llaveOwner(),{l:ls.get('epn_viajes',[]),del:ls.get('epn_viajes_del',[])});await ghPut('viajes.json',JSON.stringify(pub),'Actualizar viajes regulares (app)');ls.set('epn_viajes_pend',false);hecho.push('viajes')}}catch(e){err=e.message}
   _ghBusy=false;ls.set('epn_gh_est',{ok:!err,e:err,t:new Date().toISOString(),h:hecho});
@@ -1524,7 +1524,7 @@ async function recibirCostos(pub){if(OWNER||!LIC||!LIC.k)return;if(!pub||!pub.da
 async function buscarCostos(){if(OWNER||!LIC||!LIC.k)return;if(DB){try{const s=await DB.doc('config/costos').get();await recibirCostos(s.exists?s.data():null)}catch(e){estCostos('red');renderRent()}return}
   try{const r=await fetch('costos.json?t='+Date.now(),{cache:'no-store'});if(!r.ok){estCostos(r.status===404?'vacio':'red');renderRent();return}await recibirCostos(await r.json())}catch(e){estCostos('red');renderRent()}}
 async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publicar');return}
-  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],estEd:COSTOS.estEd||[],estEdD:COSTOS.estEdD||[],estEdN:COSTOS.estEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
+  const pub=await cifrarCostos({personal:COSTOS.personal,emb:COSTOS.emb,par:COSTOS.par,mat:COSTOS.mat||[],matTipos:COSTOS.matTipos||[],matDocs:COSTOS.matDocs||[],matEd:COSTOS.matEd||[],matEdD:COSTOS.matEdD||[],matEdN:COSTOS.matEdN||[],estEd:COSTOS.estEd||[],estEdD:COSTOS.estEdD||[],estEdN:COSTOS.estEdN||[],...(COSTOS.arqTok?{arqTok:COSTOS.arqTok}:{})});
   if(DB){try{await DB.doc('config/costos').set(pub);ls.set('epn_costos_pend',false);ls.set('epn_costos_pubf',today());toast('Costos publicados para los colegas');renderCostAdm();return}catch(e){}}
   if(ghTok()){ls.set('epn_costos_pend',true);if(await ghSync(true)){toast('Costos publicados para los colegas');renderCostAdm();return}}
   const txt=JSON.stringify(pub);cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
@@ -1976,6 +1976,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-qrecadd],[
 
 /* ===== Matrículas y permisos (embarcaciones, pangas y puerto) con aviso 30 días antes ===== */
 const MAT_TIPOS={emb:'Embarcación',pan:'Panga',pue:'Empresa (puerto)',otr:'Otro'};
+/* Tipos y documentos definidos por el usuario: quedan guardados para la próxima vez (un tipo nuevo se guarda como "x:Nombre") */
+const matTipoLbl=k=>MAT_TIPOS[k]||(String(k||'').startsWith('x:')?k.slice(2):String(k||''));
+const matEsMedio=m=>m&&m.t!=='pue';
+function matTiposExtra(){const s=new Set((ls.get('epn_mat_tipos',[])||[]).concat((COSTOS&&COSTOS.matTipos)||[]));(typeof matLista==='function'?matLista():[]).forEach(m=>{if(m&&m.t&&!MAT_TIPOS[m.t])s.add(m.t)});return [...s].filter(Boolean).sort((a,b)=>matTipoLbl(a).localeCompare(matTipoLbl(b)))}
+const matGrupos=()=>[['emb','Embarcaciones'],['pan','Pangas'],...matTiposExtra().map(k=>[k,matTipoLbl(k)]),['pue','Puerto'],['otr','Otros']];
+const MAT_DOCS_BASE=['Matrícula de embarcación','Matrícula de panga','Matrícula del puerto','Patente de navegación','Certificado de matrícula','Certificado de navegabilidad','Permiso de operación','Póliza de seguro'];
+function matDocsAll(){const s=new Set(MAT_DOCS_BASE.concat(ls.get('epn_mat_docs',[])||[]).concat((COSTOS&&COSTOS.matDocs)||[]));(typeof matLista==='function'?matLista():[]).forEach(m=>{if(m&&m.doc&&m.doc!=='Documento')s.add(m.doc)});return [...s]}
 /* Ficha técnica: datos del Certificado de Matrícula (DGTA – MTI) */
 const CERT_SEC=[['Registro',[['cno','N.º de certificado'],['tomo','Tomo'],['pag','Página(s)'],['puerto','Puerto de matrícula'],['pant','Puerto anterior'],['fmat','Fecha de matrícula','date'],['fexp','Fecha de expedición','date'],['lexp','Lugar de expedición'],['grav','Gravamen','w']]],
   ['Propietario y actividad',[['prop','Propietario','w'],['nac','Nacionalidad'],['dom','Dirección y domicilio','w'],['act','Actividad','w'],['nomant','Nombre anterior'],['propant','Propietario anterior'],['ruta','Ruta de navegación','w']]],
@@ -2019,17 +2026,17 @@ const certVal=(k,v)=>{if(!v)return'—';if(k==='fmat'||k==='fexp')return fLarga(
 function certHTML(m,ro){const c=m.cert||{};return `<details class="rg" data-ok="mcert" style="margin-top:12px"${ACC_OPEN.has('mcert')?' open':''}><summary><span>Certificado de matrícula · ficha técnica</span><span style="display:flex;gap:6px;align-items:center"><span class="chip ${certLleno(m)?'ok':'warnc'}">${certLleno(m)?'Con datos':'Sin datos'}</span><span class="chev">›</span></span></summary><div style="padding:0 10px 10px">
   ${CERT_SEC.map(([t,fs])=>`<h3 class="sub" style="margin-top:8px">${t}</h3><div class="grid">${fs.map(([k,l,ty])=>`<div${ty==='w'?' style="grid-column:1/-1"':''}><label>${l}</label><input ${ty==='date'?'type="date"':ty==='n'?'inputmode="decimal"':''} data-mc="${k}" value="${esc(c[k]||'')}" ${ro?'disabled':''}></div>`).join('')}</div>`).join('')}
   ${certLleno(m)?'<button type="button" class="btn2" data-mfpdf style="width:100%;margin-top:10px">Ficha técnica en PDF</button>':''}</div></details>`}
-function matFichaPdf(m){const c=m.cert||{};const d=PDFW();d.page();let y=pdfHeader(d,'FICHA TÉCNICA DE '+(MAT_TIPOS[m.t]||'').toUpperCase(),m.n+(m.num?' · Matrícula N.º '+m.num:''));
+function matFichaPdf(m){const c=m.cert||{};const d=PDFW();d.page();let y=pdfHeader(d,'FICHA TÉCNICA DE '+matTipoLbl(m.t).toUpperCase(),m.n+(m.num?' · Matrícula N.º '+m.num:''));
   const X=40,W=532;const nueva=()=>{d.page();y=pdfHeader(d,'FICHA TÉCNICA (continuación)',m.n)};
   CERT_SEC.forEach(([t,fs])=>{const xs=fs.filter(([k])=>String(c[k]||'').trim());if(!xs.length)return;if(y+30>745)nueva();d.rect(X,y,W,15,NAVY);d.text(X+6,y+10.5,t.toUpperCase(),{size:8,bold:true,color:'#ffffff'});y+=15;
     for(let i=0;i<xs.length;i+=2){const par=[xs[i],xs[i+1]].filter(Boolean);const L=par.map(([k,l])=>d.wrap(certVal(k,c[k]),8.5,true,W/2-118));const hgt=Math.max(...L.map(x=>x.length))*11+6;if(y+hgt>745)nueva();
       if((i/2)%2)d.rect(X,y,W,hgt,'#f6f8fb');par.forEach(([k,l],j)=>{const x0=X+j*W/2;d.text(x0+6,y+11,l,{size:8,color:GRY});L[j].forEach((s,q)=>d.text(x0+112,y+11+q*11,s,{size:8.5,bold:true,color:'#1a1a1a'}))});y+=hgt}y+=8});
   const u=matUlt(m);if(u&&u.v){if(y+30>745)nueva();d.rect(X,y,W,15,NAVY);d.text(X+6,y+10.5,'PAGO DE MATRÍCULA',{size:8,bold:true,color:'#ffffff'});y+=15;d.text(X+6,y+11,'Último pago: '+(u.f?fLarga(u.f):'—')+(+u.m?' · '+money(+u.m,'NIO'):'')+' · vence: '+fLarga(u.v)+' · '+matEstado(m).t,{size:8.5,color:'#1a1a1a'});y+=20}
   pdfFooters(d,'Ficha técnica según Certificado de Matrícula DGTA – MTI · Empresa Portuaria Nacional · APBB');abrirVisor(d,'Ficha-tecnica-'+m.n.replace(/\s+/g,'-')+'.pdf','Ficha técnica · '+m.n)}
-function matFlotaXls(){const L=matLista().filter(m=>m.t==='emb'||m.t==='pan');const cols=[['Nombre',null],['Tipo',null],['N.º matrícula',null],['Tomo / pág.',null],['Fecha matrícula','fmat'],['Material','mat'],['Año','anio'],['Eslora (m)','esl'],['Manga (m)','man'],['Puntal (m)','pun'],['Calado (m)','cal'],['TAB','tab'],['TAN','tan'],['Pasajeros','cpas'],['Tripulantes','trip'],['Motor','mot'],['HP','hp'],['Serie motor','serie'],['Actividad','act'],['Gravamen','grav'],['Vence matrícula',null]];
+function matFlotaXls(){const L=matLista().filter(matEsMedio);const cols=[['Nombre',null],['Tipo',null],['N.º matrícula',null],['Tomo / pág.',null],['Fecha matrícula','fmat'],['Material','mat'],['Año','anio'],['Eslora (m)','esl'],['Manga (m)','man'],['Puntal (m)','pun'],['Calado (m)','cal'],['TAB','tab'],['TAN','tan'],['Pasajeros','cpas'],['Tripulantes','trip'],['Motor','mot'],['HP','hp'],['Serie motor','serie'],['Actividad','act'],['Gravamen','grav'],['Vence matrícula',null]];
   const num=new Set(['anio','esl','man','pun','cal','tab','tan','cpas','trip','hp']);
   const rows=[[{v:'EMPRESA PORTUARIA NACIONAL',s:6}],[{v:'FLOTA · DATOS DE LOS CERTIFICADOS DE MATRÍCULA · al '+fLarga(today()),s:11}],[],cols.map(([h])=>({v:h,s:1}))];
-  L.forEach(m=>{const c=m.cert||{},u=matUlt(m);rows.push(cols.map(([h,k],j)=>{if(j===0)return{v:m.n,s:5};if(j===1)return{v:MAT_TIPOS[m.t]||'',s:18};if(j===2)return{v:m.num||'',s:18};if(j===3)return{v:[c.tomo,c.pag].filter(Boolean).join(' / '),s:18};if(j===cols.length-1)return{v:u&&u.v?new Date(u.v+'T12:00').toLocaleDateString('es-NI'):'',s:18};
+  L.forEach(m=>{const c=m.cert||{},u=matUlt(m);rows.push(cols.map(([h,k],j)=>{if(j===0)return{v:m.n,s:5};if(j===1)return{v:matTipoLbl(m.t),s:18};if(j===2)return{v:m.num||'',s:18};if(j===3)return{v:[c.tomo,c.pag].filter(Boolean).join(' / '),s:18};if(j===cols.length-1)return{v:u&&u.v?new Date(u.v+'T12:00').toLocaleDateString('es-NI'):'',s:18};
     const v=c[k]||'';if(k==='fmat')return{v:v?new Date(v+'T12:00').toLocaleDateString('es-NI'):'',s:18};if(num.has(k)&&v!==''&&!isNaN(+v))return{v:+v,s:k==='anio'||k==='cpas'||k==='trip'||k==='hp'?7:2};return{v:String(v),s:18}}))});
   const sinD=L.filter(m=>!certLleno(m)).map(m=>m.n);if(sinD.length)rows.push([],[{v:'Pendientes de cargar certificado: '+sinD.join(', '),s:12}]);
   const hh=[];hh[3]=32;compartirBlob(xlsx([{n:'Flota',rows,w:[20,12,12,11,13,15,7,9,9,9,9,8,8,10,10,20,7,12,30,30,13],m:['A1:U1','A2:U2'],h:hh}]),'Flota-certificados-'+today()+'.xlsx','Flota · certificados de matrícula')}
@@ -2103,15 +2110,15 @@ function renderMat(){const box=$('#matBox');if(!box)return;if(MAT_EDIT)return re
    <button class="btn2" data-mfxls style="width:100%;margin-top:8px">Flota: datos de certificados (Excel)</button>
    ${ro?'':'<button class="btn" data-mnew style="width:100%;margin-top:10px">+ Agregar embarcación, panga u otro</button>'}
    ${matPermPanel()}${!OWNER&&!matPuedeEditar()?`<div class="notice" style="margin-top:12px"><b>Modo consulta.</b> Si el administrador le dio permiso para registrar matrículas, toque el botón para recibirlo.<div class="sm" style="margin-top:4px">Versión ${APP_VER} · ID ${devFmt(devId())}</div><button class="btn2" data-mref style="margin-top:8px">Buscar permisos ahora</button></div>`:''}`}
-function matListaHTML(){const L=matLista(),q=norm(MAT_Q.trim());const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];
-  const ok=m=>!q||q.split(/\s+/).every(w=>norm([m.n,m.num,m.doc,MAT_TIPOS[m.t],(m.cert||{}).tipo].join(' ')).includes(w));let n=0;
-  const out=grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k&&ok(m));if(!xs.length)return'';n+=xs.length;return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);const tp=(m.cert&&m.cert.tipo)||MAT_TIPOS[m.t];
+function matListaHTML(){const L=matLista(),q=norm(MAT_Q.trim());const grp=matGrupos();
+  const ok=m=>!q||q.split(/\s+/).every(w=>norm([m.n,m.num,m.doc,matTipoLbl(m.t),(m.cert||{}).tipo].join(' ')).includes(w));let n=0;
+  const out=grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k&&ok(m));if(!xs.length)return'';n+=xs.length;return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);const tp=(m.cert&&m.cert.tipo)||matTipoLbl(m.t)||MAT_TIPOS[m.t];
     return `<button class="via-it" data-mver="${m.id}"><div><b>${esc(m.n)}</b><small>${esc(String(tp).replace(/\s*\(.*\)/,''))}${m.num?' · N.º '+esc(m.num):''}${u&&u.v?' · vence '+new Date(u.v+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):''}</small></div><div style="text-align:right;display:flex;align-items:center;gap:6px"><span class="chip ${e.k}">${e.t}</span><span class="chev">›</span></div></button>`}).join('')}).join('');
   return n?out:'<p class="mut" style="text-align:center;margin:14px 0">Ningún medio coincide con la búsqueda.</p>'}
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.mq!==undefined){MAT_Q=el.value;const l=$('#matList');if(l)l.innerHTML=matListaHTML()}});
 /* Ficha de solo lectura: se consulta sin riesgo de modificar */
 function renderMatFicha(m){const box=$('#matBox'),e=matEstado(m),u=matUlt(m),c=m.cert||{},ed=matPuedeEditar();const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
-  const F=d=>d?new Date(d+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';const tp=c.tipo||MAT_TIPOS[m.t];
+  const F=d=>d?new Date(d+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';const tp=c.tipo||matTipoLbl(m.t);
   const k=(l,v)=>v?`<div><span>${l}</span><b>${esc(v)}</b></div>`:'';
   const res=[k('Eslora',c.esl?c.esl+' m':''),k('TAB / TAN',c.tab?c.tab+' / '+(c.tan||'—')+' t':''),k('Pasajeros',c.cpas),k('Tripulantes',c.trip),k('Carga',c.ccar&&!/^0(\.0)?$/.test(c.ccar)?c.ccar:''),k('Motor',c.mot?(c.mot+(c.hp?' · '+c.hp+' HP':'')):'')].join('');
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><button class="btn2" data-mback style="padding:8px 14px">‹ Lista</button><span class="chip ${e.k}">${e.t}</span></div>
@@ -2122,7 +2129,7 @@ function renderMatFicha(m){const box=$('#matBox'),e=matEstado(m),u=matUlt(m),c=m
    ${m.obs?`<p class="sm"><b>Observaciones:</b> ${esc(m.obs)}</p>`:''}
    ${certLleno(m)?`<h3 class="sub">Ficha técnica</h3>${res?`<div class="facts">${res}</div>`:''}
     ${CERT_SEC.map(([t,fs],i)=>{const xs=fs.filter(([q])=>String(c[q]||'').trim());if(!xs.length)return'';return `<details class="rg" data-ok="mfv${i}" style="margin-top:6px"${ACC_OPEN.has('mfv'+i)?' open':''}><summary><span>${t}</span><span class="chev">›</span></summary><div style="padding:0 11px 8px">${xs.map(([q,l])=>`<div class="rl"><div>${l}</div><b style="text-align:right;max-width:60%">${esc(certVal(q,c[q]))}</b></div>`).join('')}</div></details>`}).join('')}`
-    :(m.t==='emb'||m.t==='pan'?'<p class="sm">Todavía sin datos del certificado de matrícula.</p>':'')}
+    :(matEsMedio(m)?'<p class="sm">Todavía sin datos del certificado de matrícula.</p>':'')}
    ${ps.length>1?`<details class="rg" data-ok="mfvh" style="margin-top:10px"${ACC_OPEN.has('mfvh')?' open':''}><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${F(p.f)}<small>vence ${F(p.v)}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
    <div class="row" style="flex-wrap:nowrap;margin-top:12px">${certLleno(m)?'<button class="btn2" data-mfpdf style="flex:1">Ficha técnica PDF</button>':''}${u&&u.v?'<button class="btn2" data-mcal style="flex:1">📅 Calendario</button>':''}</div>
    ${ed?`<div class="row" style="flex-wrap:nowrap;margin-top:8px"><button class="btn" data-mren style="flex:1">Registrar renovación</button><button class="btn2" data-meditar style="flex:1">✎ Editar datos</button></div>`:''}`}
@@ -2131,8 +2138,8 @@ function renderMatForm(){if(MAT_EDIT&&MAT_EDIT._ren)return renderMatRen();const 
    ${m.nuevo?'':`<p style="margin:6px 0"><span class="chip ${e.k}">${e.t}</span>${m.por?` <span class="sm">· actualizado por ${esc(m.por)}${m.u?' el '+new Date(m.u).toLocaleDateString('es-NI'):''}</span>`:''}</p>`}
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0"><div class="grid" style="margin-top:6px">
     <div style="grid-column:1/-1"><label>Nombre</label><input data-mf="n" value="${esc(m.n)}" placeholder="Ej.: Tango V"></div>
-    <div><label>Tipo</label><select data-mf="t">${Object.entries(MAT_TIPOS).map(([k,l])=>`<option value="${k}" ${m.t===k?'selected':''}>${l}</option>`).join('')}</select></div>
-    <div><label>Documento</label><input data-mf="doc" value="${esc(m.doc)}"></div>
+    <div><label>Tipo</label><select data-mf="t">${[...Object.keys(MAT_TIPOS),...matTiposExtra()].filter((k,i,a)=>a.indexOf(k)===i).map(k=>`<option value="${esc(k)}" ${m.t===k?'selected':''}>${esc(matTipoLbl(k))}</option>`).join('')}${m.t&&!MAT_TIPOS[m.t]&&!matTiposExtra().includes(m.t)?`<option value="${esc(m.t)}" selected>${esc(matTipoLbl(m.t))}</option>`:''}<option value="__nuevo">+ Otro tipo…</option></select></div>
+    <div><label>Documento</label><select data-mf="doc">${(()=>{const L=matDocsAll();if(m.doc&&!L.includes(m.doc))L.push(m.doc);return (m.doc?'':'<option value="">— Seleccione —</option>')+L.map(d=>`<option ${d===m.doc?'selected':''}>${esc(d)}</option>`).join('')})()}<option value="__nuevo">+ Otro documento…</option></select></div>
     <div><label>N.º de matrícula</label><input data-mf="num" value="${esc(m.num||'')}"></div>
     ${m.t==='emb'?`<div><label>Costos de la embarcación</label><select data-mf="e"><option value="">— No vincular —</option>${(COSTOS.emb||[]).map(x=>`<option value="${x.id}" ${m.e===x.id?'selected':''}>${esc(x.n)}</option>`).join('')}</select></div>`:''}
     <div style="grid-column:1/-1"><label>Observaciones</label><input data-mf="obs" value="${esc(m.obs||'')}"></div></div>
@@ -2140,7 +2147,7 @@ function renderMatForm(){if(MAT_EDIT&&MAT_EDIT._ren)return renderMatRen();const 
    ${ps.length?'':'<p class="sm" style="margin-top:0">Registre el último pago y su fecha de vencimiento.</p>'}
    ${(ps.length?[ps[0]]:[{f:'',m:'',v:''}]).map(p=>`<div class="grid"><div><label>Fecha de pago</label><input type="date" data-mp="f" value="${p.f||''}"></div><div><label>Monto pagado (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-mp="m" value="${p.m||''}" placeholder="0.00"></div><div style="grid-column:1/-1"><label>Fecha de vencimiento</label><input type="date" data-mp="v" value="${p.v||''}"></div></div>`).join('')}
    </fieldset>
-   ${(m.t==='emb'||m.t==='pan')?certHTML(m,ro):''}
+   ${matEsMedio(m)?certHTML(m,ro):''}
 
    ${ps.length>1?`<details class="rg" style="margin-top:10px"><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${p.f?new Date(p.f+'T12:00').toLocaleDateString('es-NI'):'—'}<small>vence ${p.v?new Date(p.v+'T12:00').toLocaleDateString('es-NI'):'—'}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
    ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar cambios</button><button class="btn2" data-mcancel style="flex:1">Cancelar</button></div>`}
@@ -2150,11 +2157,16 @@ function renderMatRen(){const m=MAT_EDIT,box=$('#matBox'),p=m._cur;
    <div class="grid"><div><label>Fecha de pago</label><input type="date" data-mp="f" value="${p.f||''}"></div><div><label>Monto pagado (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-mp="m" value="${p.m||''}" placeholder="0.00"></div><div style="grid-column:1/-1"><label>Nueva fecha de vencimiento</label><input type="date" data-mp="v" value="${p.v||''}"></div></div>
    <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar renovación</button><button class="btn2" data-mcancel style="flex:1">Cancelar</button></div>`}
 document.addEventListener('input',e=>{const el=e.target;if(!MAT_EDIT||!el.closest||!el.closest('#matBox'))return;const m=MAT_EDIT;
-  if(el.dataset.mf){m[el.dataset.mf]=el.value}
+  if(el.dataset.mf){if(el.value!=='__nuevo')m[el.dataset.mf]=el.value}
   if(el.dataset.mc){m.cert=m.cert||{};m.cert[el.dataset.mc]=el.value}
   if(el.dataset.mp){m.pagos=m.pagos||[];if(!m.pagos.length)m.pagos.push({f:'',m:'',v:''});const ps=m.pagos.slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));const p=m._cur||(m._cur=ps[0]);p[el.dataset.mp]=el.value;
     if(el.dataset.mp==='f'&&el.value&&!p.v){const d=new Date(el.value+'T12:00');d.setFullYear(d.getFullYear()+1);p.v=kd(d);const iv=document.querySelector('[data-mp=v]');if(iv)iv.value=p.v}}});
-document.addEventListener('change',e=>{const el=e.target;if(MAT_EDIT&&el.dataset&&el.dataset.mf==='t'){MAT_EDIT.t=el.value;if(Object.values(MAT_DOC).includes(MAT_EDIT.doc)||!MAT_EDIT.doc)MAT_EDIT.doc=MAT_DOC[el.value];if(el.value!=='emb')MAT_EDIT.e='';renderMatForm()}});
+document.addEventListener('change',e=>{const el=e.target;if(!MAT_EDIT||!el.dataset||el.dataset.mf!=='doc')return;
+  if(el.value==='__nuevo'){const n=(prompt('Nombre del documento (ej.: Certificado de arqueo):')||'').trim();if(n){const l=ls.get('epn_mat_docs',[])||[];if(!l.includes(n)){l.push(n);ls.set('epn_mat_docs',l)}if(OWNER&&COSTOS){COSTOS.matDocs=[...new Set((COSTOS.matDocs||[]).concat([n]))];guardarCostos()}MAT_EDIT.doc=n;toast('Documento agregado a la lista')}renderMatForm()}});
+document.addEventListener('change',e=>{const el=e.target;if(MAT_EDIT&&el.dataset&&el.dataset.mf==='t'&&el.value==='__nuevo'){e.stopImmediatePropagation();const n=(prompt('Nombre del nuevo tipo (ej.: Remolcador, Plana, Tanquero):')||'').trim();
+  if(n){const k='x:'+n.charAt(0).toUpperCase()+n.slice(1);const l=ls.get('epn_mat_tipos',[])||[];if(!l.includes(k)){l.push(k);ls.set('epn_mat_tipos',l)}if(OWNER&&COSTOS){COSTOS.matTipos=[...new Set((COSTOS.matTipos||[]).concat([k]))];guardarCostos()}MAT_EDIT.t=k;MAT_EDIT.e='';toast('Tipo agregado a la lista')}
+  renderMatForm()}},true);
+document.addEventListener('change',e=>{const el=e.target;if(MAT_EDIT&&el.dataset&&el.dataset.mf==='t'){MAT_EDIT.t=el.value;if((Object.values(MAT_DOC).includes(MAT_EDIT.doc)||!MAT_EDIT.doc)&&MAT_DOC[el.value])MAT_EDIT.doc=MAT_DOC[el.value];if(el.value!=='emb')MAT_EDIT.e='';renderMatForm()}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[data-mver],[data-mback],[data-meditar],[data-mnew],[data-mcancel],[data-msave],[data-mdel],[data-mren],[data-mcal],[data-mcalall],[data-mpdf],[data-mfpdf],[data-mfxls]');if(!b||!b.closest('#matBox'))return;
   const vista=()=>matLista().find(m=>m.id===MAT_VIEW);
   if(b.dataset.mver){MAT_VIEW=b.dataset.mver;renderMat();window.scrollTo(0,0);return}
@@ -2179,7 +2191,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[da
 function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');return}const d=PDFW();d.page();let y=pdfHeader(d,'CONTROL DE MATRÍCULAS Y PERMISOS','Al '+fLarga(today()));
   const C=[['Nombre',150],['Documento',120],['N.º',70],['Pagado',60],['Monto C$',60],['Vence',60],['Estado',72]];const W=C.reduce((s,x)=>s+x[1],0),sc=532/W;
   const head=()=>{d.rect(40,y,532,15,NAVY);let x=40;C.forEach(([h,w])=>{d.text(x+4,y+10.5,h,{size:7.5,bold:true,color:'#ffffff'});x+=w*sc});y+=15};head();
-  [['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']].forEach(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return;d.rect(40,y,532,13,'#e8f0f9');d.text(44,y+9.5,t,{size:8,bold:true,color:NAVY});y+=13;
+  matGrupos().forEach(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return;d.rect(40,y,532,13,'#e8f0f9');d.text(44,y+9.5,t,{size:8,bold:true,color:NAVY});y+=13;
     xs.forEach((m,i)=>{if(y>740){d.page();y=pdfHeader(d,'CONTROL DE MATRÍCULAS (continuación)','');head()}const u=matUlt(m)||{},e=matEstado(m);if(i%2)d.rect(40,y,532,13,'#f6f8fb');
       const cells=[m.n,m.doc,m.num||'—',u.f?new Date(u.f+'T12:00').toLocaleDateString('es-NI'):'—',u.m?fmt(u.m):'—',u.v?new Date(u.v+'T12:00').toLocaleDateString('es-NI'):'—',e.t];let x=40;
       cells.forEach((s,j)=>{d.text(x+4,y+9.5,d.wrap(String(s),7.5,j===6,C[j][1]*sc-8)[0],{size:7.5,bold:j===6,color:j===6?(e.k==='bad'?'#b42318':e.k==='warnc'?'#8a6100':'#1a1a1a'):'#1a1a1a'});x+=C[j][1]*sc});y+=13})});
