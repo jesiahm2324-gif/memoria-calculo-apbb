@@ -214,6 +214,7 @@ input::-webkit-date-and-time-value{text-align:left}
 details.rg{border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
 details.rg>summary{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;font-weight:600;list-style:none}
 details.rg>summary::-webkit-details-marker{display:none}
+body:not([data-view="his"]) #avMat,body.mat-det #avMat{display:none}
 body:not(.con-viajes) nav button[data-v="via"],body:not(.con-mat) nav button[data-v="his"]{display:none}
 .via-dias{display:grid;grid-template-columns:1fr 1fr;gap:8px}.via-dias>div{border:1px solid var(--line);border-radius:12px;padding:8px 10px}.via-dias span{display:block;font-size:12px;color:var(--mut);font-weight:600}.via-dias b{display:block;font-size:15px}.via-dias small{display:block;font-size:11.5px;color:var(--mut)}.via-dias .ok{border-color:color-mix(in srgb,var(--ok,#1e8e3e) 45%,var(--line))}.via-dias .bad{border-color:color-mix(in srgb,#d93025 45%,var(--line))}
 .via-it{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--ink);cursor:pointer}.via-it small{display:block;font-size:12px;color:var(--mut);margin-top:2px}.via-it b{font-size:15px;white-space:nowrap}.via-it>div:first-child{min-width:0}.via-it .neg{color:#c5221f}
@@ -960,7 +961,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.04-55';
+const APP_VER='2026.11.05-56';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2083,7 +2084,7 @@ function renderAvMat(){const el=$('#avMat');if(!el)return;const bell=$('#bell');
   const al=matLista().map(m=>({m,e:matEstado(m)})).filter(x=>x.e.d!=null&&x.e.d<=30).sort((a,b)=>a.e.d-b.e.d);
   if(bell){bell.hidden=!al.length;$('#bellN').textContent=al.length;bell.style.color=al.some(x=>x.e.d<0)?'#ffb4ab':'';if(al.length&&!bell._an){bell._an=1;bell.classList.add('anim')}}
   if(!al.length||ls.get('epn_avmat_oc','')===today()+':'+al.length){el.innerHTML='';return}
-  el.innerHTML=`<div class="notice ${al.some(x=>x.e.d<0)?'bad':''}" style="margin-bottom:10px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:start"><b>Matrículas por vencer</b><button class="pv-x" data-avmatx aria-label="Ocultar hoy" style="width:30px;height:30px">✕</button></div>${al.map(x=>`<div class="sm" style="margin-top:3px">• <b>${esc(x.m.n)}</b> (${esc(x.m.doc)}): ${x.e.t} · ${fLarga(matUlt(x.m).v)}</div>`).join('')}<button class="btn2" data-avmatgo style="margin-top:8px;padding:6px 12px">Ver matrículas</button></div>`}
+  el.innerHTML=`<div class="notice ${al.some(x=>x.e.d<0)?'bad':''}" style="margin-bottom:10px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:start"><b>Matrículas por vencer</b><button class="pv-x" data-avmatx aria-label="Ocultar hoy" style="width:30px;height:30px">✕</button></div>${al.map(x=>`<div class="sm" style="margin-top:3px">• <b>${esc(x.m.n)}</b> (${esc(x.m.doc)}): ${x.e.t} · ${fLarga(matUlt(x.m).v)}</div>`).join('')}</div>`}
 document.addEventListener('click',e=>{if(e.target.closest('#bell')){MAT_EDIT=null;MAT_VIEW=null;show('his');return}const b=e.target.closest('[data-avmatx],[data-avmatgo]');if(!b)return;
   if(b.hasAttribute('data-avmatx')){const n=matLista().filter(m=>{const s=matEstado(m);return s.d!=null&&s.d<=30}).length;ls.set('epn_avmat_oc',today()+':'+n);renderAvMat();return}
   MAT_EDIT=null;MAT_VIEW=null;show('his')});
@@ -2099,7 +2100,7 @@ async function matCalendario(ms){const ok=ms.filter(m=>{const u=matUlt(m);return
   try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
   const r=new FileReader();r.onload=()=>{const a=document.createElement('a');a.href=r.result;a.download=nombre;a.target='_blank';document.body.appendChild(a);a.click();a.remove()};r.readAsDataURL(blob);toast('Abra el archivo y toque «Agregar» al calendario')}
 /* Pantalla */
-function renderMat(){const box=$('#matBox');if(!box)return;if(MAT_EDIT)return renderMatForm();if(MAT_VIEW){const x=matLista().find(m=>m.id===MAT_VIEW);if(x)return renderMatFicha(x);MAT_VIEW=null}const L=matLista();
+function renderMat(){const box=$('#matBox');if(!box)return;document.body.classList.toggle('mat-det',!!(MAT_EDIT||MAT_VIEW));if(MAT_EDIT)return renderMatForm();if(MAT_VIEW){const x=matLista().find(m=>m.id===MAT_VIEW);if(x)return renderMatFicha(x);MAT_VIEW=null}const L=matLista();
   const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];const ro=!matPuedeEditar();
   const tot=L.reduce((s,m)=>s+matPagoEn(m,today()),0);
   box.innerHTML=`<p class="sm" style="margin:0 0 6px">Aviso automático 30 días antes del vencimiento. El pago anual de la matrícula de cada embarcación se suma a sus costos fijos. La matrícula del puerto es solo para control de vencimiento.</p>
