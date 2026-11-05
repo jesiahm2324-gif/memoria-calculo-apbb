@@ -960,7 +960,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.04-53';
+const APP_VER='2026.11.04-54';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2035,7 +2035,7 @@ function matFlotaXls(){const L=matLista().filter(m=>m.t==='emb'||m.t==='pan');co
   const hh=[];hh[3]=32;compartirBlob(xlsx([{n:'Flota',rows,w:[20,12,12,11,13,15,7,9,9,9,9,8,8,10,10,20,7,12,30,30,13],m:['A1:U1','A2:U2'],h:hh}]),'Flota-certificados-'+today()+'.xlsx','Flota · certificados de matrícula')}
 const MAT_DOC={emb:'Matrícula de embarcación',pan:'Matrícula de panga',pue:'Matrícula del puerto',otr:'Documento'};
 const MAT_DEF=[['Hilario Sánchez','emb','hsa'],['Río Escondido','emb','res'],['Jimmy Boppel','emb','jbo'],['Pedro Araúz Palacios','emb','pap'],['Libertad II','emb',''],['Tango I','pan',''],['Tango II','pan',''],['Tango III','pan',''],['Tango IV','pan',''],['Administración Portuaria Bluff–Bluefields','pue','']];
-let MAT_EDIT=null;
+let MAT_EDIT=null,MAT_VIEW=null,MAT_ORIG='',MAT_Q='';
 function matBase(){return (COSTOS&&COSTOS.mat)||[]}
 /* Lista efectiva: lo publicado por el administrador + cambios de colegas (recibidos o pendientes), gana el más reciente */
 function matLista(){const m={};const ord=[];matBase().forEach(x=>{m[x.id]=x;ord.push(x.id)});
@@ -2077,9 +2077,9 @@ function renderAvMat(){const el=$('#avMat');if(!el)return;const bell=$('#bell');
   if(bell){bell.hidden=!al.length;$('#bellN').textContent=al.length;bell.style.color=al.some(x=>x.e.d<0)?'#ffb4ab':'';if(al.length&&!bell._an){bell._an=1;bell.classList.add('anim')}}
   if(!al.length||ls.get('epn_avmat_oc','')===today()+':'+al.length){el.innerHTML='';return}
   el.innerHTML=`<div class="notice ${al.some(x=>x.e.d<0)?'bad':''}" style="margin-bottom:10px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:start"><b>Matrículas por vencer</b><button class="pv-x" data-avmatx aria-label="Ocultar hoy" style="width:30px;height:30px">✕</button></div>${al.map(x=>`<div class="sm" style="margin-top:3px">• <b>${esc(x.m.n)}</b> (${esc(x.m.doc)}): ${x.e.t} · ${fLarga(matUlt(x.m).v)}</div>`).join('')}<button class="btn2" data-avmatgo style="margin-top:8px;padding:6px 12px">Ver matrículas</button></div>`}
-document.addEventListener('click',e=>{if(e.target.closest('#bell')){MAT_EDIT=null;show('his');return}const b=e.target.closest('[data-avmatx],[data-avmatgo]');if(!b)return;
+document.addEventListener('click',e=>{if(e.target.closest('#bell')){MAT_EDIT=null;MAT_VIEW=null;show('his');return}const b=e.target.closest('[data-avmatx],[data-avmatgo]');if(!b)return;
   if(b.hasAttribute('data-avmatx')){const n=matLista().filter(m=>{const s=matEstado(m);return s.d!=null&&s.d<=30}).length;ls.set('epn_avmat_oc',today()+':'+n);renderAvMat();return}
-  MAT_EDIT=null;show('his')});
+  MAT_EDIT=null;MAT_VIEW=null;show('his')});
 /* Calendario (.ics) con alarma 30 días antes y el día del vencimiento */
 function icsDe(ms){const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//EPN APBB//Matriculas//ES','CALSCALE:GREGORIAN','METHOD:PUBLISH'];const st=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
   ms.forEach(m=>{const u=matUlt(m);if(!u||!u.v)return;const d=u.v.replace(/-/g,''),d2=kd(new Date(new Date(u.v+'T12:00').getTime()+864e5)).replace(/-/g,'');const t=('Vence '+m.doc+' – '+m.n).replace(/[,;]/g,' ');
@@ -2092,18 +2092,42 @@ async function matCalendario(ms){const ok=ms.filter(m=>{const u=matUlt(m);return
   try{if(DL){await DL.save({filename:nombre,data:blob});return}}catch(e){if(e&&e.code==='declined')return}
   const r=new FileReader();r.onload=()=>{const a=document.createElement('a');a.href=r.result;a.download=nombre;a.target='_blank';document.body.appendChild(a);a.click();a.remove()};r.readAsDataURL(blob);toast('Abra el archivo y toque «Agregar» al calendario')}
 /* Pantalla */
-function renderMat(){const box=$('#matBox');if(!box)return;if(MAT_EDIT)return renderMatForm();const L=matLista();
+function renderMat(){const box=$('#matBox');if(!box)return;if(MAT_EDIT)return renderMatForm();if(MAT_VIEW){const x=matLista().find(m=>m.id===MAT_VIEW);if(x)return renderMatFicha(x);MAT_VIEW=null}const L=matLista();
   const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];const ro=!matPuedeEditar();
   const tot=L.reduce((s,m)=>s+matPagoEn(m,today()),0);
   box.innerHTML=`<p class="sm" style="margin:0 0 6px">Aviso automático 30 días antes del vencimiento. El pago anual de la matrícula de cada embarcación se suma a sus costos fijos. La matrícula del puerto es solo para control de vencimiento.</p>
    <div class="rent-k"><div><span>Pagos anuales vigentes</span><b>${money(tot,'NIO')}</b></div><div class="${L.some(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30})?'warnc':'ok'}"><span>Por vencer o vencidas</span><b>${L.filter(m=>{const e=matEstado(m);return e.d!=null&&e.d<=30}).length}</b><small>de ${L.length} registradas</small></div></div>
-   ${grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k);if(!xs.length)return'';return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);return `<button class="via-it" data-medit="${m.id}"><div><b>${esc(m.n)}</b><small>${esc(m.doc)}${m.num?' · N.º '+esc(m.num):''}${certLleno(m)?' · ficha técnica ✓':''}${u&&+u.m?' · '+money(u.m,'NIO'):''}</small></div><div style="text-align:right"><span class="chip ${e.k}">${e.t}</span><small>${u&&u.v?'vence '+new Date(u.v+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'sin fecha'}</small></div></button>`}).join('')}).join('')}
+   <input type="search" data-mq placeholder="Buscar medio, matrícula o tipo…" value="${esc(MAT_Q)}" style="margin-top:10px" autocomplete="off">
+   <div id="matList">${matListaHTML()}</div>
    <div class="row" style="flex-wrap:nowrap;margin-top:10px"><button class="btn2" data-mcalall style="flex:1">Todas al calendario</button><button class="btn2" data-mpdf style="flex:1">Reporte PDF</button></div>
    <button class="btn2" data-mfxls style="width:100%;margin-top:8px">Flota: datos de certificados (Excel)</button>
    ${ro?'':'<button class="btn" data-mnew style="width:100%;margin-top:10px">+ Agregar embarcación, panga u otro</button>'}
    ${matPermPanel()}${!OWNER&&!matPuedeEditar()?`<div class="notice" style="margin-top:12px"><b>Modo consulta.</b> Si el administrador le dio permiso para registrar matrículas, toque el botón para recibirlo.<div class="sm" style="margin-top:4px">Versión ${APP_VER} · ID ${devFmt(devId())}</div><button class="btn2" data-mref style="margin-top:8px">Buscar permisos ahora</button></div>`:''}`}
-function renderMatForm(){const m=MAT_EDIT,box=$('#matBox'),ro=!matPuedeEditar(),e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
-  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${m.nuevo?'Nueva matrícula':esc(m.n)}</b><button class="btn2" data-mcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
+function matListaHTML(){const L=matLista(),q=norm(MAT_Q.trim());const grp=[['emb','Embarcaciones'],['pan','Pangas'],['pue','Puerto'],['otr','Otros']];
+  const ok=m=>!q||q.split(/\s+/).every(w=>norm([m.n,m.num,m.doc,MAT_TIPOS[m.t],(m.cert||{}).tipo].join(' ')).includes(w));let n=0;
+  const out=grp.map(([k,t])=>{const xs=L.filter(m=>m.t===k&&ok(m));if(!xs.length)return'';n+=xs.length;return `<h3 class="sub">${t}</h3>`+xs.map(m=>{const e=matEstado(m),u=matUlt(m);const tp=(m.cert&&m.cert.tipo)||MAT_TIPOS[m.t];
+    return `<button class="via-it" data-mver="${m.id}"><div><b>${esc(m.n)}</b><small>${esc(String(tp).replace(/\s*\(.*\)/,''))}${m.num?' · N.º '+esc(m.num):''}${u&&u.v?' · vence '+new Date(u.v+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):''}</small></div><div style="text-align:right;display:flex;align-items:center;gap:6px"><span class="chip ${e.k}">${e.t}</span><span class="chev">›</span></div></button>`}).join('')}).join('');
+  return n?out:'<p class="mut" style="text-align:center;margin:14px 0">Ningún medio coincide con la búsqueda.</p>'}
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.mq!==undefined){MAT_Q=el.value;const l=$('#matList');if(l)l.innerHTML=matListaHTML()}});
+/* Ficha de solo lectura: se consulta sin riesgo de modificar */
+function renderMatFicha(m){const box=$('#matBox'),e=matEstado(m),u=matUlt(m),c=m.cert||{},ed=matPuedeEditar();const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
+  const F=d=>d?new Date(d+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';const tp=c.tipo||MAT_TIPOS[m.t];
+  const k=(l,v)=>v?`<div><span>${l}</span><b>${esc(v)}</b></div>`:'';
+  const res=[k('Eslora',c.esl?c.esl+' m':''),k('TAB / TAN',c.tab?c.tab+' / '+(c.tan||'—')+' t':''),k('Pasajeros',c.cpas),k('Tripulantes',c.trip),k('Carga',c.ccar&&!/^0(\.0)?$/.test(c.ccar)?c.ccar:''),k('Motor',c.mot?(c.mot+(c.hp?' · '+c.hp+' HP':'')):'')].join('');
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><button class="btn2" data-mback style="padding:8px 14px">‹ Lista</button><span class="chip ${e.k}">${e.t}</span></div>
+   <div style="margin:10px 0 2px"><b style="font-size:19px">${esc(m.n)}</b><div class="sm">${esc(tp)}${m.num?' · Matrícula N.º '+esc(m.num):''} · ${esc(m.doc||'')}</div></div>
+   ${m.por?`<p class="sm" style="margin:2px 0 0">Actualizado por ${esc(m.por)}${m.u?' el '+new Date(m.u).toLocaleDateString('es-NI'):''}</p>`:''}
+   <h3 class="sub">Matrícula vigente</h3>
+   ${u?`<div class="facts"><div><span>Último pago</span><b>${F(u.f)}</b></div><div><span>Monto</span><b>${+u.m?money(+u.m,'NIO'):'—'}</b></div><div><span>Vence</span><b>${F(u.v)}</b></div><div><span>Faltan</span><b>${e.d==null?'—':e.d<0?'Vencida hace '+(-e.d)+' día(s)':e.d+' día(s)'}</b></div></div>`:'<p class="sm" style="margin-top:0">Sin pago registrado.</p>'}
+   ${m.obs?`<p class="sm"><b>Observaciones:</b> ${esc(m.obs)}</p>`:''}
+   ${certLleno(m)?`<h3 class="sub">Ficha técnica</h3>${res?`<div class="facts">${res}</div>`:''}
+    ${CERT_SEC.map(([t,fs],i)=>{const xs=fs.filter(([q])=>String(c[q]||'').trim());if(!xs.length)return'';return `<details class="rg" data-ok="mfv${i}" style="margin-top:6px"${ACC_OPEN.has('mfv'+i)?' open':''}><summary><span>${t}</span><span class="chev">›</span></summary><div style="padding:0 11px 8px">${xs.map(([q,l])=>`<div class="rl"><div>${l}</div><b style="text-align:right;max-width:60%">${esc(certVal(q,c[q]))}</b></div>`).join('')}</div></details>`}).join('')}`
+    :(m.t==='emb'||m.t==='pan'?'<p class="sm">Todavía sin datos del certificado de matrícula.</p>':'')}
+   ${ps.length>1?`<details class="rg" data-ok="mfvh" style="margin-top:10px"${ACC_OPEN.has('mfvh')?' open':''}><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${F(p.f)}<small>vence ${F(p.v)}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
+   <div class="row" style="flex-wrap:nowrap;margin-top:12px">${certLleno(m)?'<button class="btn2" data-mfpdf style="flex:1">Ficha técnica PDF</button>':''}${u&&u.v?'<button class="btn2" data-mcal style="flex:1">📅 Calendario</button>':''}</div>
+   ${ed?`<div class="row" style="flex-wrap:nowrap;margin-top:8px"><button class="btn" data-mren style="flex:1">Registrar renovación</button><button class="btn2" data-meditar style="flex:1">✎ Editar datos</button></div>`:''}`}
+function renderMatForm(){if(MAT_EDIT&&MAT_EDIT._ren)return renderMatRen();const m=MAT_EDIT,box=$('#matBox'),ro=!matPuedeEditar(),e=matEstado(m);const ps=(m.pagos||[]).slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));
+  box.innerHTML=`<div class="notice" style="margin:0 0 8px;padding:8px 12px"><b>✎ Modo edición</b> · ${m.nuevo?'nuevo registro':esc(m.n)}. Los cambios se aplican solo al tocar <b>Guardar cambios</b>.</div>
    ${m.nuevo?'':`<p style="margin:6px 0"><span class="chip ${e.k}">${e.t}</span>${m.por?` <span class="sm">· actualizado por ${esc(m.por)}${m.u?' el '+new Date(m.u).toLocaleDateString('es-NI'):''}</span>`:''}</p>`}
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0"><div class="grid" style="margin-top:6px">
     <div style="grid-column:1/-1"><label>Nombre</label><input data-mf="n" value="${esc(m.n)}" placeholder="Ej.: Tango V"></div>
@@ -2117,33 +2141,41 @@ function renderMatForm(){const m=MAT_EDIT,box=$('#matBox'),ro=!matPuedeEditar(),
    ${(ps.length?[ps[0]]:[{f:'',m:'',v:''}]).map(p=>`<div class="grid"><div><label>Fecha de pago</label><input type="date" data-mp="f" value="${p.f||''}"></div><div><label>Monto pagado (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-mp="m" value="${p.m||''}" placeholder="0.00"></div><div style="grid-column:1/-1"><label>Fecha de vencimiento</label><input type="date" data-mp="v" value="${p.v||''}"></div></div>`).join('')}
    </fieldset>
    ${(m.t==='emb'||m.t==='pan')?certHTML(m,ro):''}
-   ${!ro&&ps.length?'<button class="btn2" data-mren style="width:100%;margin-top:8px">Registrar renovación (nuevo pago)</button>':''}
+
    ${ps.length>1?`<details class="rg" style="margin-top:10px"><summary><span>Historial de pagos (${ps.length})</span><span class="chev">›</span></summary><div style="padding:0 10px 8px">${ps.map(p=>`<div class="rl"><div>Pagado ${p.f?new Date(p.f+'T12:00').toLocaleDateString('es-NI'):'—'}<small>vence ${p.v?new Date(p.v+'T12:00').toLocaleDateString('es-NI'):'—'}</small></div><b>${money(+p.m||0,'NIO')}</b></div>`).join('')}</div></details>`:''}
-   ${ps.length&&ps[0].v?`<button class="btn2" data-mcal style="width:100%;margin-top:10px">📅 Agregar al calendario (aviso 30 días antes)</button>`:''}
-   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar</button>${m.nuevo||!OWNER?'':'<button class="btnd" data-mdel style="flex:1">Eliminar</button>'}</div>`}`}
+   ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar cambios</button><button class="btn2" data-mcancel style="flex:1">Cancelar</button></div>`}
+   ${!ro&&!m.nuevo&&OWNER?`<details class="rg" data-ok="mdz" style="margin-top:22px;border-color:#d93025"><summary><span style="color:#b42318">Eliminar este medio</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><p class="sm" style="margin-top:0">Se quita del control de matrículas para todos. No se puede deshacer.</p><button class="btnd" data-mdel style="width:100%">Eliminar ${esc(m.n)}</button></div></details>`:''}`}
+function renderMatRen(){const m=MAT_EDIT,box=$('#matBox'),p=m._cur;
+  box.innerHTML=`<div class="notice" style="margin:0 0 8px;padding:8px 12px"><b>Renovación de matrícula</b> · ${esc(m.n)}</div>
+   <div class="grid"><div><label>Fecha de pago</label><input type="date" data-mp="f" value="${p.f||''}"></div><div><label>Monto pagado (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-mp="m" value="${p.m||''}" placeholder="0.00"></div><div style="grid-column:1/-1"><label>Nueva fecha de vencimiento</label><input type="date" data-mp="v" value="${p.v||''}"></div></div>
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-msave style="flex:2;padding:13px">Guardar renovación</button><button class="btn2" data-mcancel style="flex:1">Cancelar</button></div>`}
 document.addEventListener('input',e=>{const el=e.target;if(!MAT_EDIT||!el.closest||!el.closest('#matBox'))return;const m=MAT_EDIT;
   if(el.dataset.mf){m[el.dataset.mf]=el.value}
   if(el.dataset.mc){m.cert=m.cert||{};m.cert[el.dataset.mc]=el.value}
   if(el.dataset.mp){m.pagos=m.pagos||[];if(!m.pagos.length)m.pagos.push({f:'',m:'',v:''});const ps=m.pagos.slice().sort((a,b)=>String(b.v).localeCompare(String(a.v)));const p=m._cur||(m._cur=ps[0]);p[el.dataset.mp]=el.value;
     if(el.dataset.mp==='f'&&el.value&&!p.v){const d=new Date(el.value+'T12:00');d.setFullYear(d.getFullYear()+1);p.v=kd(d);const iv=document.querySelector('[data-mp=v]');if(iv)iv.value=p.v}}});
 document.addEventListener('change',e=>{const el=e.target;if(MAT_EDIT&&el.dataset&&el.dataset.mf==='t'){MAT_EDIT.t=el.value;if(Object.values(MAT_DOC).includes(MAT_EDIT.doc)||!MAT_EDIT.doc)MAT_EDIT.doc=MAT_DOC[el.value];if(el.value!=='emb')MAT_EDIT.e='';renderMatForm()}});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[data-mnew],[data-mcancel],[data-msave],[data-mdel],[data-mren],[data-mcal],[data-mcalall],[data-mpdf],[data-mfpdf],[data-mfxls]');if(!b||!b.closest('#matBox'))return;
-  if(b.hasAttribute('data-mfpdf'))return matFichaPdf(MAT_EDIT);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-medit],[data-mver],[data-mback],[data-meditar],[data-mnew],[data-mcancel],[data-msave],[data-mdel],[data-mren],[data-mcal],[data-mcalall],[data-mpdf],[data-mfpdf],[data-mfxls]');if(!b||!b.closest('#matBox'))return;
+  const vista=()=>matLista().find(m=>m.id===MAT_VIEW);
+  if(b.dataset.mver){MAT_VIEW=b.dataset.mver;renderMat();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-mback')){MAT_VIEW=null;renderMat();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-mfpdf'))return matFichaPdf(MAT_EDIT||vista());
   if(b.hasAttribute('data-mfxls'))return matFlotaXls();
   if(b.dataset.medit){const x=matLista().find(m=>m.id===b.dataset.medit);if(x){MAT_EDIT=JSON.parse(JSON.stringify(x));renderMat();window.scrollTo(0,0)}return}
-  if(b.hasAttribute('data-mcancel')){MAT_EDIT=null;return renderMat()}
-  if(b.hasAttribute('data-mcal'))return matCalendario([MAT_EDIT]);
+  if(b.hasAttribute('data-mcancel')){if(MAT_EDIT&&JSON.stringify(MAT_EDIT)!==MAT_ORIG&&!confirm('¿Descartar los cambios?'))return;MAT_EDIT=null;renderMat();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-mcal'))return matCalendario([MAT_EDIT||vista()]);
   if(b.hasAttribute('data-mcalall'))return matCalendario(matLista());
   if(b.hasAttribute('data-mpdf'))return matPdf();
   if(!matPuedeEditar())return;
-  if(b.hasAttribute('data-mnew')){MAT_EDIT={id:'m'+Date.now().toString(36),n:'',t:'pan',e:'',doc:MAT_DOC.pan,num:'',obs:'',pagos:[],nuevo:true};renderMat();window.scrollTo(0,0);return}
-  if(b.hasAttribute('data-mren')){const u=matUlt(MAT_EDIT)||{};const v=u.v?new Date(u.v+'T12:00'):new Date();v.setFullYear(v.getFullYear()+1);const p={f:today(),m:u.m||'',v:kd(v)};MAT_EDIT.pagos.push(p);MAT_EDIT._cur=p;renderMatForm();toast('Revise la fecha de pago, el monto y el vencimiento, y toque Guardar');return}
-  if(b.hasAttribute('data-msave')){const m=MAT_EDIT;if(!(m.n||'').trim()){toast('Escriba el nombre');return}const x={...m};delete x.nuevo;delete x._cur;x.pagos=(x.pagos||[]).filter(p=>p.f||p.v||+p.m);
+  if(b.hasAttribute('data-meditar')){const x=vista();if(x){MAT_EDIT=JSON.parse(JSON.stringify(x));MAT_ORIG=JSON.stringify(MAT_EDIT);renderMat();window.scrollTo(0,0)}return}
+  if(b.hasAttribute('data-mnew')){MAT_VIEW=null;MAT_EDIT={id:'m'+Date.now().toString(36),n:'',t:'pan',e:'',doc:MAT_DOC.pan,num:'',obs:'',pagos:[],nuevo:true};MAT_ORIG=JSON.stringify(MAT_EDIT);renderMat();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-mren')){const x=vista();if(!x)return;MAT_EDIT=JSON.parse(JSON.stringify(x));MAT_EDIT.pagos=MAT_EDIT.pagos||[];const u=matUlt(MAT_EDIT)||{};const v=u.v?new Date(u.v+'T12:00'):new Date();v.setFullYear(v.getFullYear()+1);const p={f:today(),m:u.m||'',v:kd(v)};MAT_EDIT.pagos.push(p);MAT_EDIT._cur=p;MAT_EDIT._ren=true;MAT_ORIG='';renderMat();window.scrollTo(0,0);return}
+  if(b.hasAttribute('data-msave')){const m=MAT_EDIT;if(!(m.n||'').trim()){toast('Escriba el nombre');return}if(m._ren&&!(m._cur.v)){toast('Anote la nueva fecha de vencimiento');return}const x={...m};delete x.nuevo;delete x._cur;delete x._ren;x.pagos=(x.pagos||[]).filter(p=>p.f||p.v||+p.m);
     x.u=new Date().toISOString();x.por=OWNER?'Administrador':((LIC&&LIC.n)||'Colega');
     if(OWNER){const L=matBase().slice();const i=L.findIndex(y=>y.id===x.id);if(i>=0)L[i]=x;else L.push(x);COSTOS.mat=L;guardarCostos()}
     else{ls.set('epn_mat_loc',(ls.get('epn_mat_loc',[])||[]).filter(y=>y.id!==x.id).concat([x]));matSync(true)}
-    MAT_EDIT=null;toast(OWNER||arqTok()?'Matrícula guardada':'Guardada en este teléfono; se enviará al activar la llave');renderMat();renderAvMat();return}
-  if(b.hasAttribute('data-mdel')&&OWNER){if(!confirm('¿Eliminar '+MAT_EDIT.n+' del control de matrículas?'))return;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderMat();renderAvMat()}});
+    MAT_EDIT=null;MAT_VIEW=x.id;toast(OWNER||arqTok()?'Matrícula guardada':'Guardada en este teléfono; se enviará al activar la llave');renderMat();renderAvMat();return}
+  if(b.hasAttribute('data-mdel')&&OWNER){const t=prompt('Para confirmar, escriba el nombre exacto: '+MAT_EDIT.n);if(t==null)return;if(norm(t.trim())!==norm(MAT_EDIT.n.trim())){toast('El nombre no coincide; no se eliminó');return}MAT_VIEW=null;COSTOS.mat=matLista().filter(y=>y.id!==MAT_EDIT.id);guardarCostos();MAT_EDIT=null;renderMat();renderAvMat()}});
 function matPdf(){const L=matLista();if(!L.length){toast('No hay matrículas');return}const d=PDFW();d.page();let y=pdfHeader(d,'CONTROL DE MATRÍCULAS Y PERMISOS','Al '+fLarga(today()));
   const C=[['Nombre',150],['Documento',120],['N.º',70],['Pagado',60],['Monto C$',60],['Vence',60],['Estado',72]];const W=C.reduce((s,x)=>s+x[1],0),sc=532/W;
   const head=()=>{d.rect(40,y,532,15,NAVY);let x=40;C.forEach(([h,w])=>{d.text(x+4,y+10.5,h,{size:7.5,bold:true,color:'#ffffff'});x+=w*sc});y+=15};head();
