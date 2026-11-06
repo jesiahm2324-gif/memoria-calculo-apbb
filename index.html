@@ -162,6 +162,7 @@ body.solo-tar.oculto #velo{display:flex}
 .tema .pv s{flex:1;display:flex;gap:4px;padding:6px;text-decoration:none}
 .tema .pv s u{flex:1;border-radius:4px;display:block}
 .notice.bad{background:#fdecea;border-color:#f3b3ad}.pfc>h2[data-ftog]{cursor:pointer;margin-bottom:0;align-items:center}.pfc>h2 .ft{flex:1;min-width:0;display:flex;flex-direction:column}.pfc>h2 .ft .chip{align-self:flex-start;margin-top:2px}.fsum{display:block;font-size:12.5px;font-weight:500;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;text-transform:none}.pfc>h2 .chev{font-size:24px;color:var(--mut);transition:transform .2s;margin-left:6px}.pfc.open>h2 .chev{transform:rotate(90deg);color:var(--pri)}.pfc>.fb{display:none;margin-top:12px}.pfc.open>.fb{display:block;animation:entra .22s ease-out}#v-pf .card.pfc{padding-top:12px;padding-bottom:12px}
+#tseg[hidden]{display:none!important}
 .seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
 .seg button{background:transparent;color:var(--mut);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
@@ -955,17 +956,20 @@ const APP_ID='proformas',LIC_KEY='proformas-epn-licencia',MK_KEY='epn_mk',COL_KE
    c Cálculo · t Tarifas · m Matrículas · v Viajes · a Arqueo · s Estadísticas · k Costos (rentabilidad)
    0 sin acceso · 1 ver · 2 registrar/editar (t: 1 solo Res. 003-2024, 2 todas) */
 const MODS=[['c','Cálculo de servicios',['Sin acceso','','Hacer cálculos y PDF']],['t','Tarifas',['Sin acceso','Solo Res. 003-2024','Todas las tarifas']],['m','Matrículas',['Sin acceso','Ver','Registrar y editar']],
-  ['v','Viajes regulares',['Sin acceso','Ver viajes y costos','Registrar viajes']],['a','Arqueo de caja',['Sin acceso','Ver arqueos','Registrar arqueos']],['s','Estadísticas',['Sin acceso','Ver informe','Registrar']],['k','Costos y rentabilidad',['Sin acceso','Ver','']]];
+  ['v','Viajes regulares',['Sin acceso','Ver viajes y costos','Registrar viajes','Solo registrar (sin costos)']],['a','Arqueo de caja',['Sin acceso','Ver arqueos','Registrar arqueos']],['s','Estadísticas',['Sin acceso','Ver informe','Registrar']],['k','Costos y rentabilidad',['Sin acceso','Ver','']],['n','Normativa (artículos)',['Sin acceso','Ver','']]];
 const PERF=[['comp','Acceso completo',{c:2,t:2,m:2,v:2,a:2,s:2,k:1}],['rci','Solo tarifa Res. 003-2024',{c:0,t:1,m:0,v:0,a:0,s:0,k:0}],['tc','Tarifas y cálculo',{c:2,t:2,m:0,v:0,a:0,s:0,k:0}],
-  ['ope','Operaciones de motonaves',{c:0,t:2,m:1,v:2,a:2,s:0,k:0}],['sob','Sobrecargo',{c:0,t:2,m:1,v:2,a:0,s:0,k:0}],['est','Estadísticas',{c:0,t:2,m:0,v:0,a:0,s:2,k:0}],['con','Consulta / supervisión',{c:2,t:2,m:1,v:1,a:1,s:1,k:1}]];
-const PALL={c:2,t:2,m:2,v:2,a:2,s:2,k:1};
-const permDe=x=>{if(x&&x.m&&typeof x.m==='object')return{...PERF[1][2],...x.m};return x&&x.p==='rci'?{...PERF[1][2]}:{...PERF[0][2]}};
+  ['ope','Operaciones de motonaves',{c:0,t:2,m:1,v:2,a:2,s:0,k:0}],['sob','Sobrecargo',{c:0,t:1,m:0,v:3,a:0,s:0,k:0,n:0}],['est','Estadísticas',{c:0,t:2,m:0,v:0,a:0,s:2,k:0}],['con','Consulta / supervisión',{c:2,t:2,m:1,v:1,a:1,s:1,k:1}]];
+const PALL={c:2,t:2,m:2,v:2,a:2,s:2,k:1,n:1};
+PERF.forEach(p=>{if(p[2].n==null)p[2].n=p[0]==='rci'?0:1});
+const permDe=x=>{if(x&&x.m&&typeof x.m==='object')return{...PERF[1][2],n:1,...x.m};return x&&x.p==='rci'?{...PERF[1][2]}:{...PERF[0][2]}};
 const permLlave=m=>!!(m.m||m.v||m.a||m.s||m.k);
+const nOk=()=>OWNER||PM().n>0;
+const viaSinCostos=()=>!OWNER&&PM().v===3;
 const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).every(k=>(+q[k]||0)===(+m[k]||0)));return f?f[1]:'Personalizado'};
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
-function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
+function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.05-58';
+const APP_VER='2026.11.06-59';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1424,7 +1428,7 @@ function tarVista(l){const o=[];let ad=[];const fl=()=>{o.push(...ad);ad=[]};
     o.push({...t,c:'h1v',n:t.n+' – primera hora',unit:'Por la primera hora o fracción',addId:t.id});
     ad.push({...t,id:t.id+'_a',c:'h1v',r:t.r2,n:'Tiempo adicional – '+t.n.replace(/^.*? – /,''),unit:'A partir de la segunda hora o fracción',addId:t.id})});
   fl();return o}
-function renderTar(){const st=soloTar();
+function renderTar(){const st=soloTar();{const sg=$('#tseg');if(sg)sg.hidden=!nOk();if(!nOk()&&!$('#tnor').hidden){$('#tnor').hidden=true;$('#tpli').hidden=false;$('#tlist').hidden=false}}
   $('#tchips').hidden=st;
   if(!st)$('#tchips').innerHTML=[['','Todas','#0b4f8a'],...CATS.map(([k,n])=>[k,n.replace(/ \(.+\)$/,'').replace(/:.*/,''),CCOL[k]])].map(([k,n,c])=>`<button class="chipc${TCAT===k?' on':''}" data-tcat="${k}" style="--cc:${c}"><i></i>${esc(n)}</button>`).join('');
   const lista=tarVista(tarFiltradas());$('#tcount').textContent=lista.length+' tarifa'+(lista.length===1?'':'s');
@@ -1432,7 +1436,7 @@ function renderTar(){const st=soloTar();
    return `<div class="catttl" style="--cc:${CCOL[k]}"><i></i>${esc(n)}<small>${r.length}</small></div>`+(k==='chr'?`<div class="notice" style="font-size:13px"><b>Condiciones:</b> horario ordinario ${esc(horTxt())} (Art. 35); extraordinario fuera de ese horario (incluido el receso de ${HOR.pi}–${HOR.pf}), sábados, domingos y feriados. Servicio de 5 h o más en horario ordinario se cobra por día; 4 h o menos, por hora. Tiempo muerto = carga y descarga del medio alquilado. Para calcularlo use <b>Alquiler chárter</b> en Cálculo.</div>`:'')+r.map(t=>{const S=sym(t.cur);
     const v=t.c==='tier'?'<b>Escalonada</b>':t.c==='h1'?`<b>${S} ${fmt(t.r)}</b><small>1.ª hora · luego ${S} ${fmt(t.r2)}/h</small>`:`<b>${S} ${fmt(t.r)}</b>`;
     const tier=t.c==='tier'?`<div class="tier">${t.tiers.map(([a,b,r])=>`<span>días ${a}${b>=INF?'+':'–'+b}: ${S} ${fmt(r)}</span>`).join('')}</div>`:'';
-    const nr=NREF[t.id];return `<div class="tc${nr?' tcn':''}"${nr?` data-tfi="${t.id}"`:''}><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span>${nr?' · <span class="nlk">§ Ver artículo</span>':''}</div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
+    const nr=nOk()&&NREF[t.id];return `<div class="tc${nr?' tcn':''}"${nr?` data-tfi="${t.id}"`:''}><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span>${nr?' · <span class="nlk">§ Ver artículo</span>':''}</div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
 $('#tq').oninput=renderTar;
 /* ===== Normativa: textos transcritos, en archivos aparte que se descargan solo al consultarlos ===== */
 const NDOCS=[['027-2022','Res. DGTA 027-2022','Reglamento Operativo y Tarifas Portuarias APBB · 68 artículos'],['022-2023','Res. DGTA 022-2023','Tarifas al buque tanque “IV Marías” (cabotaje)']];
@@ -1462,12 +1466,12 @@ function nLista(d){const q=NOR_Q.trim(),qn=norm(q);const L=d.sec.filter(s=>!qn||
   let g='';el.innerHTML=(q?`<p class="sm" style="margin:8px 0 0">${L.length} apartado(s) con “${esc(q)}”</p>`:'')+(L.map(s=>{const hd=s.g&&s.g!==g?`<h3 class="sub" style="margin-top:14px">${esc(s.g)}</h3>`:'';g=s.g||g;return hd+nSecHTML(s,q,!!q)}).join('')||'<p class="mut" style="text-align:center;margin:12px 0">Sin resultados.</p>')}
 document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.nq!==undefined){NOR_Q=e.target.value;if(NOR_DOC&&NCACHE[NOR_DOC])nLista(NCACHE[NOR_DOC])}});
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-tseg],[data-ndoc],[data-nback],[data-tfi],[data-nver]');if(!b)return;
-  if(b.dataset.tseg){const n=b.dataset.tseg==='nor';$$('#tseg button').forEach(x=>x.classList.toggle('on',x===b));$('#tpli').hidden=n;$('#tlist').hidden=n;$('#tnor').hidden=!n;if(n)renderNor();return}
+  if(b.dataset.tseg){if(!nOk())return;const n=b.dataset.tseg==='nor';$$('#tseg button').forEach(x=>x.classList.toggle('on',x===b));$('#tpli').hidden=n;$('#tlist').hidden=n;$('#tnor').hidden=!n;if(n)renderNor();return}
   if(b.dataset.ndoc){NOR_DOC=b.dataset.ndoc;NOR_Q='';renderNor();return}
   if(b.hasAttribute('data-nback')){NOR_DOC=null;renderNor();return}
   if(b.dataset.nver){cerrarSheet();const [doc,sec]=b.dataset.nver.split('|');NOR_DOC=doc;NOR_Q='';const tb=$('#tseg [data-tseg="nor"]');if(tb)tb.click();const go=()=>{const s=document.querySelector('#nlist .nart[data-sid="'+sec+'"]');if(s){s.open=true;s.scrollIntoView({block:'start'})}else setTimeout(go,120)};setTimeout(go,150);return}
   if(b.dataset.tfi&&!e.target.closest('[data-add]'))return nFicha(b.dataset.tfi)});
-async function nFicha(id){const t=TT[id];const ref=NREF[id];if(!t||!ref)return;cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';const S=sym(t.cur);
+async function nFicha(id){if(!nOk())return;const t=TT[id];const ref=NREF[id];if(!t||!ref)return;cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';const S=sym(t.cur);
   v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>${esc(t.n)}</b><button class="pv-x" data-sh="close">✕</button></div>
    <div class="facts"><div><span>Tarifa</span><b>${S} ${fmt(t.r)}</b></div><div><span>Unidad</span><b>${esc(t.unit)}</b></div></div><p class="sm" style="margin:6px 0 0">Fuente: <b>${esc(t.src)}</b></p><div id="nfx"><p class="sm">Cargando el artículo…</p></div></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');const d=await normCargar(ref[0]);const box=$('#nfx');if(!box)return;
@@ -1597,7 +1601,7 @@ const VIA_DIAS_PROG=[0,3,4,6];// dom, mié, jue, sáb
 const VIA_DIR={ida:'Bluefields → Corn Island',vue:'Corn Island → Bluefields'};
 let VIA_MES=today().slice(0,7),VIA_EDIT=null;
 const puedeVia=()=>OWNER||!!(LIC&&LIC.k&&(PM().v||PM().a||PM().s));
-const viaPuedeReg=()=>OWNER||PM().v===2;
+const viaPuedeReg=()=>OWNER||PM().v===2||PM().v===3;
 const yoNombre=()=>OWNER?'Administrador':((LIC&&LIC.n)||'Colega');
 function muTarifa(f){const l=((COSTOS&&COSTOS.par.mu)||[]).filter(x=>x&&x.f).slice().sort((a,b)=>a.f.localeCompare(b.f));if(!l.length)return{B:0,C:0,f:''};let t=l[0];l.forEach(x=>{if(x.f<=f)t=x});return t}
 const viaNuevoId=()=>'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -1744,6 +1748,7 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
   if(VIA_SEC==='est')return renderEst();
   if(!COSTOS){box.innerHTML=`<p class="mut">Para analizar los viajes se necesita la estructura de costos. ${OWNER?'Configúrela en Ajustes.':'Espere a que el administrador la publique y toque <b>Buscar ahora</b> en Rentabilidad.'}</p>`;return}
   if(VIA_EDIT)return renderViaForm();
+  if(viaSinCostos())return renderViaSob();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
   box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:${OWNER?10:0}px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
    ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
@@ -1757,6 +1762,13 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
    ${OWNER?`<details class="rg" data-ok="vaj" style="margin-top:12px"${ACC_OPEN.has('vaj')?' open':''}><summary><span>Ajustes de viajes regulares</span><span class="chev">›</span></summary><div style="padding:0 11px 11px"><div class="grid"><div><label>Precio del boleto (C$)</label><input type="number" step="any" inputmode="decimal" data-vpar="pasaje" value="${COSTOS.par.pasaje||310}"></div></div>
      <label class="chk" style="margin-top:8px"><input type="checkbox" data-vpar="bonoReg" ${COSTOS.par.bonoReg?'checked':''}> Pagar bono por viaje en los viajes regulares</label><p class="sm" style="margin:6px 0 0">El muellaje se configura en Ajustes → Estructura de costos (tarifas con fecha de vigencia).</p></div></details>`:''}
    ${R.cs.length?`<details class="rg colw" data-ok="vlist" style="margin-top:12px"${ACC_OPEN.has('vlist')?' open':''}><summary><span>Viajes de ${mesTxt(VIA_MES).toLowerCase()} (${R.cs.length})</span><span class="chev">›</span></summary><div style="padding:4px 10px 6px">${R.cs.map(({v,c})=>`<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(c.emb?c.emb.n.replace(/^Motonave /,''):'—')}${+v.np?' · '+v.np+' boletos':''}</small></div><div style="text-align:right"><b class="${c.ut<0?'neg':''}">${money(c.ut,'NIO')}</b><small>${fq(c.mg)} %</small></div></button>`).join('')}</div></details>`:''}`}
+function renderViaSob(){const box=$('#viaBox');const yo=yoNombre();const L=viaLista().filter(v=>v.f.slice(0,7)===VIA_MES&&v.autor===yo).sort((a,b)=>b.f.localeCompare(a.f));
+  const pend=(ls.get('epn_viajes_mios',[])||[]).filter(x=>x._p).length;
+  box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:6px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
+   <button class="btn" data-vnew style="width:100%;margin-top:10px;padding:13px">+ Registrar viaje</button>
+   <p class="sm" style="margin:6px 0 0">Sus viajes se envían solos al administrador${pend?' · <b>'+pend+' pendiente(s) de enviar</b> (se envían al tener señal)':''}. Cada viaje se puede corregir una sola vez.</p>
+   <h3 class="sub">Mis viajes de ${mesTxt(VIA_MES).toLowerCase()} (${L.length})</h3>
+   ${L.length?L.map(v=>{const e=(COSTOS.emb||[]).find(x=>x.id===v.emb);return `<button class="via-it" data-vedit="${v.id}"><div><b>${viaFecha(v.f)}</b><small>${VIA_DIR[v.dir]} · ${esc(e?e.n:'')}</small></div><div style="text-align:right"><b>${fq(+v.np||0)}</b><small>pasajeros${+v.ned?' · corregido':''}</small></div></button>`}).join(''):'<p class="mut" style="text-align:center;margin:14px 0">Todavía no ha registrado viajes este mes.</p>'}`}
 function viaResHTML(c){const sem=viaSem(c);const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
   return `<div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b><small>variables ${money(c.gv,'NIO')} · fijos ${money(c.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
     <p class="sm" style="margin:6px 0">Aporte del viaje (ingresos − gastos variables): <b>${money(c.cont,'NIO')}</b>.${c.faltan?` Para cubrir todos los costos faltaron <b>${money(-c.ut,'NIO')}</b> ≈ <b>${c.faltan} boletos</b> más (a C$ ${fmt(c.pas)}).`:''}${c.faltanV?` <b>No cubre ni sus gastos variables</b> (faltaron ≈ ${c.faltanV} boletos).`:''} Costos fijos: 1/${c.D} del mes${c.div.cerrado?'':' (provisional)'}.</p>
@@ -1771,7 +1783,7 @@ function viaRefrescar(){const v=VIA_EDIT;if(!v)return;viaAuto(v);const c=viaCalc
   if(q('viaBol'))q('viaBol').textContent=money(c.bolC,'NIO');if(q('viaFalta'))q('viaFalta').hidden=!viaFalta(v);
   const hx=document.querySelector('#viaBox [data-vf=hx]');if(hx)hx.placeholder='auto: '+c.hxA;
   if(v.dir==='vue'&&v.tr[1]){['sal','lle'].forEach(k=>{const el=document.querySelector(`#viaBox [data-vt="1"][data-k="${k}"]`);if(el&&document.activeElement!==el)el.value=v.tr[1][k]||''})}}
-const viaEditable=v=>!!v&&(OWNER||(PM().v===2&&(v.nuevo||v.autor===yoNombre())));
+const viaEditable=v=>!!v&&(OWNER||(PM().v===2&&(v.nuevo||v.autor===yoNombre()))||(PM().v===3&&(v.nuevo||(v.autor===yoNombre()&&!((+v.ned||0)>=1)))));
 function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=viaCalcEdit();const ro=!viaEditable(v);
   const embs=COSTOS.emb.filter(e=>e.tipo==='mot');const crewIds=new Set(c.crew.map(x=>x.pid));
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${ro?'Detalle del viaje':v.nuevo?'Registrar viaje':'Editar viaje'}</b><button class="btn2" data-vcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
@@ -1797,16 +1809,17 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
    ${ro?'':'<button type="button" class="btn2" data-vogadd style="width:100%;margin-top:6px">+ Otro gasto</button>'}
    <div><label style="margin-top:10px">Observaciones</label><textarea data-vf="obs" rows="2" placeholder="Clima, incidentes, carga especial…">${esc(v.obs||'')}</textarea></div>
    </fieldset>
-   <div class="rent-res" id="viaRes">${viaResHTML(c)}</div>
+   ${viaSinCostos()?(!v.nuevo&&!ro&&!(+v.ned)?'<p class="notice" style="margin-top:10px">Puede corregir este viaje <b>una sola vez</b>.</p>':''):`<div class="rent-res" id="viaRes">${viaResHTML(c)}</div>`}
    ${ro?'':`<p class="msg-bad" id="viaFalta" style="margin-top:8px"${viaFalta(v)?'':' hidden'}>Anote la hora de llegada para calcular el combustible.</p>
-   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-vsave style="flex:2;padding:13px">Guardar viaje</button>${v.nuevo?'':'<button class="btnd" data-vdel style="flex:1">Eliminar</button>'}</div>`}`}
+   <div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-vsave style="flex:2;padding:13px">Guardar viaje</button>${v.nuevo||!OWNER?'':'<button class="btnd" data-vdel style="flex:1">Eliminar</button>'}</div>`}`}
 function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;let full=false;
   if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d);v.muC='';full=true}}
   if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC='';full=true}
   if(k==='emb'){v.crew=null;ls.set('epn_via_emb',val);full=true}
   if(full)renderViaForm();else viaRefrescar()}
 function viaGuardar(){const v=VIA_EDIT;if(viaFalta(v)&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
-  const x={...v};delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
+  const x={...v};const era=!!x.nuevo;delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
+  if(!OWNER&&!era&&PM().v===3){if(!confirm('Solo puede corregir este viaje una vez. ¿Guardar la corrección?'))return;x.ned=(+x.ned||0)+1}
   if(!OWNER){x._p=true;ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==x.id).concat([x]));setTimeout(()=>viaIssSync(true),300)}
   else{const l=(ls.get('epn_viajes',[])||[]).filter(y=>y.id!==x.id);l.push(x);viaGuardarLista(l)}
   VIA_MES=x.f.slice(0,7);VIA_EDIT=null;ACC_OPEN.delete('vcrew');toast('Viaje guardado');renderVia();window.scrollTo(0,0)}
@@ -2269,7 +2282,7 @@ async function arqSync(silent){if(!(OWNER||PM().a>0)||_aqBusy)return;const tok=a
 window.addEventListener('online',()=>arqSync(true));
 /* Viajes registrados por colegas (sobrecargos): se envían cifrados como "issues"; el administrador los recibe, los publica en viajes.json y cierra el issue */
 let _viBusy=false;
-async function viaIssSync(silent){const tok=arqTok();if(_viBusy||!tok||!navigator.onLine)return;if(!OWNER&&!(LIC&&LIC.k&&PM().v===2))return;_viBusy=true;let err=null,n=0;
+async function viaIssSync(silent){const tok=arqTok();if(_viBusy||!tok||!navigator.onLine)return;if(!OWNER&&!(LIC&&LIC.k&&(PM().v===2||PM().v===3)))return;_viBusy=true;let err=null,n=0;
   try{const H=ghH(tok),base=`https://api.github.com/repos/${GH.own}/${GH.repo}/issues`;const k=await aesKey(await arqKeyRaw());
     if(!OWNER){for(const a of (ls.get('epn_viajes_mios',[])||[]).filter(x=>x._p)){const y={...a};delete y._p;delete y.env;delete y.local;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(JSON.stringify(y)));
       const r=await fetch(base,{method:'POST',headers:H,body:JSON.stringify({title:'viaje '+y.id,body:JSON.stringify({v:1,iv:b64u(iv),data:b64u(new Uint8Array(ct))})})});if(!r.ok)throw new Error(String(r.status));
