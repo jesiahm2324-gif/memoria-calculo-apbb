@@ -1,6 +1,6 @@
 {
- "name": "Memoria de Cálculo · Servicios Portuarios APBB",
- "short_name": "Cálculo APBB",
+ "name": "Servicios Portuarios APBB",
+ "short_name": "Servicios APBB",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

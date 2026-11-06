@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Memoria de Cálculo APBB</title>
+<title>Servicios Portuarios APBB</title>
 <meta name="theme-color" content="#0b4f8a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Cálculo APBB">
+<meta name="apple-mobile-web-app-title" content="Servicios APBB">
 <script>try{var _t=JSON.parse(localStorage.getItem('epn_theme')||'"claro"');document.documentElement.dataset.theme=_t;var _f=JSON.parse(localStorage.getItem('epn_font')||'"n"');document.documentElement.dataset.font=_f}catch(e){document.documentElement.dataset.theme='claro'}</script>
 <style>
 /* Layout: app móvil — cabecera compacta con logo, contenido en una columna, barra de acciones (solo Cálculo) y barra de pestañas fija abajo */
@@ -313,7 +313,7 @@ body.pv-on{overflow:hidden}
 <header>
  <div class="logo" id="logoBox"></div>
  <div class="hd">
-  <h1>Memoria de Cálculo · Servicios Portuarios</h1>
+  <h1>Servicios Portuarios APBB</h1>
   <p>Empresa Portuaria Nacional · APBB</p>
  </div>
  <button class="ico" id="bell" aria-label="Alertas de matrículas" hidden><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><i id="bellN"></i></button>
@@ -969,7 +969,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.06-61';
+const APP_VER='2026.11.06-62';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1064,7 +1064,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('button,a');if(!t
 
 /* --- Panel del administrador --- */
 function estadoCol(c){if(REV.has(c.i))return['Retirado','bad'];if(!c.e)return['Indefinido','ok'];const r=diasA(c.e);return r<0?['Vencido','bad']:r<=7?['Vence en '+r+' d','warnc']:['Activo','ok']}
-function mensaje(c){return `Hola ${c.n}, este es tu acceso a la app *Memoria de Cálculo · Servicios Portuarios APBB*.
+function mensaje(c){return `Hola ${c.n}, este es tu acceso a la app *Servicios Portuarios APBB*.
 
 1. Abrí la app: ${APP_URL}
 2. Pegá este código en la pantalla de activación:
@@ -1209,9 +1209,9 @@ function abrirWA(txt,tel){const t=telWA(tel);const u='whatsapp://send?'+(t?'phon
     try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){if(e&&e.name==='AbortError')return}
     copiar(txt,'No se pudo abrir WhatsApp. Se copió el mensaje: péguelo en el chat.')},1600)}
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-waid],[data-pegar]');if(!b)return;e.preventDefault();
-  if(b.hasAttribute('data-waid'))abrirWA('Hola, ya instalé la app Memoria de Cálculo APBB. El ID de mi teléfono es: '+devFmt(devId()));
+  if(b.hasAttribute('data-waid'))abrirWA('Hola, ya instalé la app Servicios Portuarios APBB. El ID de mi teléfono es: '+devFmt(devId()));
   else{const el=document.getElementById(b.dataset.pegar);if(!el)return;try{const t=await navigator.clipboard.readText();if(t){el.value=t.trim();el.dispatchEvent(new Event('input',{bubbles:true}));toast('Pegado')}else{el.focus();toast('Mantenga presionado el campo y elija Pegar')}}catch(x){el.focus();toast('Mantenga presionado el campo y elija Pegar')}}});
-function textoInv(n){return `Hola${n?' '+n:''}, te comparto la app *Memoria de Cálculo · Servicios Portuarios APBB* de la Empresa Portuaria Nacional.
+function textoInv(n){return `Hola${n?' '+n:''}, te comparto la app *Servicios Portuarios APBB* de la Empresa Portuaria Nacional.
 
 1. Abrí este enlace en Safari (iPhone) o Chrome (Android):
 ${APP_URL}
@@ -1229,7 +1229,7 @@ function abrirInv(){cerrarSheet();const v=document.createElement('div');v.id='sh
   document.body.appendChild(v);document.body.classList.add('pv-on');setTimeout(()=>$('#iN').focus(),50);
   const reg=()=>{const n=$('#iN').value.trim(),tel=$('#iT').value.trim();const a=ls.get('epn_inv',[]).filter(x=>norm(x.n)!==norm(n));a.push({n,tel,f:today()});ls.set('epn_inv',a.slice(-30));return{n,tel}};
   $('#fInv').onsubmit=e=>{e.preventDefault();const {n,tel}=reg();abrirWA(textoInv(n),tel);cerrarSheet();toast('Invitación lista en WhatsApp')};
-  $('#iSh').onclick=async()=>{const {n}=reg();try{if(navigator.share){await navigator.share({title:'App Memoria de Cálculo APBB',text:textoInv(n)});cerrarSheet();return}}catch(e){if(e&&e.name==='AbortError')return}copiar(textoInv(n),'Invitación copiada')};
+  $('#iSh').onclick=async()=>{const {n}=reg();try{if(navigator.share){await navigator.share({title:'App Servicios Portuarios APBB',text:textoInv(n)});cerrarSheet();return}}catch(e){if(e&&e.name==='AbortError')return}copiar(textoInv(n),'Invitación copiada')};
   $('#iCp').onclick=()=>{const {n}=reg();copiar(textoInv(n),'Invitación copiada. Péguela en WhatsApp.')}}
 /* Invitaciones pendientes: completar, reenviar o quitar */
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-ipeg],[data-ire],[data-idel]');if(!b)return;const inv=(ls.get('epn_inv',[])||[]).filter(x=>x&&(x.n||x.tel));
@@ -1349,7 +1349,7 @@ function pdfHeader(d,titulo,sub){const lw=128,lh=lw*LOGO_H/LOGO_W;d.image(40,30,
   d.text(182,74,titulo,{size:10.5,bold:true,color:MAGC});if(sub)d.text(182,87,sub,{size:8.5,color:GRY});
   const y=Math.max(30+lh,92)+8;d.rect(40,y,532,2.2,NAVY);d.rect(40,y+2.2,532,1,MAGC);return y+16}
 function pdfFooters(d,nota){const n=d.count,f=new Date().toLocaleString('es-NI',{dateStyle:'short',timeStyle:'short'});
-  for(let i=0;i<n;i++){d.setPage(i);d.line(40,752,572,752,'#cccccc',.6);d.text(40,764,nota,{size:7.5,color:GRY});d.text(40,774,'Generado el '+f+' · App Memoria de Cálculo APBB',{size:7.5,color:GRY});d.text(572,768,'Página '+(i+1)+' de '+n,{size:8,color:GRY,align:'r'})}}
+  for(let i=0;i<n;i++){d.setPage(i);d.line(40,752,572,752,'#cccccc',.6);d.text(40,764,nota,{size:7.5,color:GRY});d.text(40,774,'Generado el '+f+' · App Servicios Portuarios APBB',{size:7.5,color:GRY});d.text(572,768,'Página '+(i+1)+' de '+n,{size:8,color:GRY,align:'r'})}}
 function tarRateTxt(t){const S=sym(t.cur);if(t.c==='tier')return 'Escalonada';if(t.c==='h1')return S+' '+fmt(t.r)+' 1.ª h\n+ '+S+' '+fmt(t.r2)+' c/h';return S+' '+fmt(t.r)}
 function tarUnitTxt(t){let u=t.unit;if(t.c==='tier'){const S=sym(t.cur);u+='\n'+t.tiers.map(([a,b,r])=>'Días '+a+(b>=INF?' en adelante':'–'+b)+': '+S+' '+fmt(r)).join('\n')}return u}
 function tarPdf(lista,sub){const d=PDFW();const COLS=[['Servicio',212],['Unidad de cobro',150],['Tarifa',80],['Fuente',90]];const X0=40;
