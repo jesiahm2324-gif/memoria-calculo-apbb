@@ -969,7 +969,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.06-59';
+const APP_VER='2026.11.06-60';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1155,7 +1155,7 @@ function abrirCond(i){const c=COL[i];if(!c)return;cerrarSheet();const v=document
    <p class="sm">El colega no recibe ningún mensaje ni código: la condición se aplica en su teléfono la próxima vez que abra la app con señal.</p><div class="msg-bad"></div>
    <div class="row" style="margin-top:10px;flex-wrap:nowrap"><button type="button" class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" style="flex:2">Aplicar condición</button></div></form>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');$('#kP').value=c.e?'f':'i';$('#kF').value=c.e||'';$('#kFw').hidden=!c.e;
-  const chk=()=>{const w=$('#kLl');if(!w)return;const need=permLlave(permLeer('k'))&&!colLlave(c);w.hidden=!need;w.textContent=need?'El código de '+c.n+' no trae la llave de datos. Para estos módulos hay que enviarle un código nuevo una sola vez (botón «Código nuevo» en su ficha).':''};$('#fCond').addEventListener('change',chk);chk();
+  const chk=()=>{const w=$('#kLl');if(!w)return;const need=permLlave(permLeer('k'))&&!colLlave(c);w.hidden=!need;w.textContent=need?'El código de '+c.n+' no trae la llave de datos. Para estos módulos hay que enviarle un código nuevo una sola vez (botón «Código nuevo» en su ficha).':''};$('#fCond').addEventListener('change',chk);chk();permSync('k');
   $('#kP').onchange=()=>{$('#kFw').hidden=$('#kP').value!=='f'};
   $('#fCond').onsubmit=async e=>{e.preventDefault();const pl=$('#kP').value;let ne='';
     if(pl==='f'){ne=$('#kF').value;if(!ne){$('#fCond .msg-bad').textContent='Elija la fecha.';return}}else if(pl==='0')ne=addD(today(),-1);else if(pl!=='i')ne=addD(today(),+pl);
