@@ -118,6 +118,8 @@ body[data-view="pf"] .actions{display:block}
 .catttl small{font-weight:600;color:var(--mut);margin-left:auto;font-size:12px}
 .tc{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px}
 .tc .tn{flex:1;min-width:0}
+.tcn{cursor:pointer}.nlk{color:var(--pri);font-weight:600;white-space:nowrap}
+.nart{border:1px solid var(--line);border-radius:12px;margin-top:8px;overflow:hidden}.nart>summary{list-style:none;padding:10px 12px;font-weight:600;display:flex;justify-content:space-between;gap:8px;cursor:pointer}.nart>summary::-webkit-details-marker{display:none}.nart[open]>summary{background:var(--soft)}.nart .nb{padding:4px 12px 12px;line-height:1.55;font-size:14.5px}.nart .nb p{margin:8px 0}.ntab{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.ntab th{background:var(--pri);color:#fff;text-align:left;padding:6px;font-weight:600}.ntab td{border-bottom:1px solid var(--line);padding:6px;vertical-align:top}.ntab td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.ntab small{display:block;color:var(--mut);font-size:11.5px}mark{background:#ffe066;color:#000;border-radius:3px;padding:0 1px}
 .tc .tn b{display:block;font-weight:600;line-height:1.3}
 .tc .tn .sm{margin-top:3px}
 .tc .tv{text-align:right;flex:none;max-width:44%}
@@ -406,11 +408,13 @@ body.pv-on{overflow:hidden}
 <!-- TARIFAS -->
 <section class="view" id="v-tar">
  <div class="card">
-  <h2>Pliego tarifario</h2>
-  <input id="tq" type="search" placeholder="Buscar servicio o carga…">
+  <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><h2 style="margin:0">Pliego tarifario</h2><div class="seg" id="tseg"><button data-tseg="pli" class="on">Pliego</button><button data-tseg="nor">Normativa</button></div></div>
+  <div id="tpli">
+  <input id="tq" type="search" placeholder="Buscar servicio o carga…" style="margin-top:10px">
   <div class="chips" id="tchips"></div>
   <div class="tarbar"><span class="sm" id="tcount"></span><button class="btn pdfbtn" id="btnTarPdf"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Ver PDF</button></div>
-  <details class="fu" style="margin-top:10px"><summary>Fuentes de las tarifas</summary><p class="sm">Res. DGTA 027-2022 (pliego APBB), Res. DGTA 022-2023 (IV Marías, vigente 01/01/2024), Res. DGTA 003-2024 (ruta Bluefields–Corn Island, vigente 11/03/2024) y la propuesta EPN de tarifas chárter del 24/06/2019 (<span class="warn">pendiente de verificar aprobación DGTA</span>).</p></details>
+  <details class="fu" style="margin-top:10px"><summary>Fuentes de las tarifas</summary><p class="sm">Res. DGTA 027-2022 (pliego APBB), Res. DGTA 022-2023 (IV Marías, vigente 01/01/2024), Res. DGTA 003-2024 (ruta Bluefields–Corn Island, vigente 11/03/2024) y la propuesta EPN de tarifas chárter del 24/06/2019 (<span class="warn">pendiente de verificar aprobación DGTA</span>).</p></details></div>
+ <div id="tnor" hidden></div>
  </div>
  <div id="tlist"></div>
 </section>
@@ -961,7 +965,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.05-56';
+const APP_VER='2026.11.05-58';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1428,8 +1432,49 @@ function renderTar(){const st=soloTar();
    return `<div class="catttl" style="--cc:${CCOL[k]}"><i></i>${esc(n)}<small>${r.length}</small></div>`+(k==='chr'?`<div class="notice" style="font-size:13px"><b>Condiciones:</b> horario ordinario ${esc(horTxt())} (Art. 35); extraordinario fuera de ese horario (incluido el receso de ${HOR.pi}–${HOR.pf}), sábados, domingos y feriados. Servicio de 5 h o más en horario ordinario se cobra por día; 4 h o menos, por hora. Tiempo muerto = carga y descarga del medio alquilado. Para calcularlo use <b>Alquiler chárter</b> en Cálculo.</div>`:'')+r.map(t=>{const S=sym(t.cur);
     const v=t.c==='tier'?'<b>Escalonada</b>':t.c==='h1'?`<b>${S} ${fmt(t.r)}</b><small>1.ª hora · luego ${S} ${fmt(t.r2)}/h</small>`:`<b>${S} ${fmt(t.r)}</b>`;
     const tier=t.c==='tier'?`<div class="tier">${t.tiers.map(([a,b,r])=>`<span>días ${a}${b>=INF?'+':'–'+b}: ${S} ${fmt(r)}</span>`).join('')}</div>`:'';
-    return `<div class="tc"><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span></div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
+    const nr=NREF[t.id];return `<div class="tc${nr?' tcn':''}"${nr?` data-tfi="${t.id}"`:''}><div class="tn"><b>${esc(t.n)}</b><div class="sm">${esc(t.unit)} · <span class="src">${t.src}</span>${nr?' · <span class="nlk">§ Ver artículo</span>':''}</div>${tier}</div><div class="tv">${v}</div>${st||!tipoDe(t.addId||t.id)?'':`<button class="add" data-add="${t.addId||t.id}" aria-label="Agregar al cálculo">+</button>`}</div>`}).join('')}).join('')||'<p class="mut" style="text-align:center;padding:20px">Sin resultados.</p>'}
 $('#tq').oninput=renderTar;
+/* ===== Normativa: textos transcritos, en archivos aparte que se descargan solo al consultarlos ===== */
+const NDOCS=[['027-2022','Res. DGTA 027-2022','Reglamento Operativo y Tarifas Portuarias APBB · 68 artículos'],['022-2023','Res. DGTA 022-2023','Tarifas al buque tanque “IV Marías” (cabotaje)']];
+const NREF27=Object.entries({a25:'prbar prrio perm r25q',a23:'amarre r23',a27:'remol',a26:'trlan r26a trrem r26b',a28:'limp cl45 cl45m',a20:'fondeo',a21:'estconv estroro estloro abconv abroro abloro',a58:'protb segt protc',a52:'cocat',a37:'dpgi dppi dpge dppe',a38:'cll cva rell reva',a43:'aimpll aimpva aexpem aexpre atrans avac aexret agexp agimp acab',a30:'r30e r30f',a48:'r48n r48r',a49:'r49a',a35:'a35',a40:'muimp muexp mcg mpb mpa mpc mbl mhi mma mti mch mmo mvp mvl mmq mmar mot',a41:'tub1 tub2',a33:'ce20 ce20m panga',a15:'cl15',a34:'tl20 tl20m',a51:'ener apan grua mc35 mc7 trac trai agua'}).flatMap(([a,ids])=>ids.split(' ').map(i=>[i,['027-2022',a,-1,{r25f:'f',r25q:'q',perm:'o',r30e:'e',r30f:'f',r48n:'d',r48r:'d',r49a:'a'}[i]||'']]));
+const NREF={...Object.fromEntries(NREF27),r25f:['027-2022','a25',-1,'f'],ivnav:['022-2023','primero',0],ivam:['022-2023','primero',1],ivr23:['022-2023','primero',2],ivpb:['022-2023','primero',3],ivrp:['022-2023','primero',4],ivrem:['022-2023','primero',5],ivest:['022-2023','primero',6],ivpr:['022-2023','primero',7],arem:['022-2023','segundo',0]};
+const NCACHE={};let NOR_DOC=null,NOR_Q='';
+async function normCargar(id){if(NCACHE[id])return NCACHE[id];const k='epn_norm_'+id;
+  try{const r=await fetch('normativa-'+id+'.json',{cache:'no-cache'});if(r.ok){const j=await r.json();NCACHE[id]=j;try{localStorage.setItem(k,JSON.stringify(j))}catch(e){}return j}}catch(e){}
+  try{const j=JSON.parse(localStorage.getItem(k)||'null');if(j){NCACHE[id]=j;return j}}catch(e){}return null}
+const nHi=(s,q)=>{s=esc(s);if(!q)return s;const ws=q.split(/\s+/).filter(w=>w.length>1);if(!ws.length)return s;const re=new RegExp('('+ws.map(w=>w.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&').split('').map(ch=>/[aeiou]/i.test(ch)?'['+ch+'áéíóúÁÉÍÓÚ]':ch).join('')).join('|')+')','gi');return s.replace(re,'<mark>$1</mark>')};
+function nGen(src,q){const L=T.filter(t=>t.src===src);return CATS.map(([k,n])=>{const r=L.filter(t=>t.cat===k);if(!r.length)return'';return `<p style="margin:12px 0 2px"><b>${esc(n)}</b></p><table class="ntab"><tr><th>Servicio</th><th style="text-align:right">Tarifa</th><th>Unidad</th></tr>${r.map(t=>`<tr><td>${nHi(t.n,q)}</td><td class="n">${t.c==='tier'?'Escalonada':sym(t.cur)+' '+fmt(t.r)}</td><td>${esc(t.unit)}</td></tr>`).join('')}</table>`}).join('')}
+function nSecHTML(s,q,abierto,fila,inc){if(s.tab&&s.tab.cols){const tb=`${s.tabNote?`<p class="sm" style="margin:10px 0 0"><b>${esc(s.tabNote)}</b></p>`:''}<table class="ntab"><tr>${s.tab.h.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${s.tab.r.map(r=>`<tr>${r.map((c,i)=>`<td>${i?esc(c):nHi(c,q)}</td>`).join('')}</tr>`).join('')}</table>`;return nDet(s,q,abierto,tb,inc)}
+  if(s.gen)return nDet(s,q,abierto,nGen(s.gen,q),inc);
+  const tb=s.tab?`<table class="ntab"><tr>${s.tab.h.map((x,i)=>`<th${i===1?' style="text-align:right"':''}>${esc(x)}</th>`).join('')}</tr>${s.tab.g?`<tr><td colspan="3"><b>${esc(s.tab.g)}</b></td></tr>`:''}${s.tab.r.map((r,i)=>`<tr${fila===i?' style="background:var(--soft)"':''}><td>${nHi(r[0],q)}${r[3]?`<small>${nHi(r[3],q)}</small>`:''}</td><td class="n">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</table>`:'';
+  return nDet(s,q,abierto,tb,inc)}
+function nDet(s,q,abierto,tb,inc){const re=inc?new RegExp('^'+inc+'\\)'):null;return `<details class="nart" data-sid="${s.id}"${abierto?' open':''}><summary><span>${esc(s.t)}</span><small class="sm" style="white-space:nowrap">pág. ${s.p||''}</small></summary><div class="nb">${s.x.map(p=>`<p${re&&re.test(p)?' style="background:var(--soft);border-left:3px solid var(--pri);padding:4px 8px;border-radius:6px"':''}>${nHi(p,q)}</p>`).join('')}${tb}</div></details>`}
+const nTxt=s=>norm([s.t,...s.x,...(s.tab?s.tab.r.flat():[]),...(s.gen?T.filter(t=>t.src===s.gen).map(t=>t.n):[])].join(' '));
+async function renderNor(){const box=$('#tnor');if(!box)return;
+  if(!NOR_DOC){box.innerHTML=`<p class="sm" style="margin:10px 0 6px">Textos transcritos de las resoluciones. Se descargan solo al abrirlos y quedan guardados para consultarlos sin internet.</p>${NDOCS.map(([id,f,t])=>`<button class="via-it" data-ndoc="${id}"><div><b>${esc(f)}</b><small>${esc(t)}</small></div><span class="chev">›</span></button>`).join('')}`;return}
+  box.innerHTML='<p class="sm" style="margin-top:10px">Cargando…</p>';const d=await normCargar(NOR_DOC);
+  if(!d){box.innerHTML=`<button class="btn2" data-nback style="margin-top:10px;padding:8px 14px">‹ Documentos</button><p class="msg-bad">No se pudo descargar el documento. Ábralo una vez con señal y luego quedará guardado.</p>`;return}
+  const F=x=>x?new Date(x+'T12:00').toLocaleDateString('es-NI',{day:'2-digit',month:'long',year:'numeric'}):'';
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap;margin-top:10px"><button class="btn2" data-nback style="padding:8px 14px">‹ Documentos</button><small class="sm">${d.paginas||''} pág.</small></div>
+   <div style="margin:10px 0 4px"><b style="font-size:17px">${esc(d.titulo)}</b><div class="sm">${esc(d.sub)}</div><div class="sm" style="margin-top:4px">${esc(d.emisor)} · firmada el ${F(d.fecha)} · vigente ${d.vigencia?'desde el '+F(d.vigencia):esc(d.vtxt||'')}</div><div class="sm">Transcripción actualizada al ${new Date(d.act+'T12:00').toLocaleDateString('es-NI')}</div></div>
+   <input type="search" data-nq placeholder="Buscar en este documento…" value="${esc(NOR_Q)}" style="margin-top:8px"><div id="nlist"></div>`;nLista(d)}
+function nLista(d){const q=NOR_Q.trim(),qn=norm(q);const L=d.sec.filter(s=>!qn||qn.split(/\s+/).every(w=>nTxt(s).includes(w)));const el=$('#nlist');if(!el)return;
+  let g='';el.innerHTML=(q?`<p class="sm" style="margin:8px 0 0">${L.length} apartado(s) con “${esc(q)}”</p>`:'')+(L.map(s=>{const hd=s.g&&s.g!==g?`<h3 class="sub" style="margin-top:14px">${esc(s.g)}</h3>`:'';g=s.g||g;return hd+nSecHTML(s,q,!!q)}).join('')||'<p class="mut" style="text-align:center;margin:12px 0">Sin resultados.</p>')}
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.nq!==undefined){NOR_Q=e.target.value;if(NOR_DOC&&NCACHE[NOR_DOC])nLista(NCACHE[NOR_DOC])}});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-tseg],[data-ndoc],[data-nback],[data-tfi],[data-nver]');if(!b)return;
+  if(b.dataset.tseg){const n=b.dataset.tseg==='nor';$$('#tseg button').forEach(x=>x.classList.toggle('on',x===b));$('#tpli').hidden=n;$('#tlist').hidden=n;$('#tnor').hidden=!n;if(n)renderNor();return}
+  if(b.dataset.ndoc){NOR_DOC=b.dataset.ndoc;NOR_Q='';renderNor();return}
+  if(b.hasAttribute('data-nback')){NOR_DOC=null;renderNor();return}
+  if(b.dataset.nver){cerrarSheet();const [doc,sec]=b.dataset.nver.split('|');NOR_DOC=doc;NOR_Q='';const tb=$('#tseg [data-tseg="nor"]');if(tb)tb.click();const go=()=>{const s=document.querySelector('#nlist .nart[data-sid="'+sec+'"]');if(s){s.open=true;s.scrollIntoView({block:'start'})}else setTimeout(go,120)};setTimeout(go,150);return}
+  if(b.dataset.tfi&&!e.target.closest('[data-add]'))return nFicha(b.dataset.tfi)});
+async function nFicha(id){const t=TT[id];const ref=NREF[id];if(!t||!ref)return;cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';const S=sym(t.cur);
+  v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div class="sh-h"><b>${esc(t.n)}</b><button class="pv-x" data-sh="close">✕</button></div>
+   <div class="facts"><div><span>Tarifa</span><b>${S} ${fmt(t.r)}</b></div><div><span>Unidad</span><b>${esc(t.unit)}</b></div></div><p class="sm" style="margin:6px 0 0">Fuente: <b>${esc(t.src)}</b></p><div id="nfx"><p class="sm">Cargando el artículo…</p></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');const d=await normCargar(ref[0]);const box=$('#nfx');if(!box)return;
+  if(!d){box.innerHTML='<p class="msg-bad">No se pudo descargar el texto. Ábralo una vez con señal y luego quedará guardado.</p>';return}
+  const s=d.sec.find(x=>x.id===ref[1]);const r=s&&s.tab&&ref[2]>=0?s.tab.r[ref[2]]:null;const inc=ref[3]||'';const pi=inc&&s?s.x.find(p=>p.startsWith(inc+')')):'';
+  box.innerHTML=(r&&r[3]?`<div class="notice" style="margin-top:10px"><b>Condición:</b> ${esc(r[3])}</div>`:'')+(pi?`<div class="notice" style="margin-top:10px"><b>Inciso ${inc}):</b> ${esc(pi.replace(/^[a-z]\)\s*/,''))}</div>`:'')+(s?`<h3 class="sub">${esc(d.fuente)} · ${esc(s.t.split(' · ')[0])}</h3>${nSecHTML(s,'',true,ref[2],inc)}`:'')+
+   `<button class="btn2" data-nver="${ref[0]}|${ref[1]}" style="width:100%;margin-top:10px">Ver la resolución completa</button>`}
 function tipoDe(id){return ''}
 $('#tlist').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(!b)return;const id=b.dataset.add,tp=tipoDe(id);if(!tp)return;
   if(P.tipo!==tp){if(P.lines.length&&!confirm('Este servicio corresponde a '+TIPOS[tp]+'. Se iniciará ese tipo de cálculo y se quitarán los servicios actuales. ¿Continuar?'))return;setTipo(tp,true)}
