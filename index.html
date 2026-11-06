@@ -338,7 +338,7 @@ body.pv-on{overflow:hidden}
   <button class="tipo" data-tipo="chr" style="--cc:#f2a900"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><b>Viaje chárter</b><small>Remolcador · motonave</small></button>
  </div>
 
- <div class="card pfc open" data-fold="dat">
+ <div class="card pfc" data-fold="dat">
   <h2 data-ftog><span class="n">1</span><span class="ft">Datos<small class="fsum" id="fs-dat"></small></span><span class="chev">›</span></h2><div class="fb">
   <div class="grid">
    <div style="grid-column:1/-1"><label for="cliSel" id="cliLbl">Agencia naviera / usuario</label><div class="row" style="flex-wrap:nowrap"><select id="cliSel" style="flex:1"></select><button class="btn2" data-cont="new" style="flex:none" aria-label="Nueva agencia o usuario">+ Nueva</button></div></div>
@@ -732,7 +732,7 @@ function applyTipo(){const t=P.tipo;$$('#tipos .tipo').forEach(b=>b.classList.to
   $('#nServ').textContent=t==='chr'?'3':'2';$('#nTot').textContent=t==='chr'?'4':'3';
   $('#ivaNota').textContent=t==='chr'?'Tarifas en dólares; el total se presenta en córdobas al tipo de cambio oficial del BCN del día. El servicio chárter no lleva IVA.':t==='car'?'Las tarifas no incluyen IVA (Art. 8). COCATRAM no forma parte de la base del IVA. Desmarque el IVA si hay exoneración vigente.':'Las tarifas no incluyen IVA (Art. 8). Desmarque si el cliente presenta exoneración vigente.';
   estInfo();if(typeof renderRent==='function')renderRent()}
-$('#tipos').addEventListener('click',e=>{const b=e.target.closest('[data-tipo]');if(b)setTipo(b.dataset.tipo)});
+$('#tipos').addEventListener('click',e=>{const b=e.target.closest('[data-tipo]');if(b){setTipo(b.dataset.tipo);pfOpen('dat')}});
 
 /* ===== Libreta de agencias y usuarios ===== */
 let CONT=ls.get('epn_contactos',[]);
@@ -969,7 +969,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.06-60';
+const APP_VER='2026.11.06-61';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
