@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.07-71';
+const APP_VER='2026.11.07-72';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -3005,7 +3005,24 @@ async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=s
   const fin=b.slice(8,10)+'/'+b.slice(5,7)+'/'+b.slice(0,4);const MES='ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE';
   for(const ref in m1.idx){const t=lbVal(B,m1,ref);if(typeof t!=='string'||lbFormula(m1,ref)!=null)continue;const t2=t.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,fin).replace(new RegExp(`\\b\\d{1,2}\\s+(?:de\\s+)?(?:${MES})\\s+(?:de\\s+)?\\d{4}\\b`,'gi'),fin);if(t2!==t)lbSet(m1,ref,t2)}
   hechas.add('Metas1');
-  av.push('Metas1: los buques internacionales (filas de cumplimiento, resumen semanal y carga por buque) y las embarcaciones y carga nacional atendidas siguen como en el informe anterior; se automatizan en la próxima etapa.');
+  /* buques internacionales (Charlotte): buques e importación por semana de arribo; exportación por semana de salida */
+  {const r3=x=>Math.round(x*1000)/1000;const enS=d=>d&&d.slice(0,10)>=a&&d.slice(0,10)<=b;const CH=estArr().filter(x=>/charlotte/i.test(x.buque||''));
+   const lleg=CH.filter(x=>enS(x.hl)),sal=CH.filter(x=>enS(x.hs));const imps=lleg.map(x=>r3(arrTot(x,'des'))).filter(v=>v>0),exps=sal.map(x=>r3(arrTot(x,'emb'))).filter(v=>v>0);
+   const nB=lleg.length,tI=r3(imps.reduce((s,v)=>s+v,0)),tE=r3(exps.reduce((s,v)=>s+v,0));
+   lleg.filter(x=>!x.hs).forEach(x=>av.push(`${x.buque}${x.viaje?' V'+x.viaje:''}: falta la hora de salida; su exportación se sumará en la semana en que zarpe.`));
+   const c1=lbBuscar(B,m1,/CUMPLIMIENTO DE METAS ACUMULADAS \d{4}/i,/Bluff/i,8);
+   if(c1){const cB=lbCol(B,m1,c1.r0+1,c1.r,/^Buques Atendidos$/i),cI=lbCol(B,m1,c1.r0+1,c1.r,/^Importaci/i),cX=lbCol(B,m1,c1.r0+1,c1.r,/^Exportaci/i);
+     if(cB)lbSumar(m1,colA(cB)+c1.r,nB);if(cI&&imps.length)lbSumar(m1,colA(cI)+c1.r,imps.join('+'));if(cX&&exps.length)lbSumar(m1,colA(cX)+c1.r,exps.join('+'));if(!cB||!cI||!cX)av.push('Metas1: no se encontraron todas las columnas del cumplimiento de metas (buques, importación, exportación).')}
+   else av.push('Metas1: no se encontró el cumplimiento de metas acumuladas de buques.');
+   const c2=lbBuscar(B,m1,/RESUMEN SEMANAL DE ATENCI.N EN LOS PUERTOS INTERNACIONALES/i,/Bluff/i,8);
+   if(c2){const M=fxMotor(B);const col=rx=>lbCol(B,m1,c2.r0+1,c2.r,rx);const dA=col(/Atendidos Semana Anterior/i),dE=col(/Atendidos esta Semana/i),gA=col(/Manejada Semana Anterior/i),gE=col(/Manejada esta Semana/i);
+     if(dA&&dE&&gA&&gE){const prevB=M.val(m1,colA(dE)+c2.r),prevC=M.val(m1,colA(gE)+c2.r);lbSet(m1,colA(dA)+c2.r,typeof prevB==='number'?prevB:0);lbSet(m1,colA(gA)+c2.r,typeof prevC==='number'?r3(prevC):0);
+       lbSet(m1,colA(dE)+c2.r,nB);lbSet(m1,colA(dE+1)+c2.r,{f:`IFERROR(${colA(dE)}${c2.r}/${colA(dA)}${c2.r},${colA(dE)}${c2.r})`});lbSet(m1,colA(gE)+c2.r,tI||tE?{f:`${tI}+${tE}`}:0)}
+     else av.push('Metas1: no se encontraron las columnas del resumen semanal de puertos internacionales.')}
+   const c3=lbBuscar(B,m1,/Carga por Buque/i,/Portacontenedores|Charlotte/i,8);
+   if(c3){const cI=lbCol(B,m1,c3.r0+1,c3.r,/Carga de Importaci/i),cX=lbCol(B,m1,c3.r0+1,c3.r,/Carga de Exportaci/i);if(cI)lbSet(m1,colA(cI)+c3.r,tI);if(cX)lbSet(m1,colA(cX)+c3.r,tE)}
+   av.push(`Charlotte esta semana: ${nB} arribo(s) · importación ${fq(tI)} TM · exportación ${fq(tE)} TM.`)}
+  av.push('Metas1: las embarcaciones y la carga nacional atendidas (cabotaje) siguen como en el informe anterior; se automatizan en la próxima etapa.');
   await libroRecalcular(B);const blob=await libroGuardar(B);
   return{B,blob,av,hechas,res:{nV,pax,ton}}}
 /* vista previa del libro con sus estilos */
