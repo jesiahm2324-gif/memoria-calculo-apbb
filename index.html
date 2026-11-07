@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.06-68';
+const APP_VER='2026.11.07-69';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2794,24 +2794,24 @@ const xD=f=>{const [y,m,d]=f.split('-').map(Number);return Math.round((Date.UTC(
 function reViajes(a,b){const L=viaLista().filter(v=>v.f>=a&&v.f<=b);const nomE=id=>{const e=(COSTOS&&COSTOS.emb||[]).find(x=>x.id===id);return e?e.n.replace(/^motonave\s+/i,'MN '):'MN Hilario Sánchez'};
   if(L.length)return{src:'app',L:L.map(v=>({dir:v.dir==='ida'?'ida':'vue',f:v.f,buque:nomE(v.emb),pas:+v.np||0,costo:+v.tb||+(COSTOS&&COSTOS.par.pasaje)||310,ingCar:(+v.car||0)+(+v.eq||0),bul:'',tur:+v.tur||0}))};
   const D=infDatos();return{src:'excel',L:Object.values(D.HS).filter(x=>x.f>=a&&x.f<=b).map(x=>({...x}))}}
-function hojaRE(a,b){const {L}=reViajes(a,b);const R=[],M=['A1:I1'],Hh=[];let r=0;const tot={};
-  const H=(v,s)=>({v,s:s||19});
+function hojaRE(a,b){const {L}=reViajes(a,b);const R=[],M=['A1:H1'],Hh=[];const tot={};
+  const H=(v,s)=>({v,s:s||19});const T=x=>x.pas*x.costo+x.ingCar;
   const bloque=(dir,tit)=>{const xs=L.filter(x=>x.dir===dir).sort((x,y)=>x.f.localeCompare(y.f));const r0=R.length+1;
-    R.push([{v:tit,s:33}]);if(r0>1)M.push(`A${r0}:I${r0}`);R.push([]);
-    const h1=R.length+1;R.push([H('I T E M'),H('FECHA'),H('NOMBRE DEL BUQUE'),H('PASAJERO'),H(''),H(''),H('CARGA'),H(''),H(dir==='ida'?' TOTAL\nINGRESO':' TOTAL \nINGRESO',22),H('TURISTA',23)]);
-    R.push([H(''),H(''),H(''),H('CANTIDAD',20),H('COSTO',20),H('INGRESO',20),H('INGRESO',21),H('CARGA / TONELADA',21),H('',22),H('',23)]);Hh[h1]=dir==='ida'?null:21;Hh[h1+1]=dir==='ida'?21:26.25;
-    M.push(`A${h1}:A${h1+1}`,`B${h1}:B${h1+1}`,`C${h1}:C${h1+1}`,`D${h1}:F${h1}`,`G${h1}:H${h1}`,`I${h1}:I${h1+1}`,`J${h1}:J${h1+1}`);
+    R.push([{v:tit,s:33}]);if(r0>1)M.push(`A${r0}:H${r0}`);R.push([]);
+    const h1=R.length+1;R.push([H('I T E M'),H('FECHA'),H('NOMBRE DEL BUQUE'),H('PASAJERO'),H(''),H(''),H('CARGA'),H(dir==='ida'?' TOTAL\nINGRESO':' TOTAL \nINGRESO',22),H('TURISTA',23)]);
+    R.push([H(''),H(''),H(''),H('CANTIDAD',20),H('COSTO',20),H('INGRESO',20),H('INGRESO',21),H('',22),H('',23)]);Hh[h1]=dir==='ida'?null:21;Hh[h1+1]=dir==='ida'?21:26.25;
+    M.push(`A${h1}:A${h1+1}`,`B${h1}:B${h1+1}`,`C${h1}:C${h1+1}`,`D${h1}:F${h1}`,`H${h1}:H${h1+1}`,`I${h1}:I${h1+1}`);
     const d0=R.length+1;const n=Math.max(xs.length+1,3);
-    for(let i=0;i<n;i++){const x=xs[i];const rr=R.length+1;if(x)R.push([{v:i+1,s:24},{v:xD(x.f),s:25},{v:x.buque,s:26},{v:x.pas,s:24},{v:x.costo,s:24},{f:`D${rr}*E${rr}`,v:x.pas*x.costo,s:27},{v:x.ingCar,s:27},x.bul?{v:x.bul,s:27}:{v:'',s:27},{f:`+F${rr}+G${rr}`,v:x.pas*x.costo+x.ingCar,s:27},{v:x.tur,s:24},'',{f:`G${rr}/1600`,v:x.ingCar/1600,s:34}]);
-      else R.push([{v:'',s:26},{v:'',s:25},{v:'',s:26},{v:'',s:24},{v:'',s:24},{v:'',s:27},{v:'',s:27},{v:'',s:27},{v:'',s:27},{v:'',s:24}])}
+    for(let i=0;i<n;i++){const x=xs[i];const rr=R.length+1;if(x)R.push([{v:i+1,s:24},{v:xD(x.f),s:25},{v:x.buque,s:26},{v:x.pas,s:24},{v:x.costo,s:24},{f:`D${rr}*E${rr}`,v:x.pas*x.costo,s:27},{v:x.ingCar,s:27},{f:`+F${rr}+G${rr}`,v:T(x),s:27},{v:x.tur,s:24},'',{f:`G${rr}/1600`,v:x.ingCar/1600,s:34}]);
+      else R.push([{v:'',s:26},{v:'',s:25},{v:'',s:26},{v:'',s:24},{v:'',s:24},{v:'',s:27},{v:'',s:27},{v:'',s:27},{v:'',s:24}])}
     const d1=R.length;const st=R.length+1;const S=k=>xs.reduce((s,x)=>s+(+x[k]||0),0);
-    R.push([{v:'SUB TOTAL',s:28},{v:'',s:28},{v:'',s:28},{f:`SUM(D${d0}:D${d1})`,v:S('pas'),s:28},{v:'',s:28},{f:`SUM(F${d0}:F${d1})`,v:xs.reduce((s,x)=>s+x.pas*x.costo,0),s:29},{f:`SUM(G${d0}:G${d1})`,v:S('ingCar'),s:29},{f:`SUM(H${d0}:H${d1})`,v:S('bul'),s:29},{f:`SUM(I${d0}:I${d1})`,v:xs.reduce((s,x)=>s+x.pas*x.costo+x.ingCar,0),s:29},{f:`SUM(J${d0}:J${d1})`,v:S('tur'),s:dir==='ida'?32:28},dir==='ida'?{v:'Ton',s:33}:'',dir==='ida'?{f:`G${st}/1600`,v:S('ingCar')/1600,s:34}:'']);
+    R.push([{v:'SUB TOTAL',s:28},{v:'',s:28},{v:'',s:28},{f:`SUM(D${d0}:D${d1})`,v:S('pas'),s:28},{v:'',s:28},{f:`SUM(F${d0}:F${d1})`,v:xs.reduce((s,x)=>s+x.pas*x.costo,0),s:29},{f:`SUM(G${d0}:G${d1})`,v:S('ingCar'),s:29},{f:`SUM(H${d0}:H${d1})`,v:xs.reduce((s,x)=>s+T(x),0),s:29},{f:`SUM(I${d0}:I${d1})`,v:S('tur'),s:dir==='ida'?32:28},dir==='ida'?{v:'Ton',s:33}:'',dir==='ida'?{f:`G${st}/1600`,v:S('ingCar')/1600,s:34}:'']);
     M.push(`A${st}:C${st}`);tot[dir]={st,xs};R.push([]);};
   bloque('ida','RUTA: BLUEFIELDS - CORN ISLAND');bloque('vue','RUTA: CORN ISLAND - BLUEFIELDS');R.pop();
   const a1=tot.ida.st,b1=tot.vue.st,tr=R.length+1;const sum=(xs,f)=>xs.reduce((s,x)=>s+f(x),0);const all=[...tot.ida.xs,...tot.vue.xs];
-  R.push([{v:'TOTAL  GENERAL',s:30},{v:'',s:30},{v:'',s:30},{f:`+D${a1}+D${b1}`,v:sum(all,x=>x.pas),s:30},{v:'',s:30},{f:`+F${a1}+F${b1}`,v:sum(all,x=>x.pas*x.costo),s:31},{f:`+G${a1}+G${b1}`,v:sum(all,x=>x.ingCar),s:31},{f:`+H${a1}+H${b1}`,v:sum(all,x=>+x.bul||0),s:31},{f:`+I${a1}+I${b1}`,v:sum(all,x=>x.pas*x.costo+x.ingCar),s:31},{f:`+J${a1}+J${b1}`,v:sum(all,x=>x.tur),s:32},{v:'Ton',s:33},{f:`G${b1}/1600`,v:sum(tot.vue.xs,x=>x.ingCar)/1600,s:34}]);
-  M.push(`A${tr}:C${tr}`);R.push(['','','','','','','','','','',{v:'Total Ton',s:33},{f:`+L${a1}+L${tr}`,v:sum(all,x=>x.ingCar)/1600,s:34}]);
-  const hts=[];Hh.forEach((v,i)=>{if(v)hts[i-1]=v});return{n:'Ingreso RE y HS',rows:R,w:[4,10.3,15.1,9,6.6,10.1,10,9.7,11,8,10.7,7.9],m:M,h:hts}}
+  R.push([{v:'TOTAL  GENERAL',s:30},{v:'',s:30},{v:'',s:30},{f:`+D${a1}+D${b1}`,v:sum(all,x=>x.pas),s:30},{v:'',s:30},{f:`+F${a1}+F${b1}`,v:sum(all,x=>x.pas*x.costo),s:31},{f:`+G${a1}+G${b1}`,v:sum(all,x=>x.ingCar),s:31},{f:`+H${a1}+H${b1}`,v:sum(all,T),s:31},{f:`+I${a1}+I${b1}`,v:sum(all,x=>x.tur),s:32},{v:'Ton',s:33},{f:`G${b1}/1600`,v:sum(tot.vue.xs,x=>x.ingCar)/1600,s:34}]);
+  M.push(`A${tr}:C${tr}`);R.push(['','','','','','','','','',{v:'Total Ton',s:33},{f:`+K${a1}+K${tr}`,v:sum(all,x=>x.ingCar)/1600,s:34}]);
+  const hts=[];Hh.forEach((v,i)=>{if(v)hts[i-1]=v});return{n:'Ingreso RE y HS',rows:R,w:[4,10.3,15.1,9,6.6,10.1,10,11,8,10.7,7.9],m:M,h:hts}}
 /* Vista previa: el informe se revisa en pantalla; solo se comparte o guarda si el usuario lo decide */
 const XBG={20:'#9BC2E6',21:'#F4B084',22:'#A9D08E',23:'#FFFF00',30:'#A9D08E',31:'#A9D08E',32:'#FFFF00'};
 function xCelda(c){if(c==null||c==='')return'';const o=typeof c==='object'?c:{v:c};const v=o.v;if(v===''||v==null)return'';if(typeof v!=='number')return esc(v).replace(/\n/g,'<br>');
@@ -2826,7 +2826,7 @@ function xHojaHTML(s){const ref=a=>{const m=a.match(/^([A-Z]+)(\d+)$/);let c=0;f
 function xPrevia(sheets,nombre,titulo){cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';let k=0;
   const pinta=()=>{const bx=v.querySelector('#xpBody');bx.innerHTML=xHojaHTML(sheets[k]);requestAnimationFrame(()=>{const t=bx.querySelector('table'),w=bx.firstElementChild;if(t&&w&&v.dataset.fit!=='0'){const r=(w.clientWidth-4)/t.scrollWidth*0.96;if(r<1)t.style.zoom=r}});v.querySelectorAll('[data-xph]').forEach(b=>b.classList.toggle('on',+b.dataset.xph===k))};
   v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" style="max-width:980px"><div class="sh-h"><b>Vista previa · ${esc(titulo)}</b><button class="pv-x" data-sh="close">✕</button></div>
-   <p class="sm" style="margin-top:0">${esc(nombre)}</p>${sheets.length>1?`<div class="seg" style="margin-bottom:8px;flex-wrap:wrap">${sheets.map((s,i)=>`<button data-xph="${i}">${esc(s.n)}</button>`).join('')}</div>`:`<p class="sm" style="margin:0 0 6px"><b>Hoja:</b> ${esc(sheets[0].n)}</p>`}
+   <p class="sm" style="margin-top:0">${esc(nombre)}</p><div class="sm" style="margin:0 0 4px"><b>Hojas del libro (${sheets.length}):</b></div><div class="seg" style="margin-bottom:8px;flex-wrap:wrap">${sheets.map((s,i)=>`<button data-xph="${i}">${esc(s.n)}</button>`).join('')}</div>
    <label class="chk" style="margin:0 0 6px"><input type="checkbox" id="xpFit" checked> Ajustar al ancho de la pantalla</label><div id="xpBody"></div><p class="sm">Revise el informe. Solo se envía si usted toca <b>Compartir o guardar</b>.</p>
    <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
