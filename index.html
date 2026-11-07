@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.07-69';
+const APP_VER='2026.11.07-70';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2754,10 +2754,10 @@ async function infCargar(file){let H;try{H=await xlsxLeer(file)}catch(e){toast(e
    <p style="margin-top:0"><b>Semana del ${fC(o.desde)} al ${fC(o.hasta)}</b><br><span class="sm">${esc(file.name)}</span></p>
    <div class="facts"><div><span>Atraques (Muellaje)</span><b>${o.mue.length}</b></div><div><span>Pesqueros / cabotaje</span><b>${pes} / ${cab}</b></div><div><span>Carga manejada (APBB)</span><b>${fq(Math.round(tm*100)/100)} TM</b></div><div><span>Motonave</span><b>${o.rehs.length} viajes · ${fq(pas)} pas.</b></div><div><span>Carga motonave</span><b>${fq(Math.round(ton*100)/100)} TM</b></div><div><span>Ingresos (otros servicios)</span><b>${money(ing,'NIO')}</b></div></div>
    ${o.av.length?`<div class="notice" style="margin-top:10px">${o.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
-   <p class="sm">Se guardan solo los datos (≈ ${Math.max(1,Math.round(JSON.stringify(o).length/1024))} KB); el archivo no se conserva.</p>
+   <p class="sm">Se guardan los datos (≈ ${Math.max(1,Math.round(JSON.stringify(o).length/1024))} KB). Si es el informe completo, el libro queda además en este teléfono como <b>libro base</b> para generar el informe de la semana siguiente.</p>
    <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" id="infOk" style="flex:2">Guardar datos</button></div></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');
-  $('#infOk').onclick=()=>{const id='i'+o.desde.replace(/-/g,'')+'-'+o.hasta.replace(/-/g,'');const prev=infLista().find(x=>x.id===id);if(prev&&prev._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(prev._n));
+  $('#infOk').onclick=()=>{file.arrayBuffer().then(ab=>libroGuardarBase(ab,file.name,'importado')).then(()=>infBaseEstado()).catch(()=>{});const id='i'+o.desde.replace(/-/g,'')+'-'+o.hasta.replace(/-/g,'');const prev=infLista().find(x=>x.id===id);if(prev&&prev._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(prev._n));
     const x={id,desde:o.desde,hasta:o.hasta,archivo:file.name,mue:o.mue,apbb:o.apbb,rehs:o.rehs,otros:o.otros,peaje:o.peaje,av:o.av,u:new Date().toISOString(),por:yoNombre(),_p:true};
     ls.set('epn_est_inf',infLista().filter(y=>y.id!==id).concat([x]));cerrarSheet();ACC_OPEN.add('infsem');toast(prev?'Semana reemplazada':'Informe guardado');renderEst();estSync(true)}}
 document.addEventListener('change',e=>{if(e.target.id==='infFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';infCargar(f)}});
@@ -2831,11 +2831,235 @@ function xPrevia(sheets,nombre,titulo){cerrarSheet();const v=document.createElem
    <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
   v.querySelector('#xpOk').onclick=()=>compartirBlob(xlsx(sheets),nombre,titulo)}
-function infGenerar(y,n){const [a,b]=semRango(y,n);const s=[hojaRE(a,b)];const {L}=reViajes(a,b);if(!L.length)toast('No hay viajes de la motonave en esa semana');
-  xPrevia(s,`${n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,'Informe semanal '+n)}
-function infGenHTML(){const hoy=semDeFecha(today());const ops=[];let {y,n}=hoy;for(let i=0;i<12;i++){n--;if(n<1){y--;n=52}const [a,b]=semRango(y,n);ops.push(`<option value="${y}-${n}">Semana ${n} · ${fC(a)} – ${fC(b)}</option>`)}
-  return `<div class="card" style="margin:10px 0 0;padding:10px 12px"><b style="font-size:13.5px">Informe semanal para oficina central</b><p class="sm" style="margin:4px 0 6px">Lunes a domingo, con el formato definido. Incluye por ahora la hoja <b>Ingreso RE y HS</b> (viajes registrados por el sobrecargo); las demás hojas se agregan en las próximas versiones.</p>
-   <div class="row" style="flex-wrap:nowrap"><select id="infSemSel" style="flex:1">${ops.join('')}</select><button class="btn" data-infgen style="padding:8px 14px">Ver informe</button></div></div>`}
+/* --- Libro base del informe semanal: se toma el informe de la semana anterior y se actualizan sus celdas, conservando el formato de oficina central --- */
+const LB={db:null};
+function lbDB(){return LB.db||(LB.db=new Promise((ok,ko)=>{const r=indexedDB.open('epn_libros',1);r.onupgradeneeded=()=>r.result.createObjectStore('l');r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)}))}
+async function lbTx(modo,fn){const d=await lbDB();return new Promise((ok,ko)=>{const t=d.transaction('l',modo);const st=t.objectStore('l');const r=fn(st);t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>ko(t.error)})}
+const lbGet=k=>lbTx('readonly',s=>s.get(k)).catch(()=>null);
+const lbKeys=()=>lbTx('readonly',s=>s.getAllKeys()).then(x=>x||[]).catch(()=>[]);
+async function lbPut(k,v){await lbTx('readwrite',s=>s.put(v,k));const ks=(await lbKeys()).sort();for(const x of ks.slice(0,Math.max(0,ks.length-4)))await lbTx('readwrite',s=>s.delete(x))}
+const lbK=(y,n)=>y+'-'+String(n).padStart(2,'0');
+const semAnt=(y,n)=>{const [a]=semRango(y,n);const d=new Date(a+'T12:00');d.setDate(d.getDate()-1);return semDeFecha(kd(d))};
+/* zip: lee entradas crudas y vuelve a escribir solo lo modificado */
+function zipLeer(buf){const u8=new Uint8Array(buf),dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);let e=u8.length-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('El archivo no es un Excel (.xlsx)');
+  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const L=[],td=new TextDecoder();
+  for(let i=0;i<n;i++){const m=dv.getUint16(p+10,true),crc=dv.getUint32(p+16,true),cs=dv.getUint32(p+20,true),us=dv.getUint32(p+24,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+    const nm=td.decode(u8.subarray(p+46,p+46+nl));const ln=dv.getUint16(lo+26,true),lx=dv.getUint16(lo+28,true);L.push({n:nm,m,crc,cs,us,raw:u8.slice(lo+30+ln+lx,lo+30+ln+lx+cs)});p+=46+nl+xl+cl}
+  return L}
+async function zipTxt(e){if(!e)return null;if(e.d!=null)return typeof e.d==='string'?e.d:new TextDecoder().decode(e.d);if(e.m===0)return new TextDecoder().decode(e.raw);
+  if(typeof DecompressionStream==='undefined')throw new Error('Este teléfono no puede abrir Excel: actualice el sistema (iOS 16.4 o más reciente)');
+  return await new Response(new Blob([e.raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()}
+async function zipEscribir(L){const enc=new TextEncoder();const parts=[],cen=[];let off=0;const dt=new Date(),tm=(dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()>>1),dd=((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate();
+  for(const f of L){let m,crc,cs,us,raw;
+    if(f.d!=null){const d=typeof f.d==='string'?enc.encode(f.d):f.d;crc=crc32(d);us=d.length;let z=null;if(typeof CompressionStream!=='undefined'){try{z=new Uint8Array(await new Response(new Blob([d]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer())}catch(e){z=null}}
+      if(z){m=8;raw=z}else{m=0;raw=d}cs=raw.length}else({m,crc,cs,us,raw}=f);
+    const nm=enc.encode(f.n);const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,m,true);h.setUint16(10,tm,true);h.setUint16(12,dd,true);h.setUint32(14,crc,true);h.setUint32(18,cs,true);h.setUint32(22,us,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,raw);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,m,true);c.setUint16(12,tm,true);c.setUint16(14,dd,true);c.setUint32(16,crc,true);c.setUint32(20,cs,true);c.setUint32(24,us,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    cen.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+raw.length}
+  const cs=cen.reduce((s,x)=>s+x.length,0);const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,L.length,true);e.setUint16(10,L.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+/* modelo del libro */
+const lbX=s=>new DOMParser().parseFromString(s,'application/xml');
+const colN=s=>{let c=0;for(const ch of s)c=c*26+ch.charCodeAt(0)-64;return c};
+const colA=n=>{let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
+const refRC=r=>{const m=/^([A-Z]+)(\d+)$/.exec(r);return[+m[2],colN(m[1])]};
+async function libroAbrir(buf){const L=zipLeer(buf);const by={};L.forEach(e=>by[e.n]=e);
+  if(!by['xl/workbook.xml'])throw new Error('El archivo no es un libro de Excel');
+  const wb=lbX(await zipTxt(by['xl/workbook.xml'])),rl=lbX(await zipTxt(by['xl/_rels/workbook.xml.rels']));const rm={};[...rl.getElementsByTagName('Relationship')].forEach(r=>rm[r.getAttribute('Id')]=r.getAttribute('Target'));
+  const ssx=await zipTxt(by['xl/sharedStrings.xml']);const ss=ssx?[...lbX(ssx).getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join('')):[];
+  const sheets=[...wb.getElementsByTagName('sheet')].map(s=>{let t=rm[s.getAttribute('r:id')]||'';t=t.startsWith('/')?t.slice(1):'xl/'+t.replace(/^\.\//,'');return{name:s.getAttribute('name'),path:t,hidden:!!s.getAttribute('state')&&s.getAttribute('state')!=='visible',doc:null}});
+  return{L,by,wb,ss,sheets}}
+async function lbHoja(B,name){const s=B.sheets.find(x=>x.name.toLowerCase()===String(name).toLowerCase());if(!s)return null;if(!s.doc){s.doc=lbX(await zipTxt(B.by[s.path]));lbIndex(s)}return s}
+function lbIndex(s){s.idx={};s.rows={};s.shared={};for(const r of s.doc.getElementsByTagName('row')){s.rows[r.getAttribute('r')]=r;for(const c of r.getElementsByTagName('c')){const ref=c.getAttribute('r');s.idx[ref]=c;const f=c.getElementsByTagName('f')[0];
+  if(f&&f.getAttribute('t')==='shared'&&f.getAttribute('ref')&&f.textContent){const [rr,cc]=refRC(ref);s.shared[f.getAttribute('si')]={r:rr,c:cc,txt:f.textContent}}}}}
+function lbFila(s,r,crear){let row=s.rows[r];if(row||!crear)return row;const NS=s.doc.documentElement.namespaceURI;const sd=s.doc.getElementsByTagName('sheetData')[0];row=s.doc.createElementNS(NS,'row');row.setAttribute('r',r);
+  const sig=[...sd.getElementsByTagName('row')].find(x=>+x.getAttribute('r')>r);sd.insertBefore(row,sig||null);s.rows[r]=row;return row}
+function lbSet(s,ref,val){let c=s.idx[ref];const NS=s.doc.documentElement.namespaceURI;const [r,cn]=refRC(ref);
+  if(!c){if(val==null)return;const row=lbFila(s,r,true);c=s.doc.createElementNS(NS,'c');c.setAttribute('r',ref);const sig=[...row.getElementsByTagName('c')].find(x=>refRC(x.getAttribute('r'))[1]>cn);
+    if(!c.getAttribute('s')){const prev=[...row.getElementsByTagName('c')].reverse().find(x=>refRC(x.getAttribute('r'))[1]<cn);if(prev&&prev.getAttribute('s'))c.setAttribute('s',prev.getAttribute('s'))}row.insertBefore(c,sig||null);s.idx[ref]=c}
+  const f0=c.getElementsByTagName('f')[0];if(f0&&f0.getAttribute('t')==='shared'&&f0.getAttribute('ref')){/* era la fórmula maestra: sus dependientes pasan a fórmula propia */
+    const si=f0.getAttribute('si'),m=s.shared[si];for(const x of s.doc.getElementsByTagName('f'))if(x!==f0&&x.getAttribute('t')==='shared'&&x.getAttribute('si')===si&&!x.getAttribute('ref')){const [rr,cc]=refRC(x.parentNode.getAttribute('r'));x.removeAttribute('t');x.removeAttribute('si');x.textContent=fxMover(m.txt,rr-m.r,cc-m.c)}delete s.shared[si]}
+  else if(f0&&f0.getAttribute('t')==='shared'){f0.removeAttribute('t');f0.removeAttribute('si')}
+  while(c.firstChild)c.removeChild(c.firstChild);c.removeAttribute('t');s.dirty=true;if(val==null)return;
+  const el=n=>s.doc.createElementNS(NS,n);
+  if(typeof val==='number'){const v=el('v');v.textContent=String(val);c.appendChild(v)}
+  else if(typeof val==='string'){c.setAttribute('t','inlineStr');const is=el('is'),t=el('t');t.setAttributeNS('http://www.w3.org/XML/1998/namespace','xml:space','preserve');t.textContent=val;is.appendChild(t);c.appendChild(is)}
+  else if(val.f!=null){const f=el('f');f.textContent=val.f;c.appendChild(f)}}
+function lbVal(B,s,ref){const c=s.idx[ref];if(!c)return null;const t=c.getAttribute('t'),v=c.getElementsByTagName('v')[0];
+  if(t==='inlineStr')return[...c.getElementsByTagName('t')].map(x=>x.textContent).join('');if(!v)return null;
+  if(t==='s')return B.ss[+v.textContent]??'';if(t==='str')return v.textContent;if(t==='e')return new FxErr(v.textContent);if(t==='b')return v.textContent==='1';return +v.textContent}
+function lbTxt(B,s,ref){const v=lbVal(B,s,ref);return typeof v==='string'?v:''}
+function lbFormula(s,ref){const c=s.idx[ref];if(!c)return null;const f=c.getElementsByTagName('f')[0];if(!f)return null;if(f.getAttribute('t')==='shared'&&!f.textContent){const m=s.shared[f.getAttribute('si')];if(!m)return null;const [r,cc]=refRC(ref);return fxMover(m.txt,r-m.r,cc-m.c)}return f.textContent}
+/* fórmulas: se recalculan para que el archivo muestre valores correctos aun en visores que no calculan (WhatsApp, vista rápida) */
+class FxErr{constructor(v){this.v=v}}
+const RXG=/((?:'(?:[^']|'')+'|[A-Za-z_][\w\.]*)!)?(\$?)([A-Z]{1,3})(\$?)(\d+)(?![\w(!])/g;
+function fxMover(t,dr,dc){return t.split(/("(?:[^"]|"")*")/).map((p,i)=>i%2?p:p.replace(RXG,(m,sh,d1,col,d2,row,off,str)=>{const pv=str[off-1];if(pv&&/[\w.]/.test(pv))return m;return(sh||'')+d1+(d1?col:colA(colN(col)+dc))+d2+(d2?row:String(+row+dr))})).join('')}
+function fxTok(s){const T=[];let i=0;const RR=/((?:'(?:[^']|'')+'|[A-Za-z_][\w\.]*)!)?\$?([A-Z]{1,3})\$?(\d+)(?::\$?([A-Z]{1,3})\$?(\d+))?/y,RF=/([A-Za-z_][\w\.]*)\(/y,RN=/\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|\.\d+/y;
+  while(i<s.length){const ch=s[i];if(ch===' '||ch==='\n'||ch==='\r'){i++;continue}
+    if(ch==='"'){let j=i+1,v='';while(j<s.length){if(s[j]==='"'){if(s[j+1]==='"'){v+='"';j+=2;continue}break}v+=s[j++]}T.push({t:'s',v});i=j+1;continue}
+    let m;RR.lastIndex=i;if((m=RR.exec(s))&&!/[\w(]/.test(s[RR.lastIndex]||'')){let sh=m[1]?m[1].slice(0,-1):null;if(sh&&sh[0]==="'")sh=sh.slice(1,-1).replace(/''/g,"'");if(sh&&sh.includes('['))throw'ext';
+      T.push({t:'r',sh,c1:colN(m[2]),r1:+m[3],c2:m[4]?colN(m[4]):null,r2:m[5]?+m[5]:null});i=RR.lastIndex;continue}
+    RF.lastIndex=i;if((m=RF.exec(s))){T.push({t:'f',v:m[1].toUpperCase().replace(/^_XLFN\./,'')});i=RF.lastIndex;continue}
+    RN.lastIndex=i;if((m=RN.exec(s))){T.push({t:'n',v:+m[0]});i=RN.lastIndex;continue}
+    const two=s.substr(i,2);if(two==='<='||two==='>='||two==='<>'){T.push({t:'o',v:two});i+=2;continue}
+    if('+-*/^&=<>%'.includes(ch)){T.push({t:'o',v:ch});i++;continue}
+    if(ch==='('||ch===')'||ch===','){T.push({t:ch});i++;continue}
+    throw'tok'}
+  return T}
+function fxParse(T){let p=0;const pk=()=>T[p],nx=()=>T[p++];const op=(...v)=>pk()&&pk().t==='o'&&v.includes(pk().v);
+  const ex=()=>{let a=cat();while(op('=','<','>','<=','>=','<>')){const o=nx().v;a={k:'b',o,a,b:cat()}}return a};
+  const cat=()=>{let a=add();while(op('&')){nx();a={k:'b',o:'&',a,b:add()}}return a};
+  const add=()=>{let a=mul();while(op('+','-')){const o=nx().v;a={k:'b',o,a,b:mul()}}return a};
+  const mul=()=>{let a=pw();while(op('*','/')){const o=nx().v;a={k:'b',o,a,b:pw()}}return a};
+  const pw=()=>{let a=un();while(op('^')){nx();a={k:'b',o:'^',a,b:un()}}return a};
+  const un=()=>{if(op('+','-')){const o=nx().v;const a=un();return o==='-'?{k:'neg',a}:{k:'pos',a}}let a=pr();while(op('%')){nx();a={k:'b',o:'/',a,b:{k:'n',v:100}}}return a};
+  const pr=()=>{const t=nx();if(!t)throw'par';if(t.t==='n')return{k:'n',v:t.v};if(t.t==='s')return{k:'s',v:t.v};if(t.t==='r')return{k:'r',...t};
+    if(t.t==='f'){const args=[];if(pk()&&pk().t===')'){nx();return{k:'f',n:t.v,args}}for(;;){args.push(ex());const q=nx();if(!q)throw'par';if(q.t===')')break;if(q.t!==',')throw'par'}return{k:'f',n:t.v,args}}
+    if(t.t==='('){const a=ex();const q=nx();if(!q||q.t!==')')throw'par';return a}throw'par'};
+  const a=ex();if(p<T.length)throw'par';return a}
+function fxMotor(B){const memo=new Map(),busy=new Set();
+  const hoja=n=>{const s=B.sheets.find(x=>x.name.toLowerCase()===n.toLowerCase());if(!s||!s.doc)throw'hoja';return s};
+  const num=v=>{if(v instanceof FxErr)throw v;if(v==null||v==='')return 0;if(typeof v==='boolean')return v?1:0;if(typeof v==='number')return v;const n=+v;if(isNaN(n))throw new FxErr('#VALUE!');return n};
+  const rango=(n,s)=>{const sh=n.sh?hoja(n.sh):s;const out=[];const r2=n.r2||n.r1,c2=n.c2||n.c1;for(let r=Math.min(n.r1,r2);r<=Math.max(n.r1,r2);r++)for(let c=Math.min(n.c1,c2);c<=Math.max(n.c1,c2);c++){const ref=colA(c)+r;if(sh.idx[ref])out.push(val(sh,ref))}return out};
+  const nums=(args,s)=>{const L=[];args.forEach(a=>{if(a.k==='r'&&(a.r2||a.c2)){rango(a,s).forEach(v=>{if(v instanceof FxErr)throw v;if(typeof v==='number')L.push(v)})}else L.push(num(ev(a,s)))});return L};
+  const ev=(n,s)=>{switch(n.k){case'n':case's':return n.v;case'neg':return -num(ev(n.a,s));case'pos':return ev(n.a,s);
+    case'r':{if(n.r2||n.c2)throw new FxErr('#VALUE!');const sh=n.sh?hoja(n.sh):s;return val(sh,colA(n.c1)+n.r1)}
+    case'b':{const a=ev(n.a,s),b=ev(n.b,s);if(a instanceof FxErr)throw a;if(b instanceof FxErr)throw b;
+      if(n.o==='&')return String(a??'')+String(b??'');
+      if(['=','<','>','<=','>=','<>'].includes(n.o)){const A=typeof a==='string'?a.toLowerCase():(a??0),Bv=typeof b==='string'?b.toLowerCase():(b??0);return{'=':A===Bv,'<>':A!==Bv,'<':A<Bv,'>':A>Bv,'<=':A<=Bv,'>=':A>=Bv}[n.o]}
+      const x=num(a),y=num(b);if(n.o==='+')return x+y;if(n.o==='-')return x-y;if(n.o==='*')return x*y;if(n.o==='^')return Math.pow(x,y);if(y===0)throw new FxErr('#DIV/0!');return x/y}
+    case'f':{const A=n.args;switch(n.n){
+      case'SUM':return nums(A,s).reduce((p,q)=>p+q,0);
+      case'SUBTOTAL':{const k=num(ev(A[0],s))%100;const L=nums(A.slice(1),s);if(k===9)return L.reduce((p,q)=>p+q,0);if(k===1)return L.length?L.reduce((p,q)=>p+q,0)/L.length:(()=>{throw new FxErr('#DIV/0!')})();if(k===2)return L.length;if(k===4)return L.length?Math.max(...L):0;if(k===5)return L.length?Math.min(...L):0;throw'fx'}
+      case'AVERAGE':{const L=nums(A,s);if(!L.length)throw new FxErr('#DIV/0!');return L.reduce((p,q)=>p+q,0)/L.length}
+      case'MAX':{const L=nums(A,s);return L.length?Math.max(...L):0}case'MIN':{const L=nums(A,s);return L.length?Math.min(...L):0}case'COUNT':return nums(A,s).length;
+      case'ABS':return Math.abs(num(ev(A[0],s)));
+      case'ROUND':{const d=A[1]?num(ev(A[1],s)):0,f=Math.pow(10,d),x=num(ev(A[0],s));return Math.sign(x)*Math.round(Math.abs(x)*f+1e-9)/f}
+      case'IFERROR':try{const v=ev(A[0],s);if(v instanceof FxErr)throw v;return v}catch(e){if(e instanceof FxErr)return ev(A[1],s);throw e}
+      case'IF':{const c=ev(A[0],s);const t=typeof c==='string'?c!=='':!!num(c);return t?(A[1]?ev(A[1],s):true):(A[2]?ev(A[2],s):false)}
+      default:throw'fx'}}}throw'fx'};
+  function val(s,ref){const k=s.name+'!'+ref;if(memo.has(k))return memo.get(k);const c=s.idx[ref];if(!c)return null;
+    const txt=lbFormula(s,ref);const fe=c.getElementsByTagName('f')[0];let v;
+    if(txt==null||busy.has(k)||(fe&&(fe.getAttribute('t')==='array'||fe.getAttribute('t')==='dataTable')))v=lbVal(B,s,ref);
+    else{busy.add(k);try{v=ev(fxParse(fxTok(txt)),s);if(v==null)v=0}catch(e){v=e instanceof FxErr?e:lbVal(B,s,ref)}busy.delete(k)}
+    memo.set(k,v);return v}
+  return{val}}
+async function libroRecalcular(B){for(const s of B.sheets)await lbHoja(B,s.name);const M=fxMotor(B);let n=0;
+  for(const s of B.sheets)for(const ref in s.idx){const c=s.idx[ref];const fe=c.getElementsByTagName('f')[0];if(!fe)continue;const v=M.val(s,ref);if(v===undefined||v===null&&!c.getElementsByTagName('v')[0])continue;
+    const NS=s.doc.documentElement.namespaceURI;let ve=c.getElementsByTagName('v')[0];const vv=v==null?'':v;
+    let t=null,txt;if(vv instanceof FxErr){t='e';txt=vv.v}else if(typeof vv==='string'){t='str';txt=vv}else if(typeof vv==='boolean'){t='b';txt=vv?'1':'0'}else{txt=String(Math.abs(vv)<1e-12?0:+vv.toPrecision(15))}
+    if(ve&&ve.textContent===txt&&(c.getAttribute('t')||null)===t)continue;
+    if(!ve){ve=s.doc.createElementNS(NS,'v');c.appendChild(ve)}ve.textContent=txt;if(t)c.setAttribute('t',t);else c.removeAttribute('t');s.dirty=true;n++}
+  return n}
+async function libroGuardar(B){const ser=new XMLSerializer();const dec='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const quitar=new Set(['xl/calcChain.xml']);
+  const ctx=lbX(await zipTxt(B.by['[Content_Types].xml']));[...ctx.getElementsByTagName('Override')].forEach(o=>{if(o.getAttribute('PartName')==='/xl/calcChain.xml')o.parentNode.removeChild(o)});
+  const rl=lbX(await zipTxt(B.by['xl/_rels/workbook.xml.rels']));[...rl.getElementsByTagName('Relationship')].forEach(r=>{if(/calcChain/.test(r.getAttribute('Type')))r.parentNode.removeChild(r)});
+  let cp=B.wb.getElementsByTagName('calcPr')[0];if(!cp){cp=B.wb.createElementNS(B.wb.documentElement.namespaceURI,'calcPr');const after=B.wb.getElementsByTagName('definedNames')[0]||B.wb.getElementsByTagName('sheets')[0];after.parentNode.insertBefore(cp,after.nextSibling)}cp.setAttribute('fullCalcOnLoad','1');
+  const out=[];for(const e of B.L){if(quitar.has(e.n))continue;const s=B.sheets.find(x=>x.path===e.n);
+    if(s&&s.dirty)out.push({n:e.n,d:dec+ser.serializeToString(s.doc.documentElement)});
+    else if(e.n==='xl/workbook.xml')out.push({n:e.n,d:dec+ser.serializeToString(B.wb.documentElement)});
+    else if(e.n==='[Content_Types].xml')out.push({n:e.n,d:dec+ser.serializeToString(ctx.documentElement)});
+    else if(e.n==='xl/_rels/workbook.xml.rels')out.push({n:e.n,d:dec+ser.serializeToString(rl.documentElement)});
+    else out.push(e)}
+  return await zipEscribir(out)}
+/* semana del libro: se reconoce por la fecha de corte en Metas1 o por los viajes */
+async function libroSemanaDe(B,nombre){const m1=await lbHoja(B,'Metas1');if(m1)for(const ref in m1.idx){const t=lbTxt(B,m1,ref);const m=/AL\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(t);if(m)return semDeFecha(`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`)}
+  const re=await lbHoja(B,'Ingreso RE y HS');if(re){let mx=0;for(const ref in re.idx)if(/^B\d+$/.test(ref)){const v=lbVal(B,re,ref);if(typeof v==='number'&&v>40000&&v<60000)mx=Math.max(mx,v)}if(mx){const d=new Date(Date.UTC(1899,11,30)+mx*864e5);return semDeFecha(d.toISOString().slice(0,10))}}
+  const n=/^(\d{1,2})\D/.exec(nombre||'');return n?{y:new Date().getFullYear(),n:+n[1]}:null}
+async function libroGuardarBase(buf,nombre,origen){const B=await libroAbrir(buf);if(!(await lbHoja(B,'Metas1'))||!(await lbHoja(B,'Ingreso RE y HS')))throw new Error('El libro no tiene las hojas Ingreso RE y HS y Metas1');
+  const w=await libroSemanaDe(B,nombre);if(!w)throw new Error('No se reconoce la semana del informe');await lbPut(lbK(w.y,w.n),{b:buf instanceof ArrayBuffer?buf:buf.buffer,f:new Date().toISOString(),o:origen,nom:nombre||''});return w}
+/* busca la fila de un apartado de Metas1 por su título y la columna por su encabezado */
+function lbBuscar(B,s,tit,fila,maxR){let r0=0;const R=Object.keys(s.rows).map(Number).sort((a,b)=>a-b);for(const r of R){if(tit.test(lbTxt(B,s,'A'+r))){r0=r;break}}if(!r0)return null;
+  for(const r of R)if(r>r0&&r<=r0+(maxR||12)&&fila.test(lbTxt(B,s,'B'+r)))return{r0,r};return null}
+function lbCol(B,s,r0,r1,rx){for(let r=r0;r<r1;r++)for(let c=1;c<=20;c++){const v=lbVal(B,s,colA(c)+r);if(v!=null&&rx.test(String(v).replace(/\s+/g,' ')))return c}return 0}
+function lbSumar(s,ref,x){const f=lbFormula(s,ref);const c=s.idx[ref];const v=c&&c.getElementsByTagName('v')[0];let base=f!=null?f:(v?v.textContent:'0');lbSet(s,ref,{f:base.replace(/^\+?/,'')+'+'+x})}
+async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=semRango(y,n);const {L}=reViajes(a,b);const av=[],hechas=new Set();
+  const re=await lbHoja(B,'Ingreso RE y HS'),m1=await lbHoja(B,'Metas1');if(!re||!m1)throw new Error('El libro base no tiene las hojas Ingreso RE y HS y Metas1');
+  /* Ingreso RE y HS: 3 filas por sentido (la tercera oculta si no hay viaje); la columna H queda vacía y oculta */
+  const SL={ida:[5,6,7],vue:[14,15,16]};
+  for(const dir of ['ida','vue']){const xs=L.filter(x=>x.dir===dir).sort((p,q)=>p.f.localeCompare(q.f));if(xs.length>3)av.push(`Hay ${xs.length} viajes ${dir==='ida'?'Bluefields → Corn Island':'Corn Island → Bluefields'}; el formato tiene espacio para 3. Revise la hoja Ingreso RE y HS.`);
+    SL[dir].forEach((r,i)=>{const x=xs[i];
+      if(x){lbSet(re,'A'+r,i+1);lbSet(re,'B'+r,xD(x.f));lbSet(re,'C'+r,x.buque);lbSet(re,'D'+r,x.pas);lbSet(re,'E'+r,x.costo);lbSet(re,'F'+r,{f:`D${r}*E${r}`});lbSet(re,'G'+r,x.ingCar);lbSet(re,'H'+r,null);lbSet(re,'I'+r,{f:`+F${r}+G${r}`});lbSet(re,'J'+r,x.tur||0);lbSet(re,'L'+r,{f:`G${r}/1600`})}
+      else{'ABCDEFGHIJL'.split('').forEach(c=>lbSet(re,c+r,null))}
+      const row=lbFila(re,r,true);if(i===2){if(x)row.removeAttribute('hidden');else row.setAttribute('hidden','1')}})}
+  lbSet(re,'J8',{f:'SUM(J5:J7)'});lbSet(re,'J17',{f:'SUM(J14:J16)'});lbSet(re,'H17',{f:'SUM(H14:H16)'});
+  {const cols=re.doc.getElementsByTagName('col');let ok=false;for(const c of cols)if(+c.getAttribute('min')<=8&&+c.getAttribute('max')>=8){c.setAttribute('hidden','1');ok=true}if(!ok)av.push('La columna H de Ingreso RE y HS no está oculta en el libro base.')}
+  hechas.add('Ingreso RE y HS');
+  /* Metas1: acumulados de la motonave y fechas de corte */
+  const nV=L.length,pax=L.reduce((s,x)=>s+x.pas,0),ton=Math.round(L.reduce((s,x)=>s+x.ingCar,0)/1600*100)/100;
+  const cmp=lbBuscar(B,m1,/COMPARATIVO A LA FECHA.*PUERTOS NACIONALES/i,/Bluff/i);
+  if(cmp){const cE=(()=>{for(let r=cmp.r0+1;r<cmp.r;r++)for(let c=1;c<=20;c++)if(lbVal(B,m1,colA(c)+r)===y)return c;return 0})();
+    const cP=lbCol(B,m1,cmp.r0+1,cmp.r,new RegExp('Pasajeros '+y)),cK=lbCol(B,m1,cmp.r0+1,cmp.r,new RegExp('Carga '+y));
+    if(cE)lbSumar(m1,colA(cE)+cmp.r,nV);else av.push('Metas1: no se encontró la columna de embarcaciones '+y+'.');
+    if(cP)lbSumar(m1,colA(cP)+cmp.r,pax);else av.push('Metas1: no se encontró la columna Pasajeros '+y+'.');
+    if(cK)lbSumar(m1,colA(cK)+cmp.r,ton);else av.push('Metas1: no se encontró la columna Carga '+y+' (TM).')}
+  else av.push('Metas1: no se encontró el comparativo de puertos nacionales.');
+  const res=lbBuscar(B,m1,/RESUMEN SEMANAL DE LOS PUERTOS NACIONALES/i,/Bluff/i);
+  if(res){const cD=lbCol(B,m1,res.r0+1,res.r,/^Embarcaciones/i);if(cD)lbSet(m1,colA(cD)+res.r,nV)}else av.push('Metas1: no se encontró el resumen semanal de puertos nacionales.');
+  const fin=b.slice(8,10)+'/'+b.slice(5,7)+'/'+b.slice(0,4);const MES='ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE';
+  for(const ref in m1.idx){const t=lbVal(B,m1,ref);if(typeof t!=='string'||lbFormula(m1,ref)!=null)continue;const t2=t.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,fin).replace(new RegExp(`\\b\\d{1,2}\\s+(?:de\\s+)?(?:${MES})\\s+(?:de\\s+)?\\d{4}\\b`,'gi'),fin);if(t2!==t)lbSet(m1,ref,t2)}
+  hechas.add('Metas1');
+  av.push('Metas1: los buques internacionales (filas de cumplimiento, resumen semanal y carga por buque) y las embarcaciones y carga nacional atendidas siguen como en el informe anterior; se automatizan en la próxima etapa.');
+  await libroRecalcular(B);const blob=await libroGuardar(B);
+  return{B,blob,av,hechas,res:{nV,pax,ton}}}
+/* vista previa del libro con sus estilos */
+const TEMA=['#FFFFFF','#000000','#E7E6E6','#44546A','#4472C4','#ED7D31','#A5A5A5','#FFC000','#5B9BD5','#70AD47'];
+function lbColor(e){if(!e)return null;let h=null;const rgb=e.getAttribute('rgb'),th=e.getAttribute('theme'),tn=+e.getAttribute('tint')||0;if(rgb)h='#'+rgb.slice(-6);else if(th!=null)h=TEMA[+th]||null;else return null;if(!h)return null;
+  if(tn){const c=[1,3,5].map(i=>parseInt(h.substr(i,2),16)).map(v=>Math.round(tn>0?v+(255-v)*tn:v*(1+tn)));h='#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')}return h}
+async function lbEstilos(B){if(B.st)return B.st;const x=lbX(await zipTxt(B.by['xl/styles.xml']));const nf={};[...x.getElementsByTagName('numFmt')].forEach(e=>nf[e.getAttribute('numFmtId')]=e.getAttribute('formatCode'));
+  const g=(p,c)=>{const P=x.getElementsByTagName(p)[0];return P?[...P.children].filter(e=>e.localName===c):[]};
+  const fills=g('fills','fill').map(f=>{const p=f.getElementsByTagName('patternFill')[0];if(!p||p.getAttribute('patternType')!=='solid')return null;return lbColor(p.getElementsByTagName('fgColor')[0])});
+  const fonts=g('fonts','font').map(f=>({b:f.getElementsByTagName('b').length>0&&f.getElementsByTagName('b')[0].getAttribute('val')!=='0',c:lbColor(f.getElementsByTagName('color')[0])}));
+  const bds=g('borders','border').map(b=>['left','right','top','bottom'].map(k=>{const e=[...b.children].find(z=>z.localName===k);return e&&e.getAttribute('style')?1:0}));
+  const xfs=g('cellXfs','xf').map(e=>{const al=e.getElementsByTagName('alignment')[0];const id=e.getAttribute('numFmtId')||'0';return{nf:nf[id]||id,fill:fills[+e.getAttribute('fillId')||0],font:fonts[+e.getAttribute('fontId')||0]||{},bd:bds[+e.getAttribute('borderId')||0]||[0,0,0,0],h:al&&al.getAttribute('horizontal'),wrap:al&&al.getAttribute('wrapText')==='1'}});
+  return B.st={xfs}}
+function lbFmt(v,nf){if(v instanceof FxErr)return v.v;if(v==null||v==='')return'';if(typeof v==='boolean')return v?'VERDADERO':'FALSO';if(typeof v!=='number')return esc(v).replace(/\n/g,'<br>');
+  const code=String(nf);if(/^(1[4-7]|22)$/.test(code)||(/[dy]/i.test(code.replace(/"[^"]*"/g,''))&&!/#|0\.0/.test(code))){const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*864e5);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear()}
+  if(/%/.test(code)||code==='9'||code==='10'){const dec=(code.split('.')[1]||'').replace(/[^0]/g,'').length||(code==='10'?2:0);return(v*100).toLocaleString('es-NI',{minimumFractionDigits:dec,maximumFractionDigits:dec})+'%'}
+  const sec=code.split(';');if(Math.abs(v)<1e-9&&sec[2]&&/-/.test(sec[2]))return'-';
+  const m=/0\.(0+)/.exec(sec[0]);const dec=m?m[1].length:(/^(2|4|39|40|43|44)$/.test(code)?2:(/^(1|3|37|38)$/.test(code)||/^[#,0]+$/.test(sec[0].replace(/[^#,0.]/g,''))&&code!=='0'&&code!=='General'?0:null));
+  if(dec==null)return v.toLocaleString('es-NI',{maximumFractionDigits:4,useGrouping:!(code==='0'||/^general$/i.test(code))});return v.toLocaleString('es-NI',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
+async function libroHojaHTML(B,s){const st=await lbEstilos(B);const M=fxMotor(B);
+  const hidC=new Set(),wC={};for(const c of s.doc.getElementsByTagName('col')){for(let i=+c.getAttribute('min');i<=Math.min(+c.getAttribute('max'),60);i++){if(c.getAttribute('hidden')==='1')hidC.add(i);wC[i]=+c.getAttribute('width')||9}}
+  let mr=0,mc=0;for(const ref in s.idx){const c=s.idx[ref];if(!c.getElementsByTagName('v')[0]&&!c.getElementsByTagName('is')[0]&&!c.getElementsByTagName('f')[0])continue;const [r,cc]=refRC(ref);if(r>mr)mr=r;if(cc>mc)mc=cc}
+  mr=Math.min(mr,400);mc=Math.min(mc,40);const hidR=new Set();for(const r in s.rows)if(s.rows[r].getAttribute('hidden')==='1')hidR.add(+r);
+  const span={},skip=new Set();for(const m of s.doc.getElementsByTagName('mergeCell')){const [a,b2]=m.getAttribute('ref').split(':');if(!b2)continue;const [r1,c1]=refRC(a),[r2,c2]=refRC(b2);let rs=0,cs=0;for(let r=r1;r<=r2;r++)if(!hidR.has(r))rs++;for(let c=c1;c<=c2;c++)if(!hidC.has(c))cs++;
+    span[r1+','+c1]=[Math.max(rs,1),Math.max(cs,1)];for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(r!==r1||c!==c1)skip.add(r+','+c)}
+  const cols=[];for(let c=1;c<=mc;c++)if(!hidC.has(c))cols.push(c);let h=`<div style="overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:#fff"><table style="border-collapse:collapse;font-size:11px;color:#111;font-family:Calibri,Arial,sans-serif"><colgroup>${cols.map(c=>`<col style="width:${Math.round((wC[c]||9)*7)}px">`).join('')}</colgroup>`;
+  for(let r=1;r<=mr;r++){if(hidR.has(r))continue;h+='<tr>';for(const c of cols){const k=r+','+c;if(skip.has(k))continue;const ref=colA(c)+r;const ce=s.idx[ref];const x=ce?st.xfs[+ce.getAttribute('s')||0]||{}:{};const v=ce?M.val(s,ref):null;const sp=span[k];
+      const bd=x.bd||[0,0,0,0];const sty=`padding:2px 4px;white-space:${x.wrap?'normal':'nowrap'};${bd[0]?'border-left:1px solid #777;':''}${bd[1]?'border-right:1px solid #777;':''}${bd[2]?'border-top:1px solid #777;':''}${bd[3]?'border-bottom:1px solid #777;':''}${x.fill?'background:'+x.fill+';':''}${x.font&&x.font.b?'font-weight:700;':''}${x.font&&x.font.c&&x.font.c!=='#000000'?'color:'+x.font.c+';':''}text-align:${x.h&&x.h!=='general'?(x.h==='centerContinuous'?'center':x.h):(typeof v==='number'?'right':'left')};`;
+      h+=`<td${sp?` rowspan="${sp[0]}" colspan="${sp[1]}"`:''} style="${sty}">${lbFmt(v,x.nf)}</td>`}h+='</tr>'}
+  return h+'</table></div>'}
+function libroPrevia(R,nombre,titulo,clave){cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';const H=R.B.sheets.filter(s=>!s.hidden);let k=0;
+  const pinta=async()=>{const bx=v.querySelector('#xpBody');bx.innerHTML='<p class="sm">Preparando…</p>';bx.innerHTML=await libroHojaHTML(R.B,H[k]);requestAnimationFrame(()=>{const t=bx.querySelector('table'),w=bx.firstElementChild;if(t&&w&&v.dataset.fit!=='0'){const r=(w.clientWidth-4)/t.scrollWidth*0.96;if(r<1)t.style.zoom=r}});
+    v.querySelectorAll('[data-xph]').forEach(b=>b.classList.toggle('on',+b.dataset.xph===k));const s=H[k];v.querySelector('#xpEst').innerHTML=R.hechas.has(s.name)?'<span style="color:#1a7f37">● Actualizada con los datos de la app</span>':'<span style="color:#9a6700">● Igual al informe anterior (fórmulas recalculadas); se completa en próximas etapas o a mano</span>'};
+  v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" style="max-width:980px"><div class="sh-h"><b>Vista previa · ${esc(titulo)}</b><button class="pv-x" data-sh="close">✕</button></div>
+   <p class="sm" style="margin-top:0">${esc(nombre)}</p>
+   <div class="sm" style="margin:0 0 4px"><b>Hojas del libro (${H.length}${R.B.sheets.length>H.length?` visibles · ${R.B.sheets.length-H.length} ocultas`:''}):</b></div>
+   <div class="seg" style="margin-bottom:6px;flex-wrap:wrap">${H.map((s,i)=>`<button data-xph="${i}">${R.hechas.has(s.name)?'✓ ':''}${esc(s.name)}</button>`).join('')}</div>
+   <p class="sm" id="xpEst" style="margin:0 0 6px"></p>
+   ${R.av.length?`<div class="notice" style="margin:0 0 8px;font-size:12.5px">${R.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
+   <label class="chk" style="margin:0 0 6px"><input type="checkbox" id="xpFit" checked> Ajustar al ancho de la pantalla</label><div id="xpBody"></div><p class="sm">Revise el informe. Solo se envía si usted toca <b>Compartir o guardar</b>.</p>
+   <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
+  v.querySelector('#xpOk').onclick=()=>{compartirBlob(R.blob,nombre,titulo);R.blob.arrayBuffer().then(async ab=>{const ex=await lbGet(lbK(clave.y,clave.n));if(!ex||ex.o!=='importado')await lbPut(lbK(clave.y,clave.n),{b:ab,f:new Date().toISOString(),o:'generado',nom:nombre});infBaseEstado()}).catch(()=>{})}}
+async function infBaseEstado(){const el=$('#infBase');if(!el)return;const ks=(await lbKeys()).sort();if(!ks.length){el.innerHTML='Sin libro base. Cargue el último informe enviado (Excel) para generar el siguiente con el formato completo.';return}
+  const k=ks[ks.length-1];const x=await lbGet(k);el.innerHTML=`Libro base: <b>informe ${+k.split('-')[1]}</b> (${x&&x.o==='importado'?'cargado':'generado'} el ${fC((x&&x.f)||'')}) · sirve para generar la semana ${(()=>{const [y,n]=k.split('-').map(Number);const [a]=semRango(y,n);const d=new Date(a+'T12:00');d.setDate(d.getDate()+7);return semDeFecha(kd(d)).n})()}.`}
+async function libroImportar(file){try{const buf=await file.arrayBuffer();const w=await libroGuardarBase(buf,file.name,'importado');toast('Libro base guardado: informe '+w.n);infBaseEstado()}catch(e){toast(e.message||'No se pudo leer el libro')}}
+document.addEventListener('change',e=>{if(e.target.id==='infBaseFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';libroImportar(f)}});
+async function infGenerar(y,n){const [a,b]=semRango(y,n);const {L}=reViajes(a,b);if(!L.length)toast('No hay viajes de la motonave en esa semana');
+  const nombre=`${n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,tit='Informe semanal '+n;const p=semAnt(y,n);const base=await lbGet(lbK(p.y,p.n));
+  if(base){try{const R=await libroGenerar(base.b,y,n);libroPrevia(R,nombre,tit,{y,n});return}catch(e){console.error(e);toast('No se pudo usar el libro base: '+(e.message||e))}}
+  else toast(`No hay libro base del informe ${p.n}: solo se genera la hoja Ingreso RE y HS`);
+  xPrevia([hojaRE(a,b)],nombre,tit)}
+function infGenHTML(){const hoy=semDeFecha(today());const ops=[];let {y,n}=hoy;for(let i=0;i<12;i++){const [a,b]=semRango(y,n);ops.push(`<option value="${y}-${n}">Semana ${n} · ${fC(a)} – ${fC(b)}${i===0?' (en curso)':''}</option>`);n--;if(n<1){const p=semAnt(y,1);y=p.y;n=p.n}}
+  setTimeout(infBaseEstado,0);
+  return `<div class="card" style="margin:10px 0 0;padding:10px 12px"><b style="font-size:13.5px">Informe semanal para oficina central</b><p class="sm" style="margin:4px 0 6px">Lunes a domingo. Se parte del informe de la semana anterior (libro base) con todas sus hojas y formato; la app actualiza <b>Ingreso RE y HS</b> y los acumulados de la motonave en <b>Metas1</b>.</p>
+   <p class="sm" id="infBase" style="margin:0 0 6px"></p>
+   <div class="row" style="flex-wrap:nowrap"><select id="infSemSel" style="flex:1">${ops.map((o,i)=>i===1?o.replace('<option','<option selected'):o).join('')}</select><button class="btn" data-infgen style="padding:8px 14px">Ver informe</button></div>
+   <label class="btn2" style="display:block;text-align:center;margin-top:8px;padding:9px">Cargar libro base (último informe enviado)<input type="file" id="infBaseFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label></div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-infgen]');if(!b)return;const [y,n]=($('#infSemSel').value||'').split('-').map(Number);if(y&&n)infGenerar(y,n)});
 
 /* --- Cláusula 23: medios días de asueto (después del mediodía es extraordinario) --- */
