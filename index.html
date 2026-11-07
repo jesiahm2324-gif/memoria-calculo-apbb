@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.06-67';
+const APP_VER='2026.11.06-68';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1754,7 +1754,7 @@ function renderVia(){const box=$('#viaBox');if(!box)return;
   if(viaSinCostos())return renderViaSob();
   const R=viaResumen(VIA_MES),t=R.tot,sem=viaSem(t);const DN=[3,4,6,0];const allR=[].concat(...R.cs.map(x=>x.c.R));
   box.innerHTML=`${segVia()}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:center;margin-top:${OWNER?10:0}px"><button class="btn2" data-vmes="-1" style="padding:8px 14px">‹</button><b style="font-size:17px">${mesTxt(VIA_MES)}</b><button class="btn2" data-vmes="1" style="padding:8px 14px">›</button></div>
-   ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
+   ${t.n?`<div class="rent-res" style="border:0;padding-top:6px"><div class="rent-k"><div><span>Ingresos (${t.n} viaje${t.n===1?'':'s'})</span><b>${money(t.ing,'NIO')}</b><small>pasajes ${money(R.cs.reduce((s,x)=>s+x.c.bolC,0),'NIO')} · carga ${money(R.cs.reduce((s,x)=>s+(+x.v.car||0)+x.c.eqC,0),'NIO')}</small></div><div><span>Gastos</span><b>${money(t.gas,'NIO')}</b><small>variables ${money(t.gv,'NIO')} · fijos ${money(t.gf,'NIO')}</small></div><div class="${sem[0]}"><span>Utilidad del mes</span><b>${money(t.ut,'NIO')}</b><small>${fq(t.mg)} % · ${sem[1]}</small></div></div>
     <p class="sm" style="margin:6px 0 0">Costos fijos repartidos entre los ${Math.max(viaProgMes(VIA_MES),t.n)} viajes programados del mes (miércoles, jueves, sábado y domingo) · ${t.n} registrado${t.n===1?'':'s'}.</p>
     ${pieBloque(allR,t.ing,t.gas,t.ut)}
     ${viaDetHTML(R)}
@@ -1923,14 +1923,15 @@ async function viaImportar(t){t=(t||'').trim();const i=t.indexOf('VIAJES-APBB:')
 /* ---------- Informe PDF del mes ---------- */
 function viaPdf(){const R=viaResumen(VIA_MES),t=R.tot;if(!t.n){toast('No hay viajes en este mes');return}
   const d=PDFW();d.page();let y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES · BLUEFIELDS – CORN ISLAND',mesTxt(VIA_MES)+(R.prov?' (mes en curso, cifras provisionales)':''));
-  const K=[['Viajes',String(t.n)],['Ingresos',money(t.ing,'NIO')],['Gastos variables',money(t.gv,'NIO')],['Costos fijos asignados',money(t.gf,'NIO')],['Utilidad',money(t.ut,'NIO')],['Margen',fq(t.mg)+' %']];
-  K.forEach(([a,b],i)=>{const x=40+(i%3)*178,yy=y+Math.floor(i/3)*34;d.rect(x,yy,170,30,i===4?(t.ut>=0?'#e6f4ea':'#fdecea'):'#f2f6fb');d.text(x+8,yy+11,a,{size:7.5,color:GRY});d.text(x+8,yy+24,b,{size:10.5,bold:true,color:'#1a1a1a'})});y+=76;
-  const C=[['Fecha',88],['Sentido',96],['Nave',70],['Bolet.',34],['Ingresos',72],['Gastos',72],['Utilidad',70],['%',30]];
+  const bolT=R.cs.reduce((s,x)=>s+x.c.bolC,0),carT=R.cs.reduce((s,x)=>s+(+x.v.car||0)+x.c.eqC,0),tonT=R.cs.reduce((s,x)=>s+viaTon(x.v),0);
+  const K=[['Viajes',String(t.n)],['Ingresos',money(t.ing,'NIO'),'pasajes '+fmt(bolT)+' · carga '+fmt(carT)+' ('+fq(Math.round(tonT*100)/100)+' TM)'],['Gastos variables',money(t.gv,'NIO')],['Costos fijos asignados',money(t.gf,'NIO')],['Utilidad',money(t.ut,'NIO')],['Margen',fq(t.mg)+' %']];
+  K.forEach(([a,b,s2],i)=>{const x=40+(i%3)*178,yy=y+Math.floor(i/3)*38;d.rect(x,yy,170,34,i===4?(t.ut>=0?'#e6f4ea':'#fdecea'):'#f2f6fb');d.text(x+8,yy+10,a,{size:7.5,color:GRY});d.text(x+8,yy+22,b,{size:10.5,bold:true,color:'#1a1a1a'});if(s2)d.text(x+8,yy+31,s2,{size:6.6,color:GRY})});y+=84;
+  const C=[['Fecha',54],['Sentido',84],['Nave',62],['Bolet.',30],['Pasajes',58],['Carga',56],['Ingresos',58],['Gastos',58],['Utilidad',54],['%',18]];
   const head=()=>{d.rect(40,y,532,16,NAVY);let x=40;C.forEach(([h,w],i)=>{d.text(i>=3?x+w-4:x+4,y+11,h,{size:7.8,bold:true,color:'#ffffff',align:i>=3?'r':undefined});x+=w});y+=16};head();
   R.cs.forEach(({v,c},ix)=>{if(y>720){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES));head()}
-    if(ix%2)d.rect(40,y,532,15,'#f6f8fb');const dd=new Date(v.f+'T12:00');const cells=[DIAS[dd.getDay()].slice(0,3)+' '+dd.toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'}),v.dir==='ida'?'Bluefields – C. Island':'C. Island – Bluefields',c.emb?c.emb.n.replace(/^Motonave /,''):'—',+v.np?String(v.np):'—',fmt(c.ing),fmt(c.gas),fmt(c.ut),fq(Math.round(c.mg))];
-    let x=40;cells.forEach((s,i)=>{d.text(i>=3?x+C[i][1]-4:x+4,y+10.5,d.wrap(s,7.8,i===6,C[i][1]-6)[0],{size:7.8,bold:i===6,color:i===6&&c.ut<0?'#b42318':'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=15});
-  d.line(40,y,572,y,'#333333',.6);let x=40;['Total','','','',fmt(t.ing),fmt(t.gas),fmt(t.ut),fq(Math.round(t.mg))].forEach((s,i)=>{if(s)d.text(i>=3?x+C[i][1]-4:x+4,y+11,s,{size:8,bold:true,color:'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=24;
+    if(ix%2)d.rect(40,y,532,15,'#f6f8fb');const dd=new Date(v.f+'T12:00');const cells=[DIAS[dd.getDay()].slice(0,3)+' '+dd.toLocaleDateString('es-NI',{day:'2-digit',month:'2-digit'}),v.dir==='ida'?'Bluefields – C. Island':'C. Island – Bluefields',c.emb?c.emb.n.replace(/^Motonave /,''):'—',+v.np?String(v.np):'—',fmt(c.bolC),fmt((+v.car||0)+c.eqC),fmt(c.ing),fmt(c.gas),fmt(c.ut),fq(Math.round(c.mg))];
+    let x=40;cells.forEach((s,i)=>{d.text(i>=3?x+C[i][1]-4:x+4,y+10.5,d.wrap(s,7.4,i===8,C[i][1]-4)[0],{size:7.4,bold:i===8,color:i===8&&c.ut<0?'#b42318':'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=15});
+  d.line(40,y,572,y,'#333333',.6);let x=40;['Total','','',String(R.cs.reduce((s,x)=>s+(+x.v.np||0),0)),fmt(bolT),fmt(carT),fmt(t.ing),fmt(t.gas),fmt(t.ut),fq(Math.round(t.mg))].forEach((s,i)=>{if(s)d.text(i>=3?x+C[i][1]-4:x+4,y+11,s,{size:7.6,bold:true,color:'#1a1a1a',align:i>=3?'r':undefined});x+=C[i][1]});y+=24;
   if(y>650){d.page();y=pdfHeader(d,'RENTABILIDAD DE VIAJES REGULARES (continuación)',mesTxt(VIA_MES))}
   d.text(40,y+8,'Resultado por día de salida',{size:9.5,bold:true,color:NAVY});y+=16;
   [3,4,6,0].forEach(k=>{const r=R.porDia[k];d.text(46,y+8,DIAS[k],{size:8.5,color:'#1a1a1a'});d.text(200,y+8,r?r.n+' viaje(s)'+(r.np?' · '+r.np+' boletos':''):'sin viajes',{size:8.5,color:GRY});d.text(566,y+8,r?money(r.ut,'NIO'):'—',{size:8.5,bold:true,color:r&&r.ut<0?'#b42318':'#1a1a1a',align:'r'});y+=13});y+=10;
