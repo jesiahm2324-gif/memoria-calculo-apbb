@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.06-66';
+const APP_VER='2026.11.06-67';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2823,12 +2823,12 @@ function xHojaHTML(s){const ref=a=>{const m=a.match(/^([A-Z]+)(\d+)$/);let c=0;f
    ${s.rows.map((r,ri)=>`<tr>${Array.from({length:nc},(_,ci)=>{if(skip.has(ri+','+ci))return'';const c=r[ci];const o=c&&typeof c==='object'?c:{v:c};const sp=span[ri+','+ci];const st=o.s||0;const bord=st>=19&&st<=32;
      return `<td${sp?` rowspan="${sp[0]}" colspan="${sp[1]}"`:''} style="padding:3px 5px;white-space:nowrap;${bord?'border:1px solid #888;':''}${XBG[st]?'background:'+XBG[st]+';':''}${[19,20,21,22,23,28,29,30,31,32,33,34].includes(st)?'font-weight:700;':''}${typeof o.v==='number'?'text-align:right;':st>=19&&st<=24||st===28||st===30||st===32?'text-align:center;':''}">${xCelda(c)}</td>`}).join('')}</tr>`).join('')}</table></div>`}
 function xPrevia(sheets,nombre,titulo){cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';let k=0;
-  const pinta=()=>{v.querySelector('#xpBody').innerHTML=xHojaHTML(sheets[k]);v.querySelectorAll('[data-xph]').forEach(b=>b.classList.toggle('on',+b.dataset.xph===k))};
+  const pinta=()=>{const bx=v.querySelector('#xpBody');bx.innerHTML=xHojaHTML(sheets[k]);requestAnimationFrame(()=>{const t=bx.querySelector('table'),w=bx.firstElementChild;if(t&&w&&v.dataset.fit!=='0'){const r=(w.clientWidth-4)/t.scrollWidth*0.96;if(r<1)t.style.zoom=r}});v.querySelectorAll('[data-xph]').forEach(b=>b.classList.toggle('on',+b.dataset.xph===k))};
   v.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" style="max-width:980px"><div class="sh-h"><b>Vista previa · ${esc(titulo)}</b><button class="pv-x" data-sh="close">✕</button></div>
    <p class="sm" style="margin-top:0">${esc(nombre)}</p>${sheets.length>1?`<div class="seg" style="margin-bottom:8px;flex-wrap:wrap">${sheets.map((s,i)=>`<button data-xph="${i}">${esc(s.n)}</button>`).join('')}</div>`:`<p class="sm" style="margin:0 0 6px"><b>Hoja:</b> ${esc(sheets[0].n)}</p>`}
-   <div id="xpBody"></div><p class="sm">Revise el informe. Solo se envía si usted toca <b>Compartir o guardar</b>.</p>
+   <label class="chk" style="margin:0 0 6px"><input type="checkbox" id="xpFit" checked> Ajustar al ancho de la pantalla</label><div id="xpBody"></div><p class="sm">Revise el informe. Solo se envía si usted toca <b>Compartir o guardar</b>.</p>
    <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
-  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
+  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
   v.querySelector('#xpOk').onclick=()=>compartirBlob(xlsx(sheets),nombre,titulo)}
 function infGenerar(y,n){const [a,b]=semRango(y,n);const s=[hojaRE(a,b)];const {L}=reViajes(a,b);if(!L.length)toast('No hay viajes de la motonave en esa semana');
   xPrevia(s,`${n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,'Informe semanal '+n)}
