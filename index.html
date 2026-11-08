@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.07-74';
+const APP_VER='2026.11.07-75';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1289,7 +1289,7 @@ async function initAcceso(){
 const HW={"Helvetica":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],"Helvetica-Bold":[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,611,278,556,500,1000,556,556,333,1000,667,333,1000,611,611,611,611,278,278,500,500,350,556,1000,333,1000,556,333,944,611,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]};
 const CP={8364:128,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,352:138,8249:139,338:140,381:142,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,732:152,8482:153,353:154,8250:155,339:156,382:158,376:159};
 function pdfTxt(s){s=String(s??'').replace(/≤/g,'<=').replace(/≥/g,'>=').replace(/ | /g,' ');let o='';for(const ch of s){const c=ch.codePointAt(0);if(c<128||(c>159&&c<256))o+=String.fromCharCode(c);else if(CP[c])o+=String.fromCharCode(CP[c]);else o+='?'}return o}
-function PDFW(){const W=612,H=792;const pages=[];let cur=null;
+function PDFW(L){const W=L?792:612,H=L?612:792;const pages=[];let cur=null;
   const rgb=h=>{h=h.replace('#','');return [0,2,4].map(i=>(parseInt(h.substr(i,2),16)/255).toFixed(3)).join(' ')};
   const width=(s,size,bold)=>{const w=HW[bold?'Helvetica-Bold':'Helvetica'];let t=0;for(const ch of pdfTxt(s)){const c=ch.charCodeAt(0);t+=(c>=32?w[c-32]||556:556)}return t*size/1000};
   const self={W,H,width,
@@ -3086,18 +3086,39 @@ function libroPrevia(R,nombre,titulo,clave){cerrarSheet();const v=document.creat
    <p class="sm" id="xpEst" style="margin:0 0 6px"></p>
    ${R.av.length?`<div class="notice" style="margin:0 0 8px;font-size:12.5px">${R.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
    <label class="chk" style="margin:0 0 6px"><input type="checkbox" id="xpFit" checked> Ajustar al ancho de la pantalla</label><div id="xpBody"></div><p class="sm">Revise el informe. Solo se envía si usted toca <b>Compartir o guardar</b>.</p>
-   <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
-  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
-  v.querySelector('#xpOk').onclick=()=>{compartirBlob(R.blob,nombre,titulo);R.blob.arrayBuffer().then(async ab=>{const ex=await lbGet(lbK(clave.y,clave.n));if(!ex||ex.o!=='importado')await lbPut(lbK(clave.y,clave.n),{b:ab,f:new Date().toISOString(),o:'generado',nom:nombre});infBaseEstado()}).catch(()=>{})}}
+   <button class="btn2" id="xpPdf" style="width:100%;margin-bottom:8px">Ver informe en PDF</button><div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpPdf').onclick=async e=>{const bt=e.target;bt.disabled=true;bt.textContent='Preparando PDF…';try{const d=await libroPdf(R,titulo);await abrirVisor(d,nombre.replace(/\.xlsx$/i,'.pdf'),titulo+' (PDF)')}catch(er){console.error(er);toast('No se pudo preparar el PDF')}bt.disabled=false;bt.textContent='Ver informe en PDF'};v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
+  v.querySelector('#xpOk').onclick=()=>{compartirBlob(R.blob,nombre,titulo);if(R.completo)R.blob.arrayBuffer().then(async ab=>{const ex=await lbGet(lbK(clave.y,clave.n));if(!ex||ex.o!=='importado')await lbPut(lbK(clave.y,clave.n),{b:ab,f:new Date().toISOString(),o:'generado',nom:nombre});infBaseEstado()}).catch(()=>{})}}
+/* PDF del libro: cada hoja visible, horizontal y ajustada al ancho de la página */
+const lbPlano=s=>String(s).replace(/<br>/g,'\n').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+async function libroPdf(R,titulo){const B=R.B,st=await lbEstilos(B),M=fxMotor(B);const d=PDFW(true);const PW=d.W,PH=d.H,MG=22;
+  for(const s of B.sheets.filter(x=>!x.hidden)){if(!s.doc)await lbHoja(B,s.name);const hidC=new Set(),wC={};for(const c of s.doc.getElementsByTagName('col')){for(let i=+c.getAttribute('min');i<=Math.min(+c.getAttribute('max'),60);i++){if(c.getAttribute('hidden')==='1')hidC.add(i);wC[i]=+c.getAttribute('width')||9}}
+    let mr=0,mc=0;for(const ref in s.idx){const v=M.val(s,ref);if(v==null||v===''||(typeof v==='number'&&v===0&&!s.idx[ref].getElementsByTagName('v')[0]))continue;const [r,cc]=refRC(ref);if(r>mr)mr=r;if(cc>mc)mc=cc}
+    if(!mr)continue;mr=Math.min(mr,600);mc=Math.min(mc,40);const hidR=new Set(),hR={};for(const r in s.rows){const e=s.rows[r];if(e.getAttribute('hidden')==='1')hidR.add(+r);if(e.getAttribute('ht'))hR[r]=+e.getAttribute('ht')}
+    const cols=[];for(let c=1;c<=mc;c++)if(!hidC.has(c))cols.push(c);const cw={};cols.forEach(c=>cw[c]=(wC[c]||9)*5.4);const tw=cols.reduce((a,c)=>a+cw[c],0);const sc=Math.min(1,(PW-2*MG)/tw);
+    const X={};let xx=MG;cols.forEach(c=>{X[c]=xx;xx+=cw[c]*sc});const rows=[];for(let r=1;r<=mr;r++)if(!hidR.has(r))rows.push(r);const rh=r=>Math.max(5,(hR[r]||15)*sc);
+    const span={},skip=new Set();for(const m of s.doc.getElementsByTagName('mergeCell')){const [a,b2]=m.getAttribute('ref').split(':');if(!b2)continue;const [r1,c1]=refRC(a),[r2,c2]=refRC(b2);span[r1+','+c1]=[r1,c1,r2,c2];for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(r!==r1||c!==c1)skip.add(r+','+c)}
+    let y=0;const nueva=()=>{d.page();d.text(MG,15,titulo+' · '+s.name,{size:8,bold:true,color:'#555555'});y=22};nueva();
+    for(const r of rows){if(y+rh(r)>PH-MG)nueva();
+      for(const c of cols){const k=r+','+c;if(skip.has(k))continue;const ref=colA(c)+r,ce=s.idx[ref];const x=ce?st.xfs[+ce.getAttribute('s')||0]||{}:{};const sp=span[k];
+        let w=cw[c]*sc,hh=rh(r);if(sp){w=cols.filter(q=>q>=sp[1]&&q<=sp[3]).reduce((a,q)=>a+cw[q]*sc,0);hh=rows.filter(q=>q>=sp[0]&&q<=sp[2]).reduce((a,q)=>a+rh(q),0)}
+        if(!w)continue;const x0=X[c],y0=y;if(x.fill&&x.fill.toLowerCase()!=='#ffffff')d.rect(x0,y0,w,hh,x.fill);
+        const bd=x.bd||[0,0,0,0];if(bd[0])d.line(x0,y0,x0,y0+hh,'#555555',.4);if(bd[1])d.line(x0+w,y0,x0+w,y0+hh,'#555555',.4);if(bd[2])d.line(x0,y0,x0+w,y0,'#555555',.4);if(bd[3])d.line(x0,y0+hh,x0+w,y0+hh,'#555555',.4);
+        if(!ce)continue;const v=M.val(s,ref);const t=lbPlano(lbFmt(v,x.nf));if(!t)continue;const fs=Math.max(3.5,Math.min(10,9*sc));const bold=!!(x.font&&x.font.b);
+        const al=x.h&&x.h!=='general'?(x.h==='centerContinuous'?'center':x.h):(typeof v==='number'?'right':'left');
+        let L=x.wrap||t.includes('\n')?d.wrap(t,fs,bold,Math.max(4,w-3)):[t];const maxL=Math.max(1,Math.floor(hh/(fs*1.1)));if(L.length>maxL)L=L.slice(0,maxL);
+        const col=x.font&&x.font.c&&x.font.c!=='#000000'?x.font.c:'#111111';const top=y0+hh/2-(L.length-1)*fs*1.1/2+fs*0.35;
+        L.forEach((ln,i)=>{const yy=top+i*fs*1.1;if(al==='right')d.text(x0+w-2,yy,ln,{size:fs,bold,color:col,align:'r'});else if(al==='center')d.text(x0+w/2,yy,ln,{size:fs,bold,color:col,align:'c'});else d.text(x0+2,yy,ln,{size:fs,bold,color:col})})}
+      y+=rh(r)}}
+  return d}
 async function infBaseEstado(){const el=$('#infBase');if(!el)return;const ks=(await lbKeys()).sort();if(!ks.length){el.innerHTML='Sin libro base. Cargue el último informe enviado (Excel) para generar el siguiente con el formato completo.';return}
   const k=ks[ks.length-1];const x=await lbGet(k);el.innerHTML=`Libro base: <b>informe ${+k.split('-')[1]}</b> (${x&&x.o==='importado'?'cargado':'generado'} el ${fC((x&&x.f)||'')}) · sirve para generar la semana ${(()=>{const [y,n]=k.split('-').map(Number);const [a]=semRango(y,n);const d=new Date(a+'T12:00');d.setDate(d.getDate()+7);return semDeFecha(kd(d)).n})()}.`}
 async function libroImportar(file){try{const buf=await file.arrayBuffer();const w=await libroGuardarBase(buf,file.name,'importado');toast('Libro base guardado: informe '+w.n);infBaseEstado()}catch(e){toast(e.message||'No se pudo leer el libro')}}
 document.addEventListener('change',e=>{if(e.target.id==='infBaseFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';libroImportar(f)}});
 async function infGenerar(y,n){const [a,b]=semRango(y,n);const {L}=reViajes(a,b);if(!L.length)toast('No hay viajes de la motonave en esa semana');
   const nombre=`${n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,tit='Informe semanal '+n;const p=semAnt(y,n);const base=await lbGet(lbK(p.y,p.n));
-  if(base){try{const R=await libroGenerar(base.b,y,n);libroPrevia(R,nombre,tit,{y,n});return}catch(e){console.error(e);toast('No se pudo usar el libro base: '+(e.message||e))}}
-  else toast(`No hay libro base del informe ${p.n}: solo se genera la hoja Ingreso RE y HS`);
-  xPrevia([hojaRE(a,b)],nombre,tit)}
+  if(base){try{const R=await libroGenerar(base.b,y,n);R.completo=true;libroPrevia(R,nombre,tit,{y,n});return}catch(e){console.error(e);toast('No se pudo usar el libro base: '+(e.message||e))}}
+  try{const blob=xlsx([hojaRE(a,b)]);const B=await libroAbrir(await blob.arrayBuffer());for(const s of B.sheets)await lbHoja(B,s.name);libroPrevia({B,blob,av:[`No hay libro base del informe ${p.n}: solo sale la hoja Ingreso RE y HS. Para el libro completo, toque «Cargar libro base» y elija el Excel del informe ${p.n}.`],hechas:new Set(['Ingreso RE y HS'])},nombre,tit,{y,n})}catch(e){console.error(e);xPrevia([hojaRE(a,b)],nombre,tit)}}
 function infGenHTML(){const hoy=semDeFecha(today());const ops=[];let {y,n}=hoy;for(let i=0;i<12;i++){const [a,b]=semRango(y,n);ops.push(`<option value="${y}-${n}">Semana ${n} · ${fC(a)} – ${fC(b)}${i===0?' (en curso)':''}</option>`);n--;if(n<1){const p=semAnt(y,1);y=p.y;n=p.n}}
   setTimeout(infBaseEstado,0);
   return `<div class="card" style="margin:10px 0 0;padding:10px 12px"><b style="font-size:13.5px">Informe semanal para oficina central</b><p class="sm" style="margin:4px 0 6px">Lunes a domingo. Se parte del informe de la semana anterior (libro base) con todas sus hojas y formato; la app actualiza <b>Ingreso RE y HS</b> y los acumulados de la motonave en <b>Metas1</b>.</p>
