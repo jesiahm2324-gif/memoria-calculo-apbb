@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.07-75';
+const APP_VER='2026.11.08-77';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1601,7 +1601,10 @@ async function publicarCostos(){if(!MK){toast('Cargue la clave maestra para publ
    lubricantes, horas extras, viáticos, muellaje, otros). Costos fijos del mes (salarios, prestaciones,
    cargas sociales, convenio, seguro, depreciación) repartidos entre los viajes del mes de cada embarcación. */
 const VIA_DIAS_PROG=[0,3,4,6];// dom, mié, jue, sáb
-const VIA_DIR={ida:'Bluefields → Corn Island',vue:'Corn Island → Bluefields'};
+const VIA_DIR={ida:'Bluefields → Corn Island',vue:'Corn Island → Bluefields',cha:'Chárter'};
+/* galones de combustible a TM: referencia de la nota de Metas2 (90,000 gal = 289.60 TM) */
+const FAC_GAL=289.60/90000;const galTM=g=>Math.round((+g||0)*FAC_GAL*100)/100;
+const chaTM=v=>v.ctm!==''&&v.ctm!=null&&!isNaN(+v.ctm)?+v.ctm:galTM(v.cg);
 let VIA_MES=today().slice(0,7),VIA_EDIT=null;
 const puedeVia=()=>OWNER||!!(LIC&&LIC.k&&(PM().v||PM().a||PM().s));
 const viaPuedeReg=()=>OWNER||PM().v===2||PM().v===3;
@@ -1609,6 +1612,7 @@ const yoNombre=()=>OWNER?'Administrador':((LIC&&LIC.n)||'Colega');
 function muTarifa(f){const l=((COSTOS&&COSTOS.par.mu)||[]).filter(x=>x&&x.f).slice().sort((a,b)=>a.f.localeCompare(b.f));if(!l.length)return{B:0,C:0,f:''};let t=l[0];l.forEach(x=>{if(x.f<=f)t=x});return t}
 const viaNuevoId=()=>'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function viaPlantilla(f,dir){const vu=dir==='vue';
+  if(dir==='cha')return[{de:'Muelle EPN (Bluefields)',a:'Puerto El Bluff',sal:'06:00',lle:'',cd:3},{de:'Puerto El Bluff',a:'San Juan de Nicaragua',sal:'',lle:'',cd:4},{de:'San Juan de Nicaragua',a:'Puerto El Bluff',sal:'',lle:'',cd:0},{de:'Puerto El Bluff',a:'Muelle EPN (Bluefields)',sal:'07:00',lle:'',cd:0}];
   return vu?[{de:'Muelle municipal Corn Island',a:'Muelle municipal Bluefields',sal:'09:00',lle:'',cd:0.5},{de:'Muelle municipal Bluefields',a:'Muelle EPN',sal:'',lle:'',cd:0,auto:true}]
            :[{de:'Muelle EPN',a:'Muelle municipal Bluefields',sal:'07:00',lle:'07:15',cd:0},{de:'Muelle municipal Bluefields',a:'Muelle Corn Island',sal:'09:00',lle:'',cd:2}]}
 function viaDirDe(f){const d=new Date(f+'T12:00').getDay();return d===4||d===0?'vue':'ida'}
@@ -1643,7 +1647,7 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
   const hosp=v.dir==='ida';const dv=par.desay+par.alm+par.cena+(hosp?par.hosp:0);
   add('Viáticos','Alimentación'+(hosp?' y hospedaje':''),n+' persona(s) × C$ '+fmt(dv)+(hosp?' (incluye hospedaje en Corn Island)':' (sin hospedaje: regresan a casa)'),n*dv);
   if(par.bonoReg){const nc=crew.filter(c=>c.rol==='cap').length;add('Viáticos','Bono por viaje',nc+' capitán × C$ '+fmt(par.bonoCap)+' + '+(n-nc)+' × C$ '+fmt(par.bonoOtro),nc*par.bonoCap+(n-nc)*par.bonoOtro)}
-  const muT=muTarifa(v.f),muB=+v.muB>0?+v.muB:(+muT.B||0),muC=v.dir==='ida'?(+v.muC>0?+v.muC:(+muT.C||0)):0;
+  const muT=muTarifa(v.f),muB=+v.muB>0?+v.muB:(v.dir==='cha'?0:(+muT.B||0)),muC=v.dir==='ida'?(+v.muC>0?+v.muC:(+muT.C||0)):0;
   if(muB)add('Muellaje','Muelle municipal Bluefields',+v.muB>0?'Monto del viaje':'Tarifa vigente desde '+muT.f,muB);if(muC)add('Muellaje','Muelle Corn Island',+v.muC>0?'Monto del viaje':'Tarifa vigente desde '+muT.f,muC);
   (v.og||[]).forEach(o=>{if(+o.m)add('Otros gastos',o.d||'Otro gasto','',+o.m)});
   const dv2=viaDivisor(v,lista||viaLista());const D=Math.max(1,dv2.d);const sm=crew.reduce((s,c)=>s+salTot(c.p),0);
@@ -1656,7 +1660,7 @@ function viaCalc(v,lista){if(!COSTOS)return null;const par=COSTOS.par,e=COSTOS.e
   if(e){if(+e.seg)add('Costos fijos del mes (asignados)','Seguro '+e.n,'C$ '+fmt(e.seg)+' anual ÷ 12'+nota,(+e.seg)/12/D,1);if(+e.dep)add('Costos fijos del mes (asignados)','Depreciación '+e.n,'C$ '+fmt(e.dep)+' anual ÷ 12'+nota,(+e.dep)/12/D,1)}
   const tb=+v.tb>0?+v.tb:(+par.pasaje||310);const bolC=+v.np>0?(+v.np)*tb:(+v.bol||0);
   const esEq=o=>/equipaje/i.test(o.d||'');const eqC=v.eq!=null&&v.eq!==''?(+v.eq||0):(v.eq==null?(v.oi||[]).filter(esEq).reduce((s,o)=>s+(+o.m||0),0):0);const oiC=(v.oi||[]).filter(o=>v.eq!=null||!esEq(o)).reduce((s,o)=>s+(+o.m||0),0);
-  const ing=bolC+(+v.car||0)+eqC+oiC;
+  const ing=bolC+(+v.car||0)+eqC+oiC+(v.dir==='cha'?(+v.ich||0):0);
   const gv=R.filter(x=>!x.fx).reduce((s,x)=>s+x.m,0),gf=R.filter(x=>x.fx).reduce((s,x)=>s+x.m,0),gas=gv+gf,ut=ing-gas,mg=ing?ut/ing*100:(gas?-100:0);
   const lubC=(par.lub||[]).reduce((s,l)=>s+(+l.p?(+l.p)/(+l.h||250)*hn*mot:0),0),mAli=n*(par.desay+par.alm+par.cena),bono=R.filter(x=>x.c==='Bono por viaje').reduce((s,x)=>s+x.m,0);
   const det={gal:{hn,hg,galM:mot*gal*hn,galG:gen*hg,cM:mot*gal*hn*par.diesel,cG:gen*hg*par.diesel,lub:lubC},
@@ -1777,7 +1781,7 @@ function viaResHTML(c){const sem=viaSem(c);const grupos={};c.R.forEach(x=>{(grup
     <p class="sm" style="margin:6px 0">Aporte del viaje (ingresos − gastos variables): <b>${money(c.cont,'NIO')}</b>.${c.faltan?` Para cubrir todos los costos faltaron <b>${money(-c.ut,'NIO')}</b> ≈ <b>${c.faltan} boletos</b> más (a C$ ${fmt(c.pas)}).`:''}${c.faltanV?` <b>No cubre ni sus gastos variables</b> (faltaron ≈ ${c.faltanV} boletos).`:''} Costos fijos: 1/${c.D} del mes${c.div.cerrado?'':' (provisional)'}.</p>
     ${pieBloque(c.R,c.ing,c.gas,c.ut)}
     ${Object.entries(grupos).map(([g,xs])=>`<details class="rg"><summary><span>${esc(g)}</span><b>${money(xs.reduce((s,x)=>s+x.m,0),'NIO')}</b></summary>${xs.map(x=>`<div class="rl"><div>${esc(x.c)}${x.d?`<small>${esc(x.d)}</small>`:''}</div><b>${money(x.m,'NIO')}</b></div>`).join('')}</details>`).join('')}`}
-const viaInfoHTML=(v,c)=>`Navegación: <b>${hm(c.hn*60)}</b> · Generador: ${hm(c.hg*60)} · Horas extra por tripulante: <b>${c.hx}</b>${v.hx!==''&&v.hx!=null?' (ajustadas a mano)':''}. La espera en el muelle y la noche en Corn Island no consumen combustible.`;
+const viaInfoHTML=(v,c)=>`Navegación: <b>${hm(c.hn*60)}</b> · Generador: ${hm(c.hg*60)} · Horas extra por tripulante: <b>${c.hx}</b>${v.hx!==''&&v.hx!=null?' (ajustadas a mano)':''}. ${v.dir==='cha'?'La carga, el descargue y la noche en el Bluff no consumen combustible de motores.':'La espera en el muelle y la noche en Corn Island no consumen combustible.'}`;
 const viaFalta=v=>v.tr.some((g,i)=>!g.lle&&!(v.dir==='vue'&&i===1));
 function viaCalcEdit(){const v=VIA_EDIT;const lista=viaLista().filter(x=>x.id!==v.id);return viaCalc(v,lista.concat([v]))}
 /* Actualiza solo resultados y campos calculados (no redibuja los campos: el selector de hora no se cierra) */
@@ -1792,7 +1796,7 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><b style="font-size:17px">${ro?'Detalle del viaje':v.nuevo?'Registrar viaje':'Editar viaje'}</b><button class="btn2" data-vcancel style="padding:8px 14px">${ro?'Cerrar':'Cancelar'}</button></div>
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">
    <div class="grid" style="margin-top:8px"><div><label>Fecha de salida</label><input type="date" data-vf="f" value="${v.f}"></div>
-    <div><label>Sentido</label><select data-vf="dir"><option value="ida" ${v.dir==='ida'?'selected':''}>Ida: ${VIA_DIR.ida} (mié / sáb)</option><option value="vue" ${v.dir==='vue'?'selected':''}>Regreso: ${VIA_DIR.vue} (jue / dom)</option></select></div>
+    <div><label>Sentido</label><select data-vf="dir"><option value="ida" ${v.dir==='ida'?'selected':''}>Ida: ${VIA_DIR.ida} (mié / sáb)</option><option value="vue" ${v.dir==='vue'?'selected':''}>Regreso: ${VIA_DIR.vue} (jue / dom)</option><option value="cha" ${v.dir==='cha'?'selected':''}>Chárter (servicio contratado)</option></select></div>
     <div style="grid-column:1/-1"><label>Embarcación</label><select data-vf="emb">${embs.map(e=>`<option value="${e.id}" ${v.emb===e.id?'selected':''}>${esc(e.n)}</option>`).join('')}</select></div></div>
    ${c.n||ro?'':'<p class="msg-bad" style="margin:10px 0 0">Seleccione la tripulación de este viaje (o defina la tripulación habitual de la nave en Ajustes → Estructura de costos).</p>'}
    <details class="rg" data-ok="vcrew" style="margin-top:10px"${ACC_OPEN.has('vcrew')||(!c.n&&!ro)?' open':''}><summary><span>Tripulación (${c.n})</span><span class="chev">›</span></summary><div class="crew-l" style="padding:0 8px 8px">${(ro?COSTOS.personal.filter(p=>crewIds.has(p.id)):COSTOS.personal.slice()).sort((a,b)=>(crewIds.has(b.id)-crewIds.has(a.id))||a.n.localeCompare(b.n)).map(p=>{const cc=c.crew.find(x=>x.pid===p.id);return `<label class="chk crew-i"><input type="checkbox" data-vcrew="${p.id}" ${cc?'checked':''}><span>${esc(p.n)}<small>${esc(p.cargo)}</small></span><select data-vrol="${p.id}" ${cc?'':'disabled'}>${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(cc?cc.rol:rolDe(p.cargo))===k?'selected':''}>${l}</option>`).join('')}</select></label>`}).join('')}${ro?'':'<button type="button" class="btn2" data-vcrewok style="width:100%;margin-top:6px">Listo</button>'}</div></details>
@@ -1800,11 +1804,15 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
    ${v.tr.map((g,i)=>`<div class="via-tr"><div class="sm"><b>${i+1}.</b> ${esc(g.de)} → ${esc(g.a)}${v.dir==='vue'&&i===1&&g.auto!==false?' <span class="sm">(se calcula solo)</span>':''}</div><div class="grid"><div><label>Salida</label><input type="time" data-vt="${i}" data-k="sal" value="${g.sal||''}"></div><div><label>Llegada</label><input type="time" data-vt="${i}" data-k="lle" value="${g.lle||''}"></div>${+g.cd||i===(v.dir==='ida'?1:0)?`<div><label>Descarga al llegar (h)</label><input type="number" min="0" step="0.25" inputmode="decimal" data-vt="${i}" data-k="cd" value="${g.cd}"></div>`:''}</div></div>`).join('')}
    <p class="sm" id="viaInfo" style="margin:4px 0 0">${viaInfoHTML(v,c)}</p>
    <h3 class="sub">Ingresos reales del viaje</h3>
-   <div class="grid"><div><label>Boletos vendidos</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="np" value="${v.np}" placeholder="Cantidad"></div><div><label>Precio del boleto (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="tb" value="${v.tb}" placeholder="${fmt(+COSTOS.par.pasaje||310)}"></div>
+${v.dir==='cha'?`   <div class="grid"><div style="grid-column:1/-1"><label>Ruta del servicio</label><input data-vf="cr" value="${esc(v.cr||'')}" placeholder="Bluff - San Juan de Nicaragua"></div>
+    <div style="grid-column:1/-1"><label>Cliente / propietario de la carga</label><input data-vf="cc" value="${esc(v.cc||'')}" placeholder="Empresa Dragado San Juan"></div>
+    <div><label>Producto</label><select data-vf="cp"><option ${v.cp!=='Gasolina'?'selected':''}>Diésel</option><option ${v.cp==='Gasolina'?'selected':''}>Gasolina</option></select></div><div><label>Galones</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="cg" value="${v.cg??''}" placeholder="12000"></div>
+    <div><label>Toneladas (TM)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="ctm" value="${v.ctm??''}" placeholder="auto: ${fq(galTM(v.cg))}"></div><div><label>Ingreso del chárter (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="ich" value="${v.ich??''}" placeholder="262596.24"></div></div>
+   <p class="sm" style="margin:4px 0 0">TM = galones × ${FAC_GAL.toFixed(7)} (referencia de Metas2: 90,000 gal = 289.60 TM). Puede escribir las TM si son otras.</p>`:`   <div class="grid"><div><label>Boletos vendidos</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="np" value="${v.np}" placeholder="Cantidad"></div><div><label>Precio del boleto (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="tb" value="${v.tb}" placeholder="${fmt(+COSTOS.par.pasaje||310)}"></div>
     <div style="grid-column:1/-1" class="via-bol"><span>Ingreso por boletería</span><b id="viaBol">${money(c.bolC,'NIO')}</b></div>
     <div><label>Total cobrado por carga (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="car" value="${v.car}" placeholder="0.00"></div><div><label>Equipaje extra (C$)</label><input type="number" min="0" step="any" inputmode="decimal" data-vf="eq" value="${v.eq??''}" placeholder="0.00"></div></div>
    <div class="grid" style="margin-top:6px"><div><label>Turistas (incluidos en los boletos)</label><input type="number" min="0" step="1" inputmode="numeric" data-vf="tur" value="${v.tur??''}" placeholder="0"></div><div><label>Carga en toneladas</label><div class="via-bol" style="margin:0"><b id="viaTon">${fq(viaTon(v))} TM</b></div></div></div>
-   <p class="sm" style="margin:4px 0 0">Toneladas = (carga + equipaje extra) ÷ 1,600.</p>
+   <p class="sm" style="margin:4px 0 0">Toneladas = (carga + equipaje extra) ÷ 1,600.</p>`}
    ${(v.oi||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-top:6px"><input data-voi="${i}" data-f="d" value="${esc(o.d)}" placeholder="Otro ingreso" style="flex:2"><input data-voi="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1">${ro?'':`<button type="button" class="btnd" data-voidel="${i}" style="width:40px;padding:0">✕</button>`}</div>`).join('')}
    ${ro?'':'<button type="button" class="btn2" data-voiadd style="width:100%;margin-top:6px">+ Otro ingreso</button>'}
    <h3 class="sub">Otros gastos del viaje (C$)</h3>
@@ -1820,10 +1828,10 @@ function renderViaForm(){const v=VIA_EDIT,box=$('#viaBox');viaAuto(v);const c=vi
 const viaTon=v=>Math.round(((+v.car||0)+(+v.eq||0))/1600*100000)/100000;
 function viaSetCampo(k,val){const v=VIA_EDIT;v[k]=val;let full=false;
   if(k==='f'&&v.nuevo&&!v._dirMan){const d=viaDirDe(val);if(d!==v.dir){v.dir=d;v.tr=viaPlantilla(val,d);v.muC='';full=true}}
-  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC='';full=true}
+  if(k==='dir'){v._dirMan=true;v.tr=viaPlantilla(v.f,val);v.muC='';full=true;if(val==='cha'){if(!v.cr)v.cr='Bluff - San Juan de Nicaragua';if(!v.cc)v.cc='Empresa Dragado San Juan';if(!v.cp)v.cp='Diésel';if(v.cg==null||v.cg==='')v.cg='12000';if(v.ich==null||v.ich==='')v.ich='262596.24'}}
   if(k==='emb'){v.crew=null;ls.set('epn_via_emb',val);full=true}
   if(full)renderViaForm();else viaRefrescar()}
-function viaGuardar(){const v=VIA_EDIT;if(+v.tur>0&&+v.tur>(+v.np||0)){toast('Los turistas no pueden ser más que los boletos vendidos');return}if(viaFalta(v)&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
+function viaGuardar(){const v=VIA_EDIT;if(v.dir==='cha'&&!(+v.ich>0)&&!confirm('El chárter no tiene ingreso anotado. ¿Guardar de todos modos?'))return;if(+v.tur>0&&+v.tur>(+v.np||0)){toast('Los turistas no pueden ser más que los boletos vendidos');return}if(viaFalta(v)&&!confirm('Falta la hora de llegada; el combustible saldrá incompleto. ¿Guardar de todos modos?'))return;
   const x={...v};const era=!!x.nuevo;delete x.nuevo;delete x._dirMan;delete x.local;x.u=new Date().toISOString();
   if(!OWNER&&!era&&PM().v===3){if(!confirm('Solo puede corregir este viaje una vez. ¿Guardar la corrección?'))return;x.ned=(+x.ned||0)+1}
   if(!OWNER){x._p=true;ls.set('epn_viajes_mios',(ls.get('epn_viajes_mios',[])||[]).filter(y=>y.id!==x.id).concat([x]));setTimeout(()=>viaIssSync(true),300)}
@@ -2338,13 +2346,15 @@ function buqCatalogo(){const m={};BUQ_DEF.forEach(b=>m[nBuq(b.buque)]={...b,_u:'
   return Object.values(m).sort((a,b)=>a.buque.localeCompare(b.buque))}
 function buqAplicar(a,nombre){const b=buqCatalogo().find(x=>nBuq(x.buque)===nBuq(nombre));if(!b)return false;a.buque=b.buque;BUQ_CAMPOS.forEach(c=>{if(b[c]!==''&&b[c]!=null)a[c]=b[c]});if(b.ult&&!a.viaje)a.viaje=String(b.ult+1);return true}
 const estArr=()=>ls.get('epn_est_arr',[])||[];
+const estArrInt=()=>estArr().filter(a=>a.amb!=='cab');
+const dcTM=x=>x.tm!==''&&x.tm!=null&&!isNaN(+x.tm)?+x.tm:galTM(x.gal);const dcTot=(a,lug)=>(a.dc||[]).filter(x=>!lug||x.lug===lug).reduce((s,x)=>s+dcTM(x),0);
 const estSal=()=>ls.get('epn_est_sal',[])||[];
 const estPuedeEditar=()=>OWNER||PM().s===2;
 const ymPrev=(ym,n=1)=>{const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1-n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const mesUp=ym=>mesTxt(ym).toUpperCase();
 const lista=(base,k)=>[...new Set([...base,...(ls.get(k,[])||[])])].sort((a,b)=>a.localeCompare(b));
 /* ---- Agregado de un mes: desde arribos registrados, o desde el saldo inicial si no hay registros ---- */
-function estMes(ym){const L=estArr().filter(a=>(a.f||'').slice(0,7)===ym);const z={reg:L.length>0,arr:L,n:0,trb:0,trn:0,tipo:{},esl:{b:0,a:0},pd:{},pe:{},ban:{},age:{},lin:{}};
+function estMes(ym){const L=estArrInt().filter(a=>(a.f||'').slice(0,7)===ym);const z={reg:L.length>0,arr:L,n:0,trb:0,trn:0,tipo:{},esl:{b:0,a:0},pd:{},pe:{},ban:{},age:{},lin:{}};
   EST_PD.forEach(p=>z.pd[p]=0);EST_PE.forEach(p=>z.pe[p]=0);Object.keys(EST_TIPOS).forEach(k=>z.tipo[k]=0);
   if(L.length){L.forEach(a=>{z.n++;z.trb+=+a.trb||0;z.trn+=+a.trn||0;z.tipo[a.tipo||'conv']++;(+a.eslora>100?z.esl.a++:z.esl.b++);
     const d=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0),e=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0);(a.des||[]).forEach(x=>z.pd[x.p]=(z.pd[x.p]||0)+(+x.tm||0));(a.emb||[]).forEach(x=>z.pe[x.p]=(z.pe[x.p]||0)+(+x.tm||0));
@@ -2357,7 +2367,7 @@ function estMes(ym){const L=estArr().filter(a=>(a.f||'').slice(0,7)===ym);const 
 function estAcum(ym){const y=ym.slice(0,4),out=[];for(let m=1;m<=+ym.slice(5);m++)out.push(estMes(y+'-'+String(m).padStart(2,'0')));return out}
 const pct=(a,b)=>b?((a-b)/b*100):null;
 /* ---- Pasajeros de motonaves desde Viajes ---- */
-function estMN(ym){const L=viaLista().filter(v=>v.f.slice(0,7)===ym).sort((a,b)=>a.f.localeCompare(b.f));const por={};L.forEach(v=>{(por[v.emb]=por[v.emb]||[]).push(v)});return{L,por}}
+function estMN(ym){const L=viaLista().filter(v=>v.f.slice(0,7)===ym&&v.dir!=='cha').sort((a,b)=>a.f.localeCompare(b.f));const por={};L.forEach(v=>{(por[v.emb]=por[v.emb]||[]).push(v)});return{L,por}}
 /* ---- Sincronización (mismo canal que arqueos) ---- */
 let _esBusy=false;const EST_KINDS=[['arribo','epn_est_arr'],['saldo','epn_est_sal'],['semana','epn_est_sem'],['cabot','epn_est_cab'],['cnota','epn_est_cno'],['infsem','epn_est_inf']];
 async function estSync(silent){const tok=arqTok();if(!tok||!navigator.onLine||_esBusy||!(OWNER||PM().s>0))return;_esBusy=true;let err=null;
@@ -2411,9 +2421,17 @@ function renderArrForm(){const a=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();
    <fieldset ${ro?'disabled':''} style="border:0;padding:0;margin:0;min-width:0">${dl('dlBan',lista(EST_BAND,'epn_est_ban'))}${dl('dlAge',lista(EST_AGE,'epn_est_age'))}${dl('dlLin',lista(EST_LIN,'epn_est_lin'))}${dl('dlBuq',[...new Set(estArr().map(x=>x.buque).filter(Boolean))])}
    <div class="grid" style="margin-top:8px">${(()=>{const cat=buqCatalogo();const en=cat.some(x=>nBuq(x.buque)===nBuq(a.buque));return `<div style="grid-column:1/-1"><label>Buque</label><select data-ebq>${a.buque?'':'<option value="">— Seleccione el buque —</option>'}${cat.map(x=>`<option ${nBuq(x.buque)===nBuq(a.buque)?'selected':''}>${esc(x.buque)}</option>`).join('')}${a.buque&&!en?`<option selected>${esc(a.buque)}</option>`:''}<option value="__nuevo">+ Buque nuevo…</option></select><p class="sm" style="margin:4px 0 0">Al escoger el buque se llenan solos bandera, T.R.B., T.R.N., eslora, manga, puntal, agencia y línea.</p></div>`})()}${I('viaje','N.º de viaje')}
     <div><label>Bandera</label><input data-ef="ban" list="dlBan" value="${esc(a.ban||'')}" placeholder="Escoja o escriba"></div><div><label>Tipo de buque</label><select data-ef="tipo">${Object.entries(EST_TIPOS).map(([k,l])=>`<option value="${k}" ${a.tipo===k?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div style="grid-column:1/-1"><label>Ámbito</label><select data-ef="amb"><option value="int" ${a.amb!=='cab'?'selected':''}>Internacional (cuenta en buques internacionales)</option><option value="cab" ${a.amb==='cab'?'selected':''}>Cabotaje nacional (ej.: BT IV Marías)</option></select></div>
     ${I('trb','T.R.B.','number','inputmode="decimal"')}${I('trn','T.R.N.','number','inputmode="decimal"')}${I('eslora','Eslora (m)','number','inputmode="decimal"')}${I('manga','Manga (m)','number','inputmode="decimal"')}${I('puntal','Puntal (m)','number','inputmode="decimal"')}${I('tran','En tránsito','text','placeholder="Ej.: Puerto Arlen Siú, El Rama"')}
     <div><label>Agencia naviera</label><input data-ef="age" list="dlAge" value="${esc(a.age||'')}"></div><div><label>Línea naviera</label><input data-ef="lin" list="dlLin" value="${esc(a.lin||'')}"></div>
     ${I('proc','Puerto de procedencia')}${I('dest','Puerto de destino')}</div>
+   ${a.amb==='cab'?`<h3 class="sub">Descargues de combustible</h3><p class="sm" style="margin:0 0 6px">Cada descargue con su fecha y lugar. En el informe semanal (Metas2) va lo descargado en El Bluff, en la semana del descargue; en el estadístico mensual van todos, como referencia.</p>
+   <div class="grid"><div style="grid-column:1/-1"><label>Propietario de la carga</label><input data-ef="emp" value="${esc(a.emp||'')}" placeholder="Puerto Cabezas Power S.A"></div></div>
+   ${(a.dc||[]).map((x,i)=>`<div class="via-tr"><div class="grid"><div><label>Fecha</label><input type="date" data-ec="dc" data-i="${i}" data-f="f" value="${x.f||''}"></div><div><label>Lugar</label><select data-ec="dc" data-i="${i}" data-f="lug">${['El Bluff','Corn Island','El Rama'].map(o=>`<option ${x.lug===o?'selected':''}>${o}</option>`).join('')}</select></div>
+     <div><label>Producto</label><select data-ec="dc" data-i="${i}" data-f="prod">${['Diésel','Gasolina'].map(o=>`<option ${x.prod===o?'selected':''}>${o}</option>`).join('')}</select></div><div><label>Galones</label><input type="number" min="0" step="any" inputmode="decimal" data-ec="dc" data-i="${i}" data-f="gal" value="${x.gal??''}"></div>
+     <div><label>TM</label><input type="number" min="0" step="any" inputmode="decimal" data-ec="dc" data-i="${i}" data-f="tm" value="${x.tm??''}" placeholder="auto: ${fq(galTM(x.gal))}"></div>${ro?'':`<div style="display:flex;align-items:flex-end"><button type="button" class="btnd" data-edcdel="${i}" style="width:100%">Quitar</button></div>`}</div></div>`).join('')}
+   ${ro?'':'<button type="button" class="btn2" data-edcadd style="width:100%;margin:4px 0 6px">+ Descargue de combustible</button>'}
+   <p class="sm">Total descargado: <b>${fq(dcTot(a))} TM</b> (El Bluff ${fq(dcTot(a,'El Bluff'))} · Corn Island ${fq(dcTot(a,'Corn Island'))}).</p>`:''}
    <h3 class="sub">Movimientos del buque</h3>
    <label class="chk" style="margin:0 0 8px"><input type="checkbox" data-etr ${a.tr!==false&&(a.tran||'').trim()?'checked':''}> Va en tránsito a puerto interior (practicaje a ${esc(a.tran||'Arlen Siú, El Rama')})</label>
    <div class="sm" style="margin:0 0 6px"><b>Ingreso</b></div>
@@ -2439,6 +2457,8 @@ function renderSalForm(){const s=EST_EDIT,box=$('#viaBox');const N=(o,k,l)=>`<di
    <h3 class="sub">Toneladas desembarcadas por producto</h3><div class="grid">${EST_PD.map(p=>N('pd',p,p)).join('')}</div>
    <h3 class="sub">Toneladas embarcadas por producto</h3><div class="grid">${EST_PE.map(p=>N('pe',p,p)).join('')}</div>
    <div class="row" style="margin-top:12px"><button class="btn" data-esalsave style="flex:1;padding:13px">Guardar saldo</button></div>`}
+document.addEventListener('change',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;if(el.dataset.ef==='amb'){EST_EDIT.amb=el.value;if(el.value==='cab'&&!(EST_EDIT.dc||[]).length)EST_EDIT.dc=[{f:(EST_EDIT.hl||today()).slice(0,10),lug:'El Bluff',prod:'Diésel',gal:'',tm:''}];renderArrForm()}else if(el.dataset.ec==='dc'&&(el.dataset.f==='gal'||el.dataset.f==='lug'||el.dataset.f==='f'))setTimeout(renderArrForm,0)});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-edcadd],[data-edcdel]');if(!b||!EST_EDIT)return;const a=EST_EDIT;a.dc=a.dc||[];if(b.dataset.edcdel!=null)a.dc.splice(+b.dataset.edcdel,1);else a.dc.push({f:today(),lug:'El Bluff',prod:'Diésel',gal:'',tm:''});renderArrForm()});
 document.addEventListener('change',e=>{const el=e.target;if(!EST_EDIT||!el.dataset||el.dataset.etr===undefined)return;EST_EDIT.tr=el.checked;if(el.checked&&!(EST_EDIT.tran||'').trim())EST_EDIT.tran='Puerto Arlen Siú, El Rama';renderArrForm()});
 document.addEventListener('input',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;const a=EST_EDIT;
   if(el.dataset.ef){a[el.dataset.ef]=el.value;if(el.dataset.ef==='hl'&&el.value)a.f=el.value.slice(0,10)}
@@ -2478,7 +2498,7 @@ function estCuadros(ym){const M=estMes(ym),P=estMes(ymPrev(ym)),AC=estAcum(ym),y
   C.c12={t:'TONELAJE MANIPULADO SEGÚN AGENCIA NAVIERA Y CARACTERÍSTICAS DE LOS BUQUES',h:['AGENCIA NAVIERA','Nº DE BUQUES','T.R.B.','T.R.N.','TONELADAS EN DESEMBARQUE','TONELADAS EN EMBARQUE','TOTAL'],f:['','n','n','n','t','t','t'],
     rows:lista(EST_AGE,'epn_est_age').concat(Object.keys(M.age).filter(k=>!lista(EST_AGE,'epn_est_age').includes(k))).map(k=>{const r=M.age[k]||{n:0,trb:0,trn:0,d:0,e:0};return[k.toUpperCase(),r.n,r.trb,r.trn,r.d,r.e,r.d+r.e]})};
   C.c12.tot=['TOTALES',...[1,2,3,4,5,6].map(i=>C.c12.rows.reduce((s,r)=>s+r[i],0))];
-  const linAc={};estArr().filter(a=>(a.f||'').slice(0,4)===y&&(a.f||'').slice(0,7)<=ym).forEach(a=>{const k=a.lin||'—';const r=linAc[k]||(linAc[k]={d:0,e:0});r.d+=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0);r.e+=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0)});
+  const linAc={};estArrInt().filter(a=>(a.f||'').slice(0,4)===y&&(a.f||'').slice(0,7)<=ym).forEach(a=>{const k=a.lin||'—';const r=linAc[k]||(linAc[k]={d:0,e:0});r.d+=(a.des||[]).reduce((s,x)=>s+(+x.tm||0),0);r.e+=(a.emb||[]).reduce((s,x)=>s+(+x.tm||0),0)});
   const tm=M.d+M.e;C.c13={t:'TONELAJE MANIPULADO SEGÚN LÍNEA NAVIERA Y ESTADÍA EN PUERTO',h:['LÍNEA NAVIERA','DESEMBARQUE '+mA,'EMBARQUE '+mA,'TOTAL '+mA,'DESEMBARQUE ACUMULADO','EMBARQUE ACUMULADO','TOTAL ACUMULADO','% DE LA CARGA'],f:['','t','t','t','t','t','t','p'],
     rows:lista(EST_LIN,'epn_est_lin').concat(Object.keys(linAc).filter(k=>!lista(EST_LIN,'epn_est_lin').includes(k))).map(k=>{const r=M.lin[k]||{d:0,e:0},a=linAc[k]||{d:0,e:0};return[k.toUpperCase(),r.d,r.e,r.d+r.e,a.d,a.e,a.d+a.e,tm?(r.d+r.e)/tm*100:0]})};
   C.c13.tot=['TOTALES',...[1,2,3,4,5,6].map(i=>C.c13.rows.reduce((s,r)=>s+r[i],0)),tm?100:0];
@@ -2558,6 +2578,11 @@ function estPdf(){const {C,ym}=estCuadros(VIA_MES);const d=PDFW();const yR={y:0}
 /* ===== Estadísticas · Etapa 2: contenedores (TEUS), pesca y cabotaje semanal, carga de cabotaje ===== */
 const PES_CAT=[['pes','Flota Pesquera','Productos del mar'],['mg','Flota Cabotaje','Mercadería General'],['hs','Flota Cabotaje','EPN / MN Hilario Sánchez'],['re','Flota Cabotaje','EPN / MN Río Escondido'],['zo','Flota Cabotaje','BT Zompopo'],['iv','Flota Cabotaje','BT IV Marías'],['chs','Viaje Chárter','MN Hilario Sánchez'],['pap','Viaje Chárter','MR Pedro Araúz P. – Plana 3279'],['mer','Viaje Chárter','Remolcador y Plana Merling']];
 const estSem=()=>ls.get('epn_est_sem',[])||[];
+/* filas automáticas de Barcos de pesca y cabotaje: descargues de tanqueros de cabotaje y viajes chárter registrados */
+function pesAuto([p,q]){const out=[];const en=d=>d&&d>=p&&d<=q;
+  estArr().filter(a=>a.amb==='cab').forEach(a=>(a.dc||[]).filter(x=>en(x.f)).forEach(x=>out.push({c:/mar[ií]as/i.test(a.buque||'')?'iv':/zompopo/i.test(a.buque||'')?'zo':'iv',tm:Math.round(dcTM(x)*100)/100,emp:a.emp||'',dest:x.lug||'',auto:1})));
+  viaLista().filter(v=>v.dir==='cha'&&en(v.f)).forEach(v=>{const e=(COSTOS&&COSTOS.emb||[]).find(x=>x.id===v.emb);const n=(e&&e.n)||'';out.push({c:/pedro|3279/i.test(n)?'pap':/merling/i.test(n)?'mer':'chs',tm:chaTM(v),emp:v.cc||'',dest:v.cr||'',auto:1})});
+  return out}
 const estCab=()=>ls.get('epn_est_cab',[])||[];
 const estNot=()=>ls.get('epn_est_cno',[])||[];
 /* Semanas del mes: del día 1 al primer domingo, luego lunes a domingo, la última hasta fin de mes */
@@ -2566,7 +2591,7 @@ function semanasMes(ym){const [y,m]=ym.split('-').map(Number);const out=[];let d
 const semTxt=([a,b])=>{const A=new Date(a+'T12:00'),B=new Date(b+'T12:00');return String(A.getDate()).padStart(2,'0')+' – '+String(B.getDate()).padStart(2,'0')+' '+MESES[B.getMonth()]+' '+B.getFullYear()};
 function semDe(ym,i){const id='w'+ym+'-'+(i+1);return estSem().find(x=>x.id===id)||{id,ym,i,fp:'',fc:'',cp:'',cc:'',rows:[]}}
 const contTot=a=>{const c=a.cont||{};const g=(s,k)=>+((c[s]||{})[k])||0;return{imp:{ll20:g('imp','ll20'),ll40:g('imp','ll40'),va20:g('imp','va20'),va40:g('imp','va40')},exp:{ll20:g('exp','ll20'),ll40:g('exp','ll40'),va20:g('exp','va20'),va40:g('exp','va40')},tmImp:+c.tmImp||0,tmExp:+c.tmExp||0}};
-function contMes(ym,acum){const y=ym.slice(0,4);const L=estArr().filter(a=>acum?((a.f||'').slice(0,4)===y&&(a.f||'').slice(0,7)<=ym):(a.f||'').slice(0,7)===ym);
+function contMes(ym,acum){const y=ym.slice(0,4);const L=estArrInt().filter(a=>acum?((a.f||'').slice(0,4)===y&&(a.f||'').slice(0,7)<=ym):(a.f||'').slice(0,7)===ym);
   const z={imp:{ll20:0,ll40:0,va20:0,va40:0},exp:{ll20:0,ll40:0,va20:0,va40:0},tmImp:0,tmExp:0};L.forEach(a=>{const t=contTot(a);['imp','exp'].forEach(s=>Object.keys(z[s]).forEach(k=>z[s][k]+=t[s][k]));z.tmImp+=t.tmImp;z.tmExp+=t.tmExp});
   z.teus=['imp','exp'].reduce((s,k)=>s+z[k].ll20+z[k].va20+2*(z[k].ll40+z[k].va40),0);return z}
 /* ---- Pantalla Pesca / Cabotaje ---- */
@@ -2645,7 +2670,7 @@ function estHojas2(ym){const H=(t,s)=>({v:t,s:s||1}),out={};const mesU=mesUp(ym)
     [n(M.imp.ll20),n(M.imp.ll40),n(M.imp.va20),n(M.imp.va40),n(M.exp.ll20),n(M.exp.ll40),n(M.exp.va20),n(M.exp.va40),n(M.teus,1),t2(tot),t2(M.tmImp),pc(M.tmImp,tot),t2(M.tmExp),pc(M.tmExp,tot),t2(cc,1),pc(cc,tot)],[],[{v:"Nota: los contenedores de 40' valen por 2 TEUS, estén vacíos o llenos.",s:12}],...fir(16)];
   const th=[];th[7]=30;out.traf={n:'TRAFICO DE CONTENEDORES',rows:tf,w:[9,9,9,9,9,9,9,9,13,16,14,11,14,11,16,13],m:['A1:P1','A2:P2','A3:P3','A4:P4','A12:P12','A6:H6','I6:I9','J6:J9','K6:N6','O6:O9','P6:P9','A7:D7','E7:H7','K7:L7','M7:N7','A8:B8','C8:D8','E8:F8','G8:H8','K8:K9','L8:L9','M8:M9','N8:N9'],h:th};
   /* Barcos de pesca y cabotaje */
-  const W=semanasMes(ym),S=W.map((w,i)=>semDe(ym,i));const sum=k=>S.reduce((s,x)=>s+(+x[k]||0),0);
+  const W=semanasMes(ym),S=W.map((w,i)=>{const s=semDe(ym,i);return{...s,rows:[...(s.rows||[]),...pesAuto(W[i])]}});const sum=k=>S.reduce((s,x)=>s+(+x[k]||0),0);
   const pr=[[{v:'EMPRESA PORTUARIA NACIONAL · GERENCIA PORTUARIA BLUFF – BLUEFIELDS',s:6}],[{v:'BARCOS DE PESCA Y CABOTAJE · '+mesU,s:11}],[],
     [H('PERIODO'),H('MUELLE FLOTANTE LÍQUIDO'),H(''),H('MUELLES DE CABOTAJE'),H(''),H('TOTAL'),'',H('RESUMEN CANTIDAD DE EMBARCACIONES'),H(''),H('TOTAL')],
     [H(''),H('PESQUERO'),H('CABOTAJE'),H('PESQUERO'),H('CABOTAJE'),H(''),'',H('PESQUEROS'),H('CARGA Y PASAJEROS'),H('')]];
@@ -2795,7 +2820,7 @@ const MESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','s
 function semTitulo(a,b){const A=new Date(a+'T12:00'),B=new Date(b+'T12:00');const dd=d=>String(d.getDate()).padStart(2,'0');return A.getMonth()===B.getMonth()?`del ${dd(A)} al ${dd(B)} ${MESL[B.getMonth()]} ${B.getFullYear()}`:`del ${dd(A)} ${MESL[A.getMonth()]} al ${dd(B)} de ${MESL[B.getMonth()]} ${B.getFullYear()}`}
 const xD=f=>{const [y,m,d]=f.split('-').map(Number);return Math.round((Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/864e5)};
 /* Viajes de la semana: primero los registrados en la app (Marcos); si no hay, los del informe Excel cargado */
-function reViajes(a,b){const L=viaLista().filter(v=>v.f>=a&&v.f<=b);const nomE=id=>{const e=(COSTOS&&COSTOS.emb||[]).find(x=>x.id===id);return e?e.n.replace(/^motonave\s+/i,'MN '):'MN Hilario Sánchez'};
+function reViajes(a,b){const L=viaLista().filter(v=>v.f>=a&&v.f<=b&&v.dir!=='cha');const nomE=id=>{const e=(COSTOS&&COSTOS.emb||[]).find(x=>x.id===id);return e?e.n.replace(/^motonave\s+/i,'MN '):'MN Hilario Sánchez'};
   if(L.length)return{src:'app',L:L.map(v=>({dir:v.dir==='ida'?'ida':'vue',f:v.f,buque:nomE(v.emb),pas:+v.np||0,costo:+v.tb||+(COSTOS&&COSTOS.par.pasaje)||310,ingCar:(+v.car||0)+(+v.eq||0),bul:'',tur:+v.tur||0}))};
   const D=infDatos();return{src:'excel',L:Object.values(D.HS).filter(x=>x.f>=a&&x.f<=b).map(x=>({...x}))}}
 function hojaRE(a,b){const {L}=reViajes(a,b);const R=[],M=['A1:H1'],Hh=[];const tot={};
@@ -3013,7 +3038,7 @@ async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=s
   for(const ref in m1.idx){const t=lbVal(B,m1,ref);if(typeof t!=='string'||lbFormula(m1,ref)!=null)continue;const t2=t.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,fin).replace(new RegExp(`\\b\\d{1,2}\\s+(?:de\\s+)?(?:${MES})\\s+(?:de\\s+)?\\d{4}\\b`,'gi'),fin);if(t2!==t)lbSet(m1,ref,t2)}
   hechas.add('Metas1');
   /* buques internacionales (todos los arribos registrados): buques e importación por semana de arribo; exportación por semana de salida */
-  {const r3=x=>Math.round(x*1000)/1000;const enS=d=>d&&d.slice(0,10)>=a&&d.slice(0,10)<=b;const CH=estArr();
+  {const r3=x=>Math.round(x*1000)/1000;const enS=d=>d&&d.slice(0,10)>=a&&d.slice(0,10)<=b;const CH=estArrInt();
    const lleg=CH.filter(x=>enS(x.hl)),sal=CH.filter(x=>enS(x.hs));const imps=lleg.map(x=>r3(arrTot(x,'des'))).filter(v=>v>0),exps=sal.map(x=>r3(arrTot(x,'emb'))).filter(v=>v>0);
    const nB=lleg.length,tI=r3(imps.reduce((s,v)=>s+v,0)),tE=r3(exps.reduce((s,v)=>s+v,0));
    lleg.filter(x=>!x.hs).forEach(x=>av.push(`${x.buque}${x.viaje?' V'+x.viaje:''}: falta la hora de salida; su exportación se sumará en la semana en que zarpe.`));
@@ -3046,6 +3071,24 @@ async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=s
        av.push('Carga atendida (Metas1): suma la cantidad de carga de las filas «Carga General» de la hoja Agua + Carga. Solo cuenta facturas con fecha de esta semana; al completar esa hoja en Excel, el total se actualiza solo.')}
      av.push(`Puertos nacionales esta semana: ${nE} embarcaciones.`)}
    else av.push('Metas1: no se encontró el cumplimiento de metas de puertos nacionales.')}
+  /* Metas2: viajes de la motonave por sentido y fecha de corte (el resto se alimenta de Muellaje e Ingreso RE y HS) */
+  {const m2=await lbHoja(B,'Metas2');if(m2){const R=Object.keys(m2.rows).map(Number).sort((p,q)=>p-q);let ok=0;
+    for(const r of R){const t=lbTxt(B,m2,'B'+r);if(/Carga y Pasajero\s+Bluefields\s*[–-]\s*Corn/i.test(t)){lbSet(m2,'D'+r,L.filter(x=>x.dir==='ida').length);ok++}else if(/Carga y Pasajero\s+Corn Island\s*[–-]\s*Bluefields/i.test(t)){lbSet(m2,'D'+r,L.filter(x=>x.dir==='vue').length);ok++}}
+    for(const ref in m2.idx){const t=lbVal(B,m2,ref);if(typeof t==='string'&&lbFormula(m2,ref)==null&&/AL\s+\d{1,2}\/\d{1,2}\/\d{2,4}/i.test(t))lbSet(m2,ref,t.replace(/\d{1,2}\/\d{1,2}\/\d{2,4}/,fin))}
+    /* tanquero de cabotaje: lo descargado en El Bluff en la semana */
+    const enS=d=>d&&d>=a&&d<=b;const TQ=estArr().filter(x=>x.amb==='cab'&&(x.dc||[]).some(d=>d.lug==='El Bluff'&&enS(d.f)));const dcs=TQ.flatMap(x=>(x.dc||[]).filter(d=>d.lug==='El Bluff'&&enS(d.f)));
+    const rT=R.find(r=>/Buque Tanque|IV Mar/i.test(lbTxt(B,m2,'B'+r)));
+    if(rT){if(TQ.length){lbSet(m2,'D'+rT,TQ.length);lbSet(m2,'F'+rT,Math.round(dcs.reduce((s,d)=>s+dcTM(d),0)*100)/100);if(TQ[0].emp)lbSet(m2,'K'+rT,TQ[0].emp);
+        const nr=R.find(r=>/^Nota:/i.test(lbTxt(B,m2,'G'+r)));const tot=dcs.reduce((s,d)=>s+dcTM(d),0);if(nr)lbSet(m2,'G'+nr,'Nota: '+dcs.map(d=>`${fmt(+d.gal||0).replace(/\.00$/,'')} ${(d.prod||'diésel').toLowerCase().replace('diésel','diesel')}, equivalente ${(Math.round(dcTM(d)*100)/100).toFixed(2)} Ton`).join(' y ')+`, total general ${(Math.round(tot*100)/100).toFixed(2)} Ton`);
+        av.push(`Tanquero de cabotaje: ${TQ.map(x=>x.buque).join(', ')} · descargado en El Bluff ${fq(Math.round(tot*100)/100)} TM.`)}
+      else{lbSet(m2,'D'+rT,null);lbSet(m2,'F'+rT,null)}}
+    /* viajes chárter de la semana */
+    const CHs=viaLista().filter(v=>v.dir==='cha'&&enS(v.f));const rC=R.find(r=>/San Juan de Nicaragua/i.test(lbTxt(B,m2,'B'+r)));
+    if(rC){const xs=CHs.filter(v=>/san juan/i.test(v.cr||''));if(xs.length){lbSet(m2,'D'+rC,xs.length);lbSet(m2,'E'+rC,0);lbSet(m2,'F'+rC,Math.round(xs.reduce((s,v)=>s+chaTM(v),0)*100)/100);lbSet(m2,'G'+rC,Math.round(xs.reduce((s,v)=>s+(+v.ich||0),0)*100)/100);
+        const nom=id=>{const e=(COSTOS&&COSTOS.emb||[]).find(x=>x.id===id);return e?e.n.replace(/^motonave\s+/i,''):'Hilario Sánchez'};lbSet(m2,'K'+rC,xs.map(v=>`Traslado a bordo del buque ${nom(v.emb)} de ${fmt(+v.cg||0).replace(/\.00$/,'')} galones de ${(v.cp||'diésel').toLowerCase()}, propiedad de ${v.cc||'—'}, de puerto El Bluff con destino a San Juan de Nic.`).join(' '))}
+      else{lbSet(m2,'D'+rC,null);lbSet(m2,'F'+rC,null);lbSet(m2,'G'+rC,null)}}
+    const otros=CHs.filter(v=>!/san juan/i.test(v.cr||''));if(otros.length)av.push(`Chárter a otra ruta (${otros.map(v=>v.cr).join(', ')}): Metas2 no tiene fila para esa ruta; agréguela a mano.`);
+    if(ok===2)hechas.add('Metas2');else av.push('Metas2: no se encontraron las filas «Carga y Pasajero» de la motonave.')}}
   await libroRecalcular(B);const blob=await libroGuardar(B);
   return{B,blob,av,hechas,res:{nV,pax,ton}}}
 /* vista previa del libro con sus estilos */
