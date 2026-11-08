@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.08-77';
+const APP_VER='2026.11.08-78';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -3129,9 +3129,9 @@ function libroPrevia(R,nombre,titulo,clave){cerrarSheet();const v=document.creat
    <p class="sm" id="xpEst" style="margin:0 0 6px"></p>
    ${R.av.length?`<div class="notice" style="margin:0 0 8px;font-size:12.5px">${R.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
    <label class="chk" style="margin:0 0 6px"><input type="checkbox" id="xpFit" checked> Ajustar al ancho de la pantalla</label><div id="xpBody"></div><p class="sm">Revise el informe. Solo se envía si usted toca <b>Compartir o guardar</b>.</p>
-   <button class="btn2" id="xpPdf" style="width:100%;margin-bottom:8px">Ver informe en PDF</button><div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
-  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();v.querySelector('#xpPdf').onclick=async e=>{const bt=e.target;bt.disabled=true;bt.textContent='Preparando PDF…';try{const d=await libroPdf(R,titulo);await abrirVisor(d,nombre.replace(/\.xlsx$/i,'.pdf'),titulo+' (PDF)')}catch(er){console.error(er);toast('No se pudo preparar el PDF')}bt.disabled=false;bt.textContent='Ver informe en PDF'};v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
-  v.querySelector('#xpOk').onclick=()=>{compartirBlob(R.blob,nombre,titulo);if(R.completo)R.blob.arrayBuffer().then(async ab=>{const ex=await lbGet(lbK(clave.y,clave.n));if(!ex||ex.o!=='importado')await lbPut(lbK(clave.y,clave.n),{b:ab,f:new Date().toISOString(),o:'generado',nom:nombre});infBaseEstado()}).catch(()=>{})}}
+   ${R.txt?`<details style="margin:0 0 8px"><summary class="sm"><b>Texto «Servicio de atraque» para el informe de actividades</b></summary><textarea id="xpTxt" readonly style="width:100%;min-height:220px;font-size:12.5px;margin-top:6px">${esc(R.txt)}</textarea><button class="btn2" id="xpCopy" style="width:100%;margin-top:6px">Copiar texto</button></details>`:''}<button class="btn2" id="xpPdf" style="width:100%;margin-bottom:8px">Ver informe en PDF</button><div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cerrar</button><button class="btn" id="xpOk" style="flex:2">Compartir o guardar Excel</button></div></div>`;
+  document.body.appendChild(v);document.body.classList.add('pv-on');pinta();{const cp=v.querySelector('#xpCopy');if(cp)cp.onclick=async()=>{const t=v.querySelector('#xpTxt');try{await navigator.clipboard.writeText(t.value);toast('Texto copiado')}catch(e){t.select();document.execCommand('copy');toast('Texto copiado')}}}v.querySelector('#xpPdf').onclick=async e=>{const bt=e.target;bt.disabled=true;bt.textContent='Preparando PDF…';try{const d=await libroPdf(R,titulo);await abrirVisor(d,nombre.replace(/\.xlsx$/i,'.pdf'),titulo+' (PDF)')}catch(er){console.error(er);toast('No se pudo preparar el PDF')}bt.disabled=false;bt.textContent='Ver informe en PDF'};v.querySelector('#xpFit').onchange=e=>{v.dataset.fit=e.target.checked?'1':'0';pinta()};v.addEventListener('click',e=>{const b=e.target.closest('[data-xph]');if(b){k=+b.dataset.xph;pinta()}});
+  v.querySelector('#xpOk').onclick=()=>{compartirBlob(R.blob,nombre,titulo);if(R.completo)R.blob.arrayBuffer().then(async ab=>{const ex=await lbGet(lbK(clave.y,clave.n));if(!ex||ex.o!=='importado'||R.origen==='importado')await lbPut(lbK(clave.y,clave.n),{b:ab,f:new Date().toISOString(),o:R.origen||'generado',nom:nombre});infBaseEstado()}).catch(()=>{})}}
 /* PDF del libro: cada hoja visible, horizontal y ajustada al ancho de la página */
 const lbPlano=s=>String(s).replace(/<br>/g,'\n').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
 async function libroPdf(R,titulo){const B=R.B,st=await lbEstilos(B),M=fxMotor(B);const d=PDFW(true);const PW=d.W,PH=d.H,MG=22;
@@ -3158,6 +3158,64 @@ async function infBaseEstado(){const el=$('#infBase');if(!el)return;const ks=(aw
   const k=ks[ks.length-1];const x=await lbGet(k);el.innerHTML=`Libro base: <b>informe ${+k.split('-')[1]}</b> (${x&&x.o==='importado'?'cargado':'generado'} el ${fC((x&&x.f)||'')}) · sirve para generar la semana ${(()=>{const [y,n]=k.split('-').map(Number);const [a]=semRango(y,n);const d=new Date(a+'T12:00');d.setDate(d.getDate()+7);return semDeFecha(kd(d)).n})()}.`}
 async function libroImportar(file){try{const buf=await file.arrayBuffer();const w=await libroGuardarBase(buf,file.name,'importado');toast('Libro base guardado: informe '+w.n);infBaseEstado()}catch(e){toast(e.message||'No se pudo leer el libro')}}
 document.addEventListener('change',e=>{if(e.target.id==='infBaseFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';libroImportar(f)}});
+/* --- Completar informe: lee la lista de atraques de Muellaje y llena sus dos cuadros (Carga y Pasajeros, Pesquero) --- */
+const mNorm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+const mLugK=s=>{let k=mNorm(s).replace(/[^a-z]/g,'');if(/^banco(de)?pesca/.test(k))return'bancopesca';if(/^puertocab/.test(k))return'puertocabezas';if(/^corn/.test(k))return'cornisland';if(/^bl(ue)?f/.test(k))return'bluefields';if(/^pesca?nic/.test(k))return'pescanica';if(/^(el)?rama/.test(k))return'rama';return k};
+const mLugN=s=>({bancopesca:'Banco Pesca',pescanica:'Pescanica',puertocabezas:'Puerto Cabezas',cornisland:'Corn Island',bluefields:'Bluefields',rama:'Rama',bluff:'Bluff'}[mLugK(s)]||String(s||'').trim());
+const n2=x=>String(x).padStart(2,'0');
+function muelLista(B,s){let hr=0,C={};for(let r=1;r<=8&&!hr;r++){const H={};for(let c=1;c<=40;c++){const t=mNorm(lbVal(B,s,colA(c)+r));if(t)H[t]=c}
+    if(H['tipo']&&H['origen']&&H['destino']){hr=r;const f=rx=>{for(const k in H)if(rx.test(k))return H[k];return 0};C={tipo:H['tipo'],ori:H['origen'],des:H['destino'],pas:f(/^p?s?a?s?ajeros?$|^psajeros$/),emb:f(/^nombre/),monto:f(/^monto/),desc:f(/^descripcion/),uni:f(/^unidad/),cant:f(/^cantidad$/)}}}
+  if(!hr)return null;const L=[];const M=fxMotor(B);
+  for(let r=hr+1;r<hr+400;r++){const a=mNorm(lbVal(B,s,'A'+r));if(/^total/.test(a))break;const tipo=mNorm(lbVal(B,s,colA(C.tipo)+r));if(!tipo)continue;
+    const v=k=>C[k]?M.val(s,colA(C[k])+r):null;const uni=mNorm(v('uni')).replace(/[^a-z]/g,'');const cant=typeof v('cant')==='number'?v('cant'):0;
+    L.push({r,tipo,ori:v('ori'),des:v('des'),pas:+v('pas')||0,monto:+v('monto')||0,desc:mNorm(v('desc')),ton:/^(tm|tn|ton|tons|toneladas?)$/.test(uni)?cant:0,emb:String(v('emb')||'').trim()})}
+  return L}
+const mProd=d=>/langost/.test(d)?'Langosta':/escama|pescado/.test(d)?'Escama':/camar/.test(d)?'Camaron':/nasa/.test(d)?'Nasa':'Carnada';
+async function libroCompletar(B){const av=[],hechas=new Set();for(const s of B.sheets)await lbHoja(B,s.name);const s=await lbHoja(B,'Muellaje');if(!s)throw new Error('El libro no tiene la hoja Muellaje');
+  const L=muelLista(B,s);if(!L)throw new Error('No se encontró la lista de atraques en Muellaje (encabezados Tipo, Origen, Destino)');
+  const esCab=x=>/cabotaje|carga|pasaj/.test(x.tipo),esPes=x=>/langost|escama|camar|pesq/.test(x.tipo);
+  const otros=L.filter(x=>!esCab(x)&&!esPes(x));if(otros.length)av.push('Muellaje: tipos no clasificados (no entran en los cuadros): '+[...new Set(otros.map(x=>x.tipo))].join(', ')+'.');
+  /* encabezados de los cuadros */
+  let hr=0;const R=Object.keys(s.rows).map(Number).sort((a,b)=>a-b);const cb=[];for(const r of R){for(let c=1;c<=40;c++)if(mNorm(lbVal(B,s,colA(c)+r))==='cant. barco')cb.push(c);if(cb.length>=2){hr=r;break}cb.length=0}
+  if(!hr)throw new Error('No se encontraron los cuadros de Muellaje (columna «Cant. Barco»)');
+  const colTras=(c0,rx)=>{for(let c=c0;c<=c0+12;c++)if(rx.test(mNorm(lbVal(B,s,colA(c)+hr))))return c;return 0};
+  const K={n:cb[0],pas:cb[0]-1,ori:colTras(cb[0],/^origen/),des:colTras(cb[0],/^destino/),ton:colTras(cb[0],/^tonelaje/),ing:colTras(cb[0],/^ingreso/),tip:cb[0]-2};
+  const P={n:cb[1],ori:colTras(cb[1],/^origen/),des:colTras(cb[1],/^destino/),ing:colTras(cb[1],/^ingreso/),tp:colTras(cb[1],/^tipo de pesca/),tip:cb[1]-1,prod:{}};
+  let pr=0;for(let r=hr+1;r<=hr+4&&!pr;r++){for(let c=P.n;c<=P.n+12;c++){const t=mNorm(lbVal(B,s,colA(c)+r));if(/^langosta$/.test(t)){pr=r}const pn={langosta:'Langosta',escama:'Escama',camaron:'Camaron',nasa:'Nasa',carnada:'Carnada'}[t.replace(/\s/g,'')];if(pr&&pn)P.prod[pn]=c}}
+  const totR=c=>R.find(r=>r>hr&&mNorm(lbVal(B,s,colA(c)+r))==='total');const kT=totR(K.tip),pT=totR(P.tip);if(!kT||!pT)throw new Error('No se encontraron las filas Total de los cuadros de Muellaje');
+  /* agrupar la lista */
+  const grp=(xs)=>{const G=new Map();xs.forEach(x=>{const k=mLugK(x.ori)+'>'+mLugK(x.des);const g=G.get(k)||{ori:mLugN(x.ori),des:mLugN(x.des),xs:[]};g.xs.push(x);G.set(k,g)});return G};
+  const GK=grp(L.filter(esCab)),GP=grp(L.filter(esPes));
+  const filas=(r0,r1,cO,cD)=>{const out=[];for(let r=r0;r<r1;r++){const o=lbTxt(B,s,colA(cO)+r),d=lbTxt(B,s,colA(cD)+r);out.push({r,o,d,k:o.trim()&&d.trim()?mLugK(o)+'>'+mLugK(d):null,titulo:!!o.trim()&&!d.trim()})}return out};
+  const r3=x=>Math.round(x*100)/100;
+  /* Carga y Pasajeros */
+  {const F=filas(hr+1,kT,K.ori,K.des);F.forEach(f=>{if(f.titulo)return;[K.pas,K.n,K.ton,K.ing].forEach(c=>lbSet(s,colA(c)+f.r,null));if(K.tip-1>0&&f.k)lbSet(s,colA(K.tip-1)+f.r,null)});
+    for(const [k,g] of GK){let f=F.find(x=>x.k===k);if(!f){f=F.find(x=>!x.titulo&&!x.k&&!x.usada);if(!f){av.push(`Muellaje · Carga y Pasajeros: no hay fila libre para la ruta ${g.ori} → ${g.des}.`);continue}lbSet(s,colA(K.ori)+f.r,g.ori);lbSet(s,colA(K.des)+f.r,g.des);f.k=k;av.push(`Muellaje · Carga y Pasajeros: ruta nueva ${g.ori} → ${g.des} agregada al cuadro.`)}
+      f.usada=1;g.row=f.r;const n=g.xs.length,pas=g.xs.reduce((a,x)=>a+x.pas,0),ton=r3(g.xs.reduce((a,x)=>a+x.ton,0)),ing=r3(g.xs.reduce((a,x)=>a+x.monto,0)),cc=g.xs.filter(x=>x.ton>0).length;
+      lbSet(s,colA(K.n)+f.r,n);if(pas)lbSet(s,colA(K.pas)+f.r,pas);if(ton)lbSet(s,colA(K.ton)+f.r,ton);if(ing)lbSet(s,colA(K.ing)+f.r,ing);
+      if(K.tip-1>0)lbSet(s,colA(K.tip-1)+f.r,cc===n?`${cc} lleva carga`:cc?`${cc} lleva carga y ${n-cc} sin carga`:'Sin carga');g.cc=cc;g.pas=pas;g.ton=ton;g.n=n}
+    const xs=L.filter(esCab);lbSet(s,colA(K.n)+(kT+1),xs.length);lbSet(s,colA(K.ton)+(kT+1),r3(xs.reduce((a,x)=>a+x.ton,0)));lbSet(s,colA(K.ing)+(kT+1),r3(xs.reduce((a,x)=>a+x.monto,0)))}
+  /* Pesquero */
+  {const F=filas(pr+1,pT,P.ori,P.des);const pc=Object.values(P.prod);F.forEach(f=>{if(f.titulo)return;[P.n,P.ing,...pc].forEach(c=>lbSet(s,colA(c)+f.r,null))});
+    for(const [k,g] of GP){let f=F.find(x=>x.k===k);if(!f){f=F.find(x=>!x.k&&!x.usada);if(!f){av.push(`Muellaje · Pesquero: no hay fila libre para la ruta ${g.ori} → ${g.des}.`);continue}lbSet(s,colA(P.ori)+f.r,g.ori);lbSet(s,colA(P.des)+f.r,g.des);f.k=k;av.push(`Muellaje · Pesquero: ruta nueva ${g.ori} → ${g.des} agregada al cuadro.`)}
+      f.usada=1;lbSet(s,colA(P.n)+f.r,g.xs.length);const T={};g.xs.forEach(x=>{if(x.ton>0){const p=mProd(x.desc);T[p]=(T[p]||0)+x.ton}});for(const p in T)if(P.prod[p])lbSet(s,colA(P.prod[p])+f.r,r3(T[p]));
+      const ing=r3(g.xs.reduce((a,x)=>a+x.monto,0));if(ing)lbSet(s,colA(P.ing)+f.r,ing);
+      const ne=g.xs.filter(x=>/escama/.test(x.tipo)).length,nl=g.xs.filter(x=>/langost/.test(x.tipo)).length,nc=g.xs.filter(x=>/camar/.test(x.tipo)).length;const pz=[ne?`${n2(ne)} Escama`:'',nl?`${n2(nl)} Langostero`:'',nc?`${n2(nc)} Camaronero`:''].filter(Boolean);
+      if(P.tp&&pz.length)lbSet(s,colA(P.tp)+f.r,pz.length>1?pz.slice(0,-1).join(', ')+' y '+pz[pz.length-1]:pz[0])}
+    const xs=L.filter(esPes);const mar=xs.filter(x=>x.ton>0&&/Langosta|Escama|Camaron/.test(mProd(x.desc))).reduce((a,x)=>a+x.ton,0);
+    lbSet(s,colA(P.n)+(pT+1),xs.length);if(P.prod.Langosta)lbSet(s,colA(P.prod.Langosta)+(pT+1),r3(mar));lbSet(s,colA(P.ing)+(pT+1),r3(xs.reduce((a,x)=>a+x.monto,0)))}
+  hechas.add('Muellaje');
+  /* texto para el informe de actividades */
+  const xc=L.filter(esCab),xp=L.filter(esPes);const tc=r3(xc.reduce((a,x)=>a+x.ton,0));const mar=r3(xp.filter(x=>x.ton>0&&/Langosta|Escama|Camaron/.test(mProd(x.desc))).reduce((a,x)=>a+x.ton,0)),ins=r3(xp.filter(x=>x.ton>0&&!/Langosta|Escama|Camaron/.test(mProd(x.desc))).reduce((a,x)=>a+x.ton,0));
+  const ROM=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];let t=`SERVICIO ATRAQUE A BUQUES EN TRÁNSITO.\n✓ ${n2(xc.length)} barcos de Carga y Pasajeros: Carga: ${fmt(tc)} Ton Mercadería General\n✓ ${n2(xp.length)} barcos Pesqueros: ${fmt(mar)} Ton producto de mar y ${fmt(ins)} Ton insumos de pesca.\n\nDESGLOSE DE BARCOS DE CARGA, CARGA Y PASAJEROS\n`;
+  [...GK.values()].sort((a,b)=>(a.row||999)-(b.row||999)).forEach((g,i)=>{const n=g.xs.length,cc=g.xs.filter(x=>x.ton>0).length,pas=g.xs.reduce((a,x)=>a+x.pas,0),ton=r3(g.xs.reduce((a,x)=>a+x.ton,0));
+    t+=`\n${ROM[i]||i+1}. ${n2(n)} barco${n===1?'':'s'} ruta ${g.ori} – El Bluff – ${g.des}:\n`+(cc?`✓ ${n2(cc)} barco${cc===1?'':'s'}: ${fmt(ton)} Ton mercadería general.\n`:'')+(n-cc?`✓ ${n2(n-cc)} barco${n-cc===1?'':'s'}: carga lastre.\n`:'')+(cc||pas?`✓ ${n2(pas)} pasajeros\n`:'')});
+  t+=`\nFLOTA PESQUERA:\n✓ ${n2(xp.length)} barcos\n✓ ${fmt(mar)} Ton producto de mar\n✓ ${fmt(ins)} Ton insumos de pesca\n\n${n2(xp.length+xc.length)} BARCOS ATENDIDOS (FLOTA PESQUERA, CABOTAJE Y PASAJEROS).`;
+  av.unshift(`Muellaje: ${L.length} atraques en la lista → ${xc.length} de carga y pasajeros (${fmt(tc)} TM) y ${xp.length} pesqueros (${fmt(mar)} TM producto de mar, ${fmt(ins)} TM insumos).`);
+  await libroRecalcular(B);const blob=await libroGuardar(B);return{B,blob,av,hechas,txt:t}}
+async function infCompletar(file){try{toast('Leyendo el informe…');const buf=await file.arrayBuffer();const B=await libroAbrir(buf);const w=await libroSemanaDe(B,file.name);const R=await libroCompletar(B);R.completo=true;R.origen='importado';
+    libroPrevia(R,file.name.replace(/\.xlsx$/i,'')+'.xlsx','Informe semanal '+(w?w.n:'')+' · completado',w||semDeFecha(today()))}catch(e){console.error(e);toast(e.message||'No se pudo completar el informe')}}
+document.addEventListener('change',e=>{if(e.target.id==='infCompFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';infCompletar(f)}});
 async function infGenerar(y,n){const [a,b]=semRango(y,n);const {L}=reViajes(a,b);if(!L.length)toast('No hay viajes de la motonave en esa semana');
   const nombre=`${n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,tit='Informe semanal '+n;const p=semAnt(y,n);const base=await lbGet(lbK(p.y,p.n));
   if(base){try{const R=await libroGenerar(base.b,y,n);R.completo=true;libroPrevia(R,nombre,tit,{y,n});return}catch(e){console.error(e);toast('No se pudo usar el libro base: '+(e.message||e))}}
@@ -3167,6 +3225,7 @@ function infGenHTML(){const hoy=semDeFecha(today());const ops=[];let {y,n}=hoy;f
   return `<div class="card" style="margin:10px 0 0;padding:10px 12px"><b style="font-size:13.5px">Informe semanal para oficina central</b><p class="sm" style="margin:4px 0 6px">Lunes a domingo. Se parte del informe de la semana anterior (libro base) con todas sus hojas y formato; la app actualiza <b>Ingreso RE y HS</b> y los acumulados de la motonave en <b>Metas1</b>.</p>
    <p class="sm" id="infBase" style="margin:0 0 6px"></p>
    <div class="row" style="flex-wrap:nowrap"><select id="infSemSel" style="flex:1">${ops.map((o,i)=>i===1?o.replace('<option','<option selected'):o).join('')}</select><button class="btn" data-infgen style="padding:8px 14px">Ver informe</button></div>
+   <label class="btn" style="display:block;text-align:center;margin-top:8px;padding:10px">Completar informe (Excel con Muellaje y Agua + Carga llenos)<input type="file" id="infCompFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
    <label class="btn2" style="display:block;text-align:center;margin-top:8px;padding:9px">Cargar libro base (último informe enviado)<input type="file" id="infBaseFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label></div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-infgen]');if(!b)return;const [y,n]=($('#infSemSel').value||'').split('-').map(Number);if(y&&n)infGenerar(y,n)});
 
