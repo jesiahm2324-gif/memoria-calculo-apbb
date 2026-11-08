@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.07-73';
+const APP_VER='2026.11.07-74';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2939,6 +2939,12 @@ function fxMotor(B){const memo=new Map(),busy=new Set();
       case'AVERAGE':{const L=nums(A,s);if(!L.length)throw new FxErr('#DIV/0!');return L.reduce((p,q)=>p+q,0)/L.length}
       case'MAX':{const L=nums(A,s);return L.length?Math.max(...L):0}case'MIN':{const L=nums(A,s);return L.length?Math.min(...L):0}case'COUNT':return nums(A,s).length;
       case'ABS':return Math.abs(num(ev(A[0],s)));
+      case'SUMIF':case'SUMIFS':{const P=n.n==='SUMIF'?{S:A[2]||A[0],C:[[A[0],A[1]]]}:{S:A[0],C:[]};if(n.n==='SUMIFS')for(let q=1;q+1<A.length;q+=2)P.C.push([A[q],A[q+1]]);
+        if(P.S.k!=='r'||P.C.some(([R])=>R.k!=='r'))throw'fx';const shS=P.S.sh?hoja(P.S.sh):s;
+        const mk=cr=>{if(typeof cr==='number')return v=>v===cr;cr=String(cr??'');if(!/^[<>=]/.test(cr)){const rx=new RegExp('^'+cr.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.')+'$','i');return v=>rx.test(String(v??''))}
+          const m=/^(<=|>=|<>|<|>|=)(.*)$/.exec(cr),o=m[1],q=m[2]!==''&&!isNaN(+m[2])?+m[2]:m[2].toLowerCase();return v=>{const x=typeof q==='number'?(typeof v==='number'?v:NaN):String(v??'').toLowerCase();return{'=':x===q,'<>':x!==q,'<':x<q,'>':x>q,'<=':x<=q,'>=':x>=q}[o]}};
+        const C=P.C.map(([R,c])=>({R,sh:R.sh?hoja(R.sh):s,ok:mk(ev(c,s))}));const nr=(P.S.r2||P.S.r1)-P.S.r1,nc=(P.S.c2||P.S.c1)-P.S.c1;let t=0;
+        for(let dr=0;dr<=nr;dr++)for(let dc=0;dc<=nc;dc++){if(!C.every(({R,sh,ok})=>{const ref=colA(R.c1+dc)+(R.r1+dr);const v=sh.idx[ref]?val(sh,ref):null;return!(v instanceof FxErr)&&ok(v)}))continue;const ref=colA(P.S.c1+dc)+(P.S.r1+dr);const w=shS.idx[ref]?val(shS,ref):null;if(typeof w==='number')t+=w}return t}
       case'ROUND':{const d=A[1]?num(ev(A[1],s)):0,f=Math.pow(10,d),x=num(ev(A[0],s));return Math.sign(x)*Math.round(Math.abs(x)*f+1e-9)/f}
       case'IFERROR':try{const v=ev(A[0],s);if(v instanceof FxErr)throw v;return v}catch(e){if(e instanceof FxErr)return ev(A[1],s);throw e}
       case'IF':{const c=ev(A[0],s);const t=typeof c==='string'?c!=='':!!num(c);return t?(A[1]?ev(A[1],s):true):(A[2]?ev(A[2],s):false)}
@@ -2948,7 +2954,8 @@ function fxMotor(B){const memo=new Map(),busy=new Set();
     if(txt==null||busy.has(k)||(fe&&(fe.getAttribute('t')==='array'||fe.getAttribute('t')==='dataTable')))v=lbVal(B,s,ref);
     else{busy.add(k);try{v=ev(fxParse(fxTok(txt)),s);if(v==null)v=0}catch(e){v=e instanceof FxErr?e:lbVal(B,s,ref)}busy.delete(k)}
     memo.set(k,v);return v}
-  return{val}}
+  const evalTxt=(s,txt)=>{try{return ev(fxParse(fxTok(txt)),s)}catch(e){return null}};
+  return{val,evalTxt}}
 async function libroRecalcular(B){for(const s of B.sheets)await lbHoja(B,s.name);const M=fxMotor(B);let n=0;
   for(const s of B.sheets)for(const ref in s.idx){const c=s.idx[ref];const fe=c.getElementsByTagName('f')[0];if(!fe)continue;const v=M.val(s,ref);if(v===undefined||v===null&&!c.getElementsByTagName('v')[0])continue;
     const NS=s.doc.documentElement.namespaceURI;let ve=c.getElementsByTagName('v')[0];const vv=v==null?'':v;
@@ -2980,7 +2987,7 @@ function lbBuscar(B,s,tit,fila,maxR){let r0=0;const R=Object.keys(s.rows).map(Nu
 function lbCol(B,s,r0,r1,rx){for(let r=r0;r<r1;r++)for(let c=1;c<=20;c++){const v=lbVal(B,s,colA(c)+r);if(v!=null&&rx.test(String(v).replace(/\s+/g,' ')))return c}return 0}
 function lbSumar(s,ref,x){const f=lbFormula(s,ref);const c=s.idx[ref];const v=c&&c.getElementsByTagName('v')[0];let base=f!=null?f:(v?v.textContent:'0');lbSet(s,ref,{f:base.replace(/^\+?/,'')+'+'+x})}
 async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=semRango(y,n);const {L}=reViajes(a,b);const av=[],hechas=new Set();
-  const re=await lbHoja(B,'Ingreso RE y HS'),m1=await lbHoja(B,'Metas1');if(!re||!m1)throw new Error('El libro base no tiene las hojas Ingreso RE y HS y Metas1');
+  for(const s of B.sheets)await lbHoja(B,s.name);const re=await lbHoja(B,'Ingreso RE y HS'),m1=await lbHoja(B,'Metas1');if(!re||!m1)throw new Error('El libro base no tiene las hojas Ingreso RE y HS y Metas1');
   /* Ingreso RE y HS: 3 filas por sentido (la tercera oculta si no hay viaje); la columna H queda vacía y oculta */
   const SL={ida:[5,6,7],vue:[14,15,16]};
   for(const dir of ['ida','vue']){const xs=L.filter(x=>x.dir===dir).sort((p,q)=>p.f.localeCompare(q.f));if(xs.length>3)av.push(`Hay ${xs.length} viajes ${dir==='ida'?'Bluefields → Corn Island':'Corn Island → Bluefields'}; el formato tiene espacio para 3. Revise la hoja Ingreso RE y HS.`);
@@ -3023,7 +3030,22 @@ async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=s
    if(c3){const cI=lbCol(B,m1,c3.r0+1,c3.r,/Carga de Importaci/i),cX=lbCol(B,m1,c3.r0+1,c3.r,/Carga de Exportaci/i);if(cI)lbSet(m1,colA(cI)+c3.r,tI);if(cX)lbSet(m1,colA(cX)+c3.r,tE)}
    av.push(`Buques internacionales esta semana: ${nB} arribo(s) · importación ${fq(tI)} TM · exportación ${fq(tE)} TM.`+(lleg.length||sal.length?' Detalle: '+[...new Set([...lleg,...sal])].map(x=>`${x.buque}${x.viaje?' V'+x.viaje:''} (${EST_TIPOS[x.tipo]||'—'}${enS(x.hl)?' · arribo, imp. '+fq(r3(arrTot(x,'des'))):''}${enS(x.hs)?' · salida, exp. '+fq(r3(arrTot(x,'emb'))):''})`).join('; ')+'.':''));
    if(new Set([...lleg,...sal].map(x=>x.tipo)).size>1)av.push('Esta semana hay buques de distinto tipo: la fila «Carga por buque» de Metas1 lleva el total de todos; si oficina central pide una fila por tipo, sepárela a mano con el detalle de arriba.')}
-  av.push('Metas1: las embarcaciones y la carga nacional atendidas (cabotaje) siguen como en el informe anterior; se automatizan en la próxima etapa.');
+  /* puertos nacionales: embarcaciones de la semana (Pesca y cabotaje) y carga general de la hoja Agua + Carga */
+  {const nac=lbBuscar(B,m1,/CUMPLIMIENTO DE METAS ACUMULADAS EN LOS PUERTOS NACIONALES/i,/Bluff/i,8);
+   if(nac){const cD=lbCol(B,m1,nac.r0+1,nac.r,/^Embarcaciones Atendidas/i),cH=lbCol(B,m1,nac.r0+1,nac.r,/^Carga Atendida/i);
+     /* embarcaciones: tramos de semana del mes (Pesca y cabotaje) que caen en esta semana */
+     let nE=0;const falt=[];const D=infDatos();const yms=[...new Set([a.slice(0,7),b.slice(0,7)])];
+     yms.forEach(ym=>semanasMes(ym).forEach(([p,q],i)=>{if(p<a||q>b)return;const s=semDe(ym,i);if(s.u){nE+=(+s.fp||0)+(+s.fc||0)+(+s.cp||0)+(+s.cc||0);return}
+       const z=infSemana(p,q,D);if(z.dias){nE+=z.fp+z.fc+z.cp+z.cc}else falt.push(semTxt([p,q]))}));
+     if(falt.length)av.push(`Embarcaciones nacionales: falta registrar en Pesca y cabotaje ${falt.join(' y ')}; se sumaron ${nE}. Registre y vuelva a generar.`);
+     if(cD)lbSumar(m1,colA(cD)+nac.r,nE);else av.push('Metas1: no se encontró la columna Embarcaciones Atendidas (puertos nacionales).');
+     /* carga atendida: la semana anterior queda como número fijo; la de esta semana es una fórmula sobre Agua + Carga */
+     if(cH){const ref=colA(cH)+nac.r;const M=fxMotor(B);let f=lbFormula(m1,ref)||String(lbVal(B,m1,ref)??0);const RXS=/\+?SUMIFS?\('Agua \+ Carga'![^)]*\)$/i;const mt=RXS.exec(f);
+       if(mt){const v=M.evalTxt(m1,mt[0].replace(/^\+/,''));f=f.slice(0,mt.index)+'+'+(Math.round((+v||0)*100)/100)}
+       lbSet(m1,ref,{f:f.replace(/^\+?/,'')+`+SUMIFS('Agua + Carga'!$I$3:$I$80,'Agua + Carga'!$D$3:$D$80,"*Carga General*",'Agua + Carga'!$A$3:$A$80,">=${xD(a)}",'Agua + Carga'!$A$3:$A$80,"<=${xD(b)}")`});
+       av.push('Carga atendida (Metas1): suma la cantidad de carga de las filas «Carga General» de la hoja Agua + Carga. Solo cuenta facturas con fecha de esta semana; al completar esa hoja en Excel, el total se actualiza solo.')}
+     av.push(`Puertos nacionales esta semana: ${nE} embarcaciones.`)}
+   else av.push('Metas1: no se encontró el cumplimiento de metas de puertos nacionales.')}
   await libroRecalcular(B);const blob=await libroGuardar(B);
   return{B,blob,av,hechas,res:{nV,pax,ton}}}
 /* vista previa del libro con sus estilos */
