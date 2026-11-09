@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.09-82';
+const APP_VER='2026.11.09-86';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2443,8 +2443,8 @@ function renderArrForm(){const a=EST_EDIT,box=$('#viaBox'),ro=!estPuedeEditar();
    <div class="via-tr"><div class="sm"><b>5.</b> Llegada a la Dársena de Maniobra</div><div class="grid">${I('rb','Fecha y hora de llegada','datetime-local')}${a.fon2?I('fon2','Hora de fondeo (registro anterior)','time'):''}</div></div>`:''}
    <div class="via-tr"><div class="sm"><b>${TR?6:3}.</b> Salida hacia ${esc(a.dest||'su destino final')}</div><div class="grid">${I('hs','Fecha y hora de salida','datetime-local')}${I('cal2','Calado (m)','number','inputmode="decimal"')}</div></div>
    ${(()=>{const H=(x,y)=>x&&y?hm((new Date(y)-new Date(x))/6e4):'—';return `<p class="sm" style="margin:4px 0 0">Estadía total en puerto: <b>${H(a.hl,a.hs)}</b> · arribo → dársena: <b>${H(a.hl,a.dm1)}</b>${TR?` · en ${esc(a.tran)}: <b>${H(a.sr,a.srm)}</b> · ida y vuelta: <b>${H(a.sr,a.rb)}</b>`:''}</p>`})()}
-   <h3 class="sub">Carga de importación · desembarcada (TM)</h3>${cargaFilas('des',a,EST_PD)}
-   <h3 class="sub">Carga de exportación · embarcada (TM)</h3>${cargaFilas('emb',a,EST_PE)}
+   ${a.amb==='cab'?'<p class="sm">Buque de cabotaje: el combustible se registra arriba en <b>Descargues de combustible</b> (diésel o gasolina, en galones). No lleva carga de importación ni exportación.</p>':`<h3 class="sub">Carga de importación · desembarcada (TM)</h3>${cargaFilas('des',a,EST_PD)}
+   <h3 class="sub">Carga de exportación · embarcada (TM)</h3>${cargaFilas('emb',a,EST_PE)}`}
    <div class="rent-k" style="grid-template-columns:1fr 1fr 1fr;margin-top:8px"><div><span>Importación</span><b id="eTotDes">${fq(arrTot(a,'des'))} TM</b></div><div><span>Exportación</span><b id="eTotEmb">${fq(arrTot(a,'emb'))} TM</b></div><div><span>Total manejado</span><b id="eTotAll">${fq(arrTot(a,'des')+arrTot(a,'emb'))} TM</b></div></div>${contHTML(a)}
    <div><label style="margin-top:10px">Observaciones</label><input data-ef="obs" value="${esc(a.obs||'')}" placeholder="Ej.: zarpa hacia Arlen Siu"></div></fieldset>
    ${ro?'':`<div class="row" style="margin-top:12px;flex-wrap:nowrap"><button class="btn" data-esave style="flex:2;padding:13px">Guardar arribo</button>${!a.nuevo&&OWNER?'<button class="btnd" data-edel style="flex:1">Eliminar</button>':''}</div>`}`}
@@ -2457,7 +2457,8 @@ function renderSalForm(){const s=EST_EDIT,box=$('#viaBox');const N=(o,k,l)=>`<di
    <h3 class="sub">Toneladas desembarcadas por producto</h3><div class="grid">${EST_PD.map(p=>N('pd',p,p)).join('')}</div>
    <h3 class="sub">Toneladas embarcadas por producto</h3><div class="grid">${EST_PE.map(p=>N('pe',p,p)).join('')}</div>
    <div class="row" style="margin-top:12px"><button class="btn" data-esalsave style="flex:1;padding:13px">Guardar saldo</button></div>`}
-document.addEventListener('change',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;if(el.dataset.ef==='amb'){EST_EDIT.amb=el.value;if(el.value==='cab'&&!(EST_EDIT.dc||[]).length)EST_EDIT.dc=[{f:(EST_EDIT.hl||today()).slice(0,10),lug:'El Bluff',prod:'Diésel',gal:'',tm:''}];renderArrForm()}else if(el.dataset.ec==='dc'&&(el.dataset.f==='gal'||el.dataset.f==='lug'||el.dataset.f==='f'))setTimeout(renderArrForm,0)});
+document.addEventListener('change',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;if(el.dataset.ef==='tipo'&&el.value==='tanq'&&EST_EDIT.amb!=='int'){EST_EDIT.tipo='tanq';EST_EDIT.amb='cab';if(!(EST_EDIT.dc||[]).length)EST_EDIT.dc=[{f:(EST_EDIT.hl||today()).slice(0,10),lug:'El Bluff',prod:'Diésel',gal:'',tm:''}];renderArrForm();return}
+  if(el.dataset.ef==='amb'){EST_EDIT.amb=el.value;if(el.value==='cab'&&!(EST_EDIT.dc||[]).length)EST_EDIT.dc=[{f:(EST_EDIT.hl||today()).slice(0,10),lug:'El Bluff',prod:'Diésel',gal:'',tm:''}];renderArrForm()}else if(el.dataset.ec==='dc'&&(el.dataset.f==='gal'||el.dataset.f==='lug'||el.dataset.f==='f'))setTimeout(renderArrForm,0)});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-edcadd],[data-edcdel]');if(!b||!EST_EDIT)return;const a=EST_EDIT;a.dc=a.dc||[];if(b.dataset.edcdel!=null)a.dc.splice(+b.dataset.edcdel,1);else a.dc.push({f:today(),lug:'El Bluff',prod:'Diésel',gal:'',tm:''});renderArrForm()});
 document.addEventListener('change',e=>{const el=e.target;if(!EST_EDIT||!el.dataset||el.dataset.etr===undefined)return;EST_EDIT.tr=el.checked;if(el.checked&&!(EST_EDIT.tran||'').trim())EST_EDIT.tran='Puerto Arlen Siú, El Rama';renderArrForm()});
 document.addEventListener('input',e=>{const el=e.target;if(!EST_EDIT||!el.closest||!el.closest('#viaBox'))return;const a=EST_EDIT;
@@ -3017,15 +3018,25 @@ function lbCol(B,s,r0,r1,rx){for(let r=r0;r<r1;r++)for(let c=1;c<=20;c++){const 
 function lbSumar(s,ref,x){const f=lbFormula(s,ref);const c=s.idx[ref];const v=c&&c.getElementsByTagName('v')[0];let base=f!=null?f:(v?v.textContent:'0');lbSet(s,ref,{f:base.replace(/^\+?/,'')+'+'+x})}
 async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=semRango(y,n);const {L}=reViajes(a,b);const av=[],hechas=new Set();
   for(const s of B.sheets)await lbHoja(B,s.name);const re=await lbHoja(B,'Ingreso RE y HS'),m1=await lbHoja(B,'Metas1');if(!re||!m1)throw new Error('El libro base no tiene las hojas Ingreso RE y HS y Metas1');
-  /* Ingreso RE y HS: 3 filas por sentido (la tercera oculta si no hay viaje); la columna H queda vacía y oculta */
-  const SL={ida:[5,6,7],vue:[14,15,16]};
-  for(const dir of ['ida','vue']){const xs=L.filter(x=>x.dir===dir).sort((p,q)=>p.f.localeCompare(q.f));if(xs.length>3)av.push(`Hay ${xs.length} viajes ${dir==='ida'?'Bluefields → Corn Island':'Corn Island → Bluefields'}; el formato tiene espacio para 3. Revise la hoja Ingreso RE y HS.`);
-    SL[dir].forEach((r,i)=>{const x=xs[i];
-      if(x){lbSet(re,'A'+r,i+1);lbSet(re,'B'+r,xD(x.f));lbSet(re,'C'+r,x.buque);lbSet(re,'D'+r,x.pas);lbSet(re,'E'+r,x.costo);lbSet(re,'F'+r,{f:`D${r}*E${r}`});lbSet(re,'G'+r,x.ingCar);lbSet(re,'H'+r,null);lbSet(re,'I'+r,{f:`+F${r}+G${r}`});lbSet(re,'J'+r,x.tur||0);lbSet(re,'L'+r,{f:`G${r}/1600`})}
-      else{'ABCDEFGHIJL'.split('').forEach(c=>lbSet(re,c+r,null))}
-      const row=lbFila(re,r,true);if(i===2){if(x)row.removeAttribute('hidden');else row.setAttribute('hidden','1')}})}
-  lbSet(re,'J8',{f:'SUM(J5:J7)'});lbSet(re,'J17',{f:'SUM(J14:J16)'});lbSet(re,'H17',{f:'SUM(H14:H16)'});
-  {const cols=re.doc.getElementsByTagName('col');let ok=false;for(const c of cols)if(+c.getAttribute('min')<=8&&+c.getAttribute('max')>=8){c.setAttribute('hidden','1');ok=true}if(!ok)av.push('La columna H de Ingreso RE y HS no está oculta en el libro base.')}
+  /* Ingreso RE y HS: las columnas y filas se ubican por sus títulos (el formato puede moverse de una semana a otra) */
+  {const RR=Object.keys(re.rows).map(Number).sort((p,q)=>p-q);const txt=(r,c)=>mNorm(lbVal(B,re,colA(c)+r));const fila=(r,rx)=>{for(let c=1;c<=20;c++)if(rx.test(txt(r,c)))return c;return 0};
+   const bloques=[];RR.forEach(r=>{const c=fila(r,/^ruta:?/);if(c)bloques.push({r,dir:/^ruta:?\s*bluefields/.test(txt(r,c))?'ida':'vue'})});
+   if(bloques.length<2)av.push('Ingreso RE y HS: no se encontraron las dos rutas.');
+   for(const bq of bloques){const h2=RR.find(r=>r>bq.r&&r<bq.r+6&&fila(r,/^cantidad$/));if(!h2){av.push('Ingreso RE y HS: no se encontró el encabezado CANTIDAD.');continue}const h1=h2-1;
+     const st=RR.find(r=>r>h2&&fila(r,/^sub ?total/));if(!st){av.push('Ingreso RE y HS: no se encontró el SUB TOTAL.');continue}
+     const cs=[];for(let c=1;c<=20;c++)if(txt(h2,c)==='ingreso')cs.push(c);
+     const K={it:fila(h1,/^i ?t ?e ?m/),fe:fila(h1,/^fecha/),bu:fila(h1,/nombre del buque/),pa:fila(h2,/^cantidad$/),co:fila(h2,/^costo/),ip:cs[0],ic:cs[1],ct:fila(h2,/carga ?\/ ?tonelada/),to:fila(h1,/total/),tu:fila(h1,/^turista/)};
+     let ton=0;for(const r of RR.filter(r=>r>=st&&r<=st+12)){const c=fila(r,/^(total )?ton\.?$/);if(c){ton=c+1;break}}if(!ton&&K.tu)ton=K.tu+2;
+     if(!K.fe||!K.pa||!K.ip||!K.ic||!K.to){av.push('Ingreso RE y HS: faltan columnas en el encabezado.');continue}
+     const xs=L.filter(x=>x.dir===bq.dir).sort((p,q)=>p.f.localeCompare(q.f));const slots=[];for(let r=h2+1;r<st;r++)slots.push(r);
+     if(xs.length>slots.length)av.push(`Hay ${xs.length} viajes ${bq.dir==='ida'?'Bluefields → Corn Island':'Corn Island → Bluefields'}; el formato tiene espacio para ${slots.length}. Revise la hoja Ingreso RE y HS.`);
+     const A=c=>colA(c);
+     slots.forEach((r,i)=>{const x=xs[i];
+       if(x){if(K.it)lbSet(re,A(K.it)+r,i+1);lbSet(re,A(K.fe)+r,xD(x.f));if(K.bu)lbSet(re,A(K.bu)+r,x.buque);lbSet(re,A(K.pa)+r,x.pas);if(K.co)lbSet(re,A(K.co)+r,x.costo);lbSet(re,A(K.ip)+r,{f:`${A(K.pa)}${r}*${A(K.co)}${r}`});lbSet(re,A(K.ic)+r,x.ingCar);if(K.ct)lbSet(re,A(K.ct)+r,null);lbSet(re,A(K.to)+r,{f:`+${A(K.ip)}${r}+${A(K.ic)}${r}`});if(K.tu)lbSet(re,A(K.tu)+r,x.tur||0);if(ton)lbSet(re,A(ton)+r,{f:`${A(K.ic)}${r}/1600`})}
+       else{[K.it,K.fe,K.bu,K.pa,K.co,K.ip,K.ic,K.ct,K.to,K.tu,ton].filter(Boolean).forEach(c=>lbSet(re,A(c)+r,null))}
+       const row=lbFila(re,r,true);if(i>=2){if(x)row.removeAttribute('hidden');else row.setAttribute('hidden','1')}});
+     const r0=slots[0],r1=slots[slots.length-1];if(K.tu)lbSet(re,A(K.tu)+st,{f:`SUM(${A(K.tu)}${r0}:${A(K.tu)}${r1})`});if(K.ct)lbSet(re,A(K.ct)+st,{f:`SUM(${A(K.ct)}${r0}:${A(K.ct)}${r1})`});
+     if(K.ct){for(const c of re.doc.getElementsByTagName('col'))if(+c.getAttribute('min')<=K.ct&&+c.getAttribute('max')>=K.ct)c.setAttribute('hidden','1')}}}
   hechas.add('Ingreso RE y HS');
   /* Metas1: acumulados de la motonave y fechas de corte */
   const nV=L.length,pax=L.reduce((s,x)=>s+x.pas,0),ton=Math.round(L.reduce((s,x)=>s+x.ingCar,0)/1600*100)/100;
@@ -3164,15 +3175,17 @@ async function libroImportar(file){try{const buf=await file.arrayBuffer();const 
 document.addEventListener('change',e=>{if(e.target.id==='infBaseFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';libroImportar(f)}});
 /* --- Completar informe: lee la lista de atraques de Muellaje y llena sus dos cuadros (Carga y Pasajeros, Pesquero) --- */
 const mNorm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
-const mLugK=s=>{let k=mNorm(s).replace(/[^a-z]/g,'');if(/^banco(de)?pesca/.test(k))return'bancopesca';if(/^puertocab/.test(k))return'puertocabezas';if(/^corn/.test(k))return'cornisland';if(/^bl(ue)?f/.test(k))return'bluefields';if(/^pesca?nic/.test(k))return'pescanica';if(/^(el)?rama/.test(k))return'rama';return k};
+const mLugK=s=>{let k=mNorm(s).replace(/[^a-z]/g,'');if(/^banco(de)?pesca/.test(k))return'bancopesca';if(/^puertocab/.test(k))return'puertocabezas';if(/^corn/.test(k))return'cornisland';if(/^bl(ue)?f/.test(k))return'bluefields';if(/^pesca?nic/.test(k))return'pescanica';if(/^(el)?rama/.test(k))return'rama';if(/^fondeo/.test(k))return'fondeo';return k};
 const mLugN=s=>({bancopesca:'Banco Pesca',pescanica:'Pescanica',puertocabezas:'Puerto Cabezas',cornisland:'Corn Island',bluefields:'Bluefields',rama:'Rama',bluff:'Bluff'}[mLugK(s)]||String(s||'').trim());
 const n2=x=>String(x).padStart(2,'0');
 function muelLista(B,s){let hr=0,C={};for(let r=1;r<=8&&!hr;r++){const H={};for(let c=1;c<=40;c++){const t=mNorm(lbVal(B,s,colA(c)+r));if(t)H[t]=c}
     if(H['tipo']&&(H['origen']||H['procedencia'])&&H['destino']){hr=r;const f=rx=>{for(const k in H)if(rx.test(k))return H[k];return 0};C={tipo:H['tipo'],ori:H['origen']||H['procedencia'],des:H['destino'],pas:f(/^p?s?a?s?ajeros?$|^psajeros$/),emb:f(/^nombre/),monto:f(/^monto/),desc:f(/^descripcion/),uni:f(/^unidad/),cant:f(/^cantidad$/)}}}
   if(!hr)return null;const L=[];const M=fxMotor(B);
   for(let r=hr+1;r<hr+400;r++){const a=mNorm(lbVal(B,s,'A'+r));if(/^total/.test(a))break;const tipo=mNorm(lbVal(B,s,colA(C.tipo)+r));if(!tipo)continue;
-    const v=k=>C[k]?M.val(s,colA(C[k])+r):null;const uni=mNorm(v('uni')).replace(/[^a-z]/g,'');const cant=typeof v('cant')==='number'?v('cant'):0;
-    L.push({r,tipo,ori:v('ori'),des:v('des'),pas:+v('pas')||0,monto:+v('monto')||0,desc:mNorm(v('desc')),ton:/^(tm|tn|ton|tons|toneladas?)$/.test(uni)?cant:0,emb:String(v('emb')||'').trim(),f:typeof lbVal(B,s,'B'+r)==='number'?lbVal(B,s,'B'+r):null})}
+    const v=k=>C[k]?M.val(s,colA(C[k])+r):null;/* la unidad puede venir corrida una columna en algunas filas pegadas: se busca alrededor */
+    let cu=C.uni;if(C.uni){for(const d of [0,1,-1,2]){const t=mNorm(M.val(s,colA(C.uni+d)+r)).replace(/[^a-z]/g,'');if(/^(tn|tm|ton|tons|toneladas?|und|unds?|lbs?|libras?|kg|glns?|galones?)$/.test(t)){cu=C.uni+d;break}}}
+    const uni=cu?mNorm(M.val(s,colA(cu)+r)).replace(/[^a-z]/g,''):'';let cv=cu?M.val(s,colA(cu+1)+r):null;if(cu&&typeof cv!=='number'){const c2=M.val(s,colA(cu+2)+r);if(typeof c2==='number')cv=c2}const cant=typeof cv==='number'?cv:0;const dsc=cu?M.val(s,colA(cu-1)+r):v('desc');
+    L.push({r,tipo,ori:v('ori'),des:v('des'),pas:+v('pas')||0,monto:+v('monto')||0,desc:mNorm(typeof dsc==='string'?dsc:v('desc')),ton:/^(tm|tn|ton|tons|toneladas?)$/.test(uni)?cant:0,emb:String(v('emb')||'').trim(),f:typeof lbVal(B,s,'B'+r)==='number'?lbVal(B,s,'B'+r):null})}
   L.hr=hr;L.C=C;return L}
 const mProd=d=>/langost/.test(d)?'Langosta':/escama|pescado/.test(d)?'Escama':/camar/.test(d)?'Camaron':/nasa/.test(d)?'Nasa':'Carnada';
 async function libroCompletar(B){const av=[],hechas=new Set();for(const s of B.sheets)await lbHoja(B,s.name);const s=await lbHoja(B,'Muellaje');if(!s)throw new Error('El libro no tiene la hoja Muellaje');
@@ -3185,29 +3198,33 @@ async function libroCompletar(B){const av=[],hechas=new Set();for(const s of B.s
   const colTras=(c0,rx)=>{for(let c=c0;c<=c0+12;c++)if(rx.test(mNorm(lbVal(B,s,colA(c)+hr))))return c;return 0};
   const K={n:cb[0],pas:cb[0]-1,ori:colTras(cb[0],/^origen/),des:colTras(cb[0],/^destino/),ton:colTras(cb[0],/^tonelaje/),ing:colTras(cb[0],/^ingreso/),tip:cb[0]-2};
   const P={n:cb[1],ori:colTras(cb[1],/^origen/),des:colTras(cb[1],/^destino/),ing:colTras(cb[1],/^ingreso/),tp:colTras(cb[1],/^tipo de pesca/),tip:cb[1]-1,prod:{}};
-  let pr=0;for(let r=hr+1;r<=hr+4&&!pr;r++){for(let c=P.n;c<=P.n+12;c++){const t=mNorm(lbVal(B,s,colA(c)+r));if(/^langosta$/.test(t)){pr=r}const pn={langosta:'Langosta',escama:'Escama',camaron:'Camaron',nasa:'Nasa',carnada:'Carnada'}[t.replace(/\s/g,'')];if(pr&&pn)P.prod[pn]=c}}
-  const totR=c=>R.find(r=>r>hr&&mNorm(lbVal(B,s,colA(c)+r))==='total');const kT=totR(K.tip),pT=totR(P.tip);if(!kT||!pT)throw new Error('No se encontraron las filas Total de los cuadros de Muellaje');
+  let pr=0;for(let r=hr+1;r<=hr+4&&!pr;r++){for(let c=P.n;c<=P.n+12;c++){const t=mNorm(lbVal(B,s,colA(c)+r));if(/^langosta$/.test(t)){pr=r}const pn={langosta:'Langosta',escama:'Escama',camaron:'Camaron',nasa:'Nasa',carnada:'Carnada',insumodepesca:'Insumo',insumosdepesca:'Insumo',insumo:'Insumo',insumos:'Insumo'}[t.replace(/\s/g,'')];if(pr&&pn)P.prod[pn]=c}}
+  const totR=c=>R.find(r=>r>hr&&mNorm(lbVal(B,s,colA(c)+r))==='total');let kT=totR(K.tip),pT=totR(P.tip);if(!kT||!pT)throw new Error('No se encontraron las filas Total de los cuadros de Muellaje');
   /* agrupar la lista */
   const grp=(xs)=>{const G=new Map();xs.forEach(x=>{const k=mLugK(x.ori)+'>'+mLugK(x.des);const g=G.get(k)||{ori:mLugN(x.ori),des:mLugN(x.des),xs:[]};g.xs.push(x);G.set(k,g)});return G};
   const GK=grp(L.filter(esCab)),GP=grp(L.filter(esPes));
   const filas=(r0,r1,cO,cD)=>{const out=[];for(let r=r0;r<r1;r++){const o=lbTxt(B,s,colA(cO)+r),d=lbTxt(B,s,colA(cD)+r);out.push({r,o,d,k:o.trim()&&d.trim()?mLugK(o)+'>'+mLugK(d):null,titulo:!!o.trim()&&!d.trim()})}return out};
   const r3=x=>Math.round(x*100)/100;
+  /* rutas nuevas sin fila libre: se agregan filas al cuadro que queda más abajo (el otro cuadro no se mueve) */
+  {const falta=(G,r0,r1,cO,cD)=>{const F=filas(r0,r1,cO,cD);const ks=new Set(F.map(f=>f.k).filter(Boolean));const nuevas=[...G.keys()].filter(k=>!ks.has(k)).length;const libres=F.filter(f=>!f.titulo&&!f.k).length;return Math.max(0,nuevas-libres)};
+   const nP=falta(GP,pr+1,pT,P.ori,P.des);if(nP){if(pT>kT){await lbInsFilas(B,s,pT-1,nP);pT+=nP;av.push(`Muellaje · Pesquero: se agregaron ${nP} fila(s) al cuadro para rutas nuevas.`)}}
+   const nK=falta(GK,hr+1,kT,K.ori,K.des);if(nK){if(kT>pT){await lbInsFilas(B,s,kT-1,nK);kT+=nK;av.push(`Muellaje · Carga y Pasajeros: se agregaron ${nK} fila(s) al cuadro para rutas nuevas.`)}}}
   /* Carga y Pasajeros */
   {const F=filas(hr+1,kT,K.ori,K.des);F.forEach(f=>{if(f.titulo)return;[K.pas,K.n,K.ton,K.ing].forEach(c=>lbSet(s,colA(c)+f.r,null));if(K.tip-1>0&&f.k)lbSet(s,colA(K.tip-1)+f.r,null)});
     for(const [k,g] of GK){let f=F.find(x=>x.k===k);if(!f){f=F.find(x=>!x.titulo&&!x.k&&!x.usada);if(!f){av.push(`Muellaje · Carga y Pasajeros: no hay fila libre para la ruta ${g.ori} → ${g.des}.`);continue}lbSet(s,colA(K.ori)+f.r,g.ori);lbSet(s,colA(K.des)+f.r,g.des);f.k=k;av.push(`Muellaje · Carga y Pasajeros: ruta nueva ${g.ori} → ${g.des} agregada al cuadro.`)}
       f.usada=1;g.row=f.r;const n=g.xs.length,pas=g.xs.reduce((a,x)=>a+x.pas,0),ton=r3(g.xs.reduce((a,x)=>a+x.ton,0)),ing=r3(g.xs.reduce((a,x)=>a+x.monto,0)),cc=g.xs.filter(x=>x.ton>0).length;
       lbSet(s,colA(K.n)+f.r,n);if(pas)lbSet(s,colA(K.pas)+f.r,pas);if(ton)lbSet(s,colA(K.ton)+f.r,ton);if(ing)lbSet(s,colA(K.ing)+f.r,ing);
       if(K.tip-1>0)lbSet(s,colA(K.tip-1)+f.r,cc===n?`${cc} lleva carga`:cc?`${cc} lleva carga y ${n-cc} sin carga`:'Sin carga');g.cc=cc;g.pas=pas;g.ton=ton;g.n=n}
-    const xs=L.filter(esCab);lbSet(s,colA(K.n)+(kT+1),xs.length);lbSet(s,colA(K.ton)+(kT+1),r3(xs.reduce((a,x)=>a+x.ton,0)));lbSet(s,colA(K.ing)+(kT+1),r3(xs.reduce((a,x)=>a+x.monto,0)))}
+  }
   /* Pesquero */
   {const F=filas(pr+1,pT,P.ori,P.des);const pc=Object.values(P.prod);F.forEach(f=>{if(f.titulo)return;[P.n,P.ing,...pc].forEach(c=>lbSet(s,colA(c)+f.r,null))});
     for(const [k,g] of GP){let f=F.find(x=>x.k===k);if(!f){f=F.find(x=>!x.k&&!x.usada);if(!f){av.push(`Muellaje · Pesquero: no hay fila libre para la ruta ${g.ori} → ${g.des}.`);continue}lbSet(s,colA(P.ori)+f.r,g.ori);lbSet(s,colA(P.des)+f.r,g.des);f.k=k;av.push(`Muellaje · Pesquero: ruta nueva ${g.ori} → ${g.des} agregada al cuadro.`)}
-      f.usada=1;lbSet(s,colA(P.n)+f.r,g.xs.length);const T={};g.xs.forEach(x=>{if(x.ton>0){const p=mProd(x.desc);T[p]=(T[p]||0)+x.ton}});for(const p in T)if(P.prod[p])lbSet(s,colA(P.prod[p])+f.r,r3(T[p]));
+      f.usada=1;lbSet(s,colA(P.n)+f.r,g.xs.length);const T={};g.xs.forEach(x=>{if(x.ton>0){const p=mProd(x.desc);T[p]=(T[p]||0)+x.ton}});const T2={};for(const p in T){const k=P.prod[p]?p:(/Nasa|Carnada/.test(p)&&P.prod.Insumo?'Insumo':(p==='Nasa'&&P.prod.Carnada?'Carnada':null));if(k)T2[k]=(T2[k]||0)+T[p];else av.push(`Muellaje · Pesquero: no hay columna para ${p}.`)}for(const p in T2)lbSet(s,colA(P.prod[p])+f.r,r3(T2[p]));
       const ing=r3(g.xs.reduce((a,x)=>a+x.monto,0));if(ing)lbSet(s,colA(P.ing)+f.r,ing);
       const ne=g.xs.filter(x=>/escama/.test(x.tipo)).length,nl=g.xs.filter(x=>/langost/.test(x.tipo)).length,nc=g.xs.filter(x=>/camar/.test(x.tipo)).length;const pz=[ne?`${n2(ne)} Escama`:'',nl?`${n2(nl)} Langostero`:'',nc?`${n2(nc)} Camaronero`:''].filter(Boolean);
       if(P.tp&&pz.length)lbSet(s,colA(P.tp)+f.r,pz.length>1?pz.slice(0,-1).join(', ')+' y '+pz[pz.length-1]:pz[0])}
     const xs=L.filter(esPes);const mar=xs.filter(x=>x.ton>0&&/Langosta|Escama|Camaron/.test(mProd(x.desc))).reduce((a,x)=>a+x.ton,0);
-    lbSet(s,colA(P.n)+(pT+1),xs.length);if(P.prod.Langosta)lbSet(s,colA(P.prod.Langosta)+(pT+1),r3(mar));lbSet(s,colA(P.ing)+(pT+1),r3(xs.reduce((a,x)=>a+x.monto,0)))}
+  }
   hechas.add('Muellaje');
   /* texto para el informe de actividades */
   const xc=L.filter(esCab),xp=L.filter(esPes);const tc=r3(xc.reduce((a,x)=>a+x.ton,0));const mar=r3(xp.filter(x=>x.ton>0&&/Langosta|Escama|Camaron/.test(mProd(x.desc))).reduce((a,x)=>a+x.ton,0)),ins=r3(xp.filter(x=>x.ton>0&&!/Langosta|Escama|Camaron/.test(mProd(x.desc))).reduce((a,x)=>a+x.ton,0));
