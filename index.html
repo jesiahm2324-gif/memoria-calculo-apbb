@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.09-79';
+const APP_VER='2026.11.09-81';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2717,16 +2717,17 @@ const hojaDe=(H,re)=>{const k=Object.keys(H).find(n=>re.test(norm(n)));return k?
 const filas=M=>Object.keys(M||{}).map(Number).sort((a,b)=>a-b);
 function infExtraer(H){const out={mue:[],apbb:[],rehs:[],otros:[],peaje:[],av:[]};
   /* Muellaje: un renglón por atraque */
-  const Mu=hojaDe(H,/^muellaje/);
+  const Mu=hojaDe(H,/^muellaje/)||Object.values(H).find(S=>filas(S).slice(0,6).some(r=>{const vs=Object.values(S[r]||{}).map(v=>norm(xS(v)));return vs.some(v=>/embarcaci/.test(v))&&vs.some(v=>/procedencia|origen/.test(v))}));
   if(Mu){const rs=filas(Mu);const hr=rs.find(r=>Object.values(Mu[r]).some(v=>/embarcaci/.test(norm(v))));
     if(hr){const L={};const cols=new Set([...Object.keys(Mu[hr]||{}),...Object.keys(Mu[hr+1]||{})].map(Number));cols.forEach(c=>L[c]=norm(xS((Mu[hr]||{})[c])+' '+xS((Mu[hr+1]||{})[c])));
       const fc=re=>{const c=[...cols].sort((a,b)=>a-b).find(c=>re.test(L[c]));return c||0};
-      const C={fa:fc(/atraque/),fd:fc(/desatraque/),emb:fc(/embarcaci/),trip:fc(/tripulante/),pas:fc(/p\w*sajero/),mat:fc(/matricula/),prop:fc(/propietario/),tipo:fc(/^tipo(?!.*pago)/),ori:fc(/origen/),des:fc(/destino/),liq:fc(/muelle\s*liquido/),pri:fc(/muelle\s*principal/),monto:fc(/monto/),pago:fc(/pago/),fac:fc(/factura/),car:fc(/descripci/),um:fc(/unidad/),cant:fc(/^cantidad\s*$/)};
+      const C={fa:fc(/atraque/),fd:fc(/desatraque/),emb:fc(/embarcaci/),trip:fc(/tripulante/),pas:fc(/p\w*sajero/),mat:fc(/matricula/),prop:fc(/propietario/),tipo:fc(/^tipo(?!.*pago)/),ori:fc(/origen|procedencia/),des:fc(/destino/),liq:fc(/muelle\s*liquido/),pri:fc(/muelle\s*principal/),monto:fc(/monto/),pago:fc(/pago/),fac:fc(/factura/),car:fc(/descripci/),um:fc(/unidad/),cant:fc(/^cantidad\s*$/)};
       if(C.fa===C.fd)C.fd=C.fa+1;
       for(const r of rs.filter(r=>r>hr+1)){const w=Mu[r];if(Object.values(w).some(v=>/^total/.test(norm(v)))&&!w[C.emb])break;const fa=xF(w[C.fa]);if(!fa||!xS(w[C.emb]))continue;
         const X1=c=>!!(c&&xS(w[c]));out.mue.push({fa,fd:xF(w[C.fd])||'',emb:xS(w[C.emb]),trip:xN(w[C.trip]),pas:xN(w[C.pas]),mat:xS(w[C.mat]),prop:xS(w[C.prop]),tipo:xS(w[C.tipo]),ori:xS(w[C.ori]),des:xS(w[C.des]),
           liq:X1(C.liq)||X1(C.liq&&C.liq+1),pri:X1(C.pri)||X1(C.pri&&C.pri+1),monto:xN(w[C.monto]),pago:xS(w[C.pago]),fac:xS(w[C.fac]),car:xS(w[C.car]),um:xS(w[C.um]),cant:xN(w[C.cant])})}}}
-  else out.av.push('No trae la hoja «Muellaje» (atraques).');
+  else out.av.push('No trae la lista de atraques (hoja «Muellaje»).');
+  out.esSemana=!hojaDe(H,/^metas1$/)&&!!Mu;
   /* APBB: resumen diario (las columnas se ubican por su nombre) */
   const Ap=hojaDe(H,/^apbb$/);
   if(Ap){const rs=filas(Ap);const hr=rs.find(r=>Object.values(Ap[r]).some(v=>/^pesqueros/.test(norm(v))));
@@ -2784,11 +2785,11 @@ async function infCargar(file){let H;try{H=await xlsxLeer(file)}catch(e){toast(e
    <div class="facts"><div><span>Atraques (Muellaje)</span><b>${o.mue.length}</b></div><div><span>Pesqueros / cabotaje</span><b>${pes} / ${cab}</b></div><div><span>Carga manejada (APBB)</span><b>${fq(Math.round(tm*100)/100)} TM</b></div><div><span>Motonave</span><b>${o.rehs.length} viajes · ${fq(pas)} pas.</b></div><div><span>Carga motonave</span><b>${fq(Math.round(ton*100)/100)} TM</b></div><div><span>Ingresos (otros servicios)</span><b>${money(ing,'NIO')}</b></div></div>
    ${o.av.length?`<div class="notice" style="margin-top:10px">${o.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
    <p class="sm">Se guardan los datos (≈ ${Math.max(1,Math.round(JSON.stringify(o).length/1024))} KB). Si es el informe completo, el libro queda además en este teléfono como <b>libro base</b> para generar el informe de la semana siguiente.</p>
-   <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" id="infOk" style="flex:2">Guardar datos</button></div></div>`;
+   <div class="row" style="flex-wrap:nowrap"><button class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" id="infOk" style="flex:2">${o.esSemana?'Guardar datos y preparar el informe':'Guardar datos'}</button></div></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');
-  $('#infOk').onclick=()=>{file.arrayBuffer().then(ab=>libroGuardarBase(ab,file.name,'importado')).then(()=>infBaseEstado()).catch(()=>{});const id='i'+o.desde.replace(/-/g,'')+'-'+o.hasta.replace(/-/g,'');const prev=infLista().find(x=>x.id===id);if(prev&&prev._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(prev._n));
+  $('#infOk').onclick=()=>{if(!o.esSemana)file.arrayBuffer().then(ab=>libroGuardarBase(ab,file.name,'importado')).then(()=>infBaseEstado()).catch(()=>{});const id='i'+o.desde.replace(/-/g,'')+'-'+o.hasta.replace(/-/g,'');const prev=infLista().find(x=>x.id===id);if(prev&&prev._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(prev._n));
     const x={id,desde:o.desde,hasta:o.hasta,archivo:file.name,mue:o.mue,apbb:o.apbb,rehs:o.rehs,otros:o.otros,peaje:o.peaje,av:o.av,u:new Date().toISOString(),por:yoNombre(),_p:true};
-    ls.set('epn_est_inf',infLista().filter(y=>y.id!==id).concat([x]));cerrarSheet();ACC_OPEN.add('infsem');toast(prev?'Semana reemplazada':'Informe guardado');renderEst();estSync(true)}}
+    ls.set('epn_est_inf',infLista().filter(y=>y.id!==id).concat([x]));cerrarSheet();ACC_OPEN.add('infsem');toast(prev?'Semana reemplazada':'Informe guardado');renderEst();estSync(true);if(o.esSemana)setTimeout(()=>infCompletar(file),300)}}
 document.addEventListener('change',e=>{if(e.target.id==='infFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';infCargar(f)}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-infdel],[data-inffill]');if(!b)return;
   if(b.dataset.infdel&&OWNER){const x=infLista().find(y=>y.id===b.dataset.infdel);if(!x||!confirm('¿Quitar el informe del '+fC(x.desde)+' al '+fC(x.hasta)+'?'))return;if(x._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(x._n));ls.set('epn_est_inf',infLista().filter(y=>y.id!==x.id));renderEst();estSync(true);return}
@@ -2967,7 +2968,7 @@ function fxMotor(B){const memo=new Map(),busy=new Set();
       case'SUMIF':case'SUMIFS':{const P=n.n==='SUMIF'?{S:A[2]||A[0],C:[[A[0],A[1]]]}:{S:A[0],C:[]};if(n.n==='SUMIFS')for(let q=1;q+1<A.length;q+=2)P.C.push([A[q],A[q+1]]);
         if(P.S.k!=='r'||P.C.some(([R])=>R.k!=='r'))throw'fx';const shS=P.S.sh?hoja(P.S.sh):s;
         const mk=cr=>{if(typeof cr==='number')return v=>v===cr;cr=String(cr??'');if(!/^[<>=]/.test(cr)){const rx=new RegExp('^'+cr.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.')+'$','i');return v=>rx.test(String(v??''))}
-          const m=/^(<=|>=|<>|<|>|=)(.*)$/.exec(cr),o=m[1],q=m[2]!==''&&!isNaN(+m[2])?+m[2]:m[2].toLowerCase();return v=>{const x=typeof q==='number'?(typeof v==='number'?v:NaN):String(v??'').toLowerCase();return{'=':x===q,'<>':x!==q,'<':x<q,'>':x>q,'<=':x<=q,'>=':x>=q}[o]}};
+          const m=/^(<=|>=|<>|<|>|=)(.*)$/.exec(cr),o=m[1];if((o==='='||o==='<>')&&/[*?]/.test(m[2])){const rx=new RegExp('^'+m[2].replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.')+'$','i');return v=>o==='='?rx.test(String(v??'')):!rx.test(String(v??''))}const q=m[2]!==''&&!isNaN(+m[2])?+m[2]:m[2].toLowerCase();return v=>{const x=typeof q==='number'?(typeof v==='number'?v:NaN):String(v??'').toLowerCase();return{'=':x===q,'<>':x!==q,'<':x<q,'>':x>q,'<=':x<=q,'>=':x>=q}[o]}};
         const C=P.C.map(([R,c])=>({R,sh:R.sh?hoja(R.sh):s,ok:mk(ev(c,s))}));const nr=(P.S.r2||P.S.r1)-P.S.r1,nc=(P.S.c2||P.S.c1)-P.S.c1;let t=0;
         for(let dr=0;dr<=nr;dr++)for(let dc=0;dc<=nc;dc++){if(!C.every(({R,sh,ok})=>{const ref=colA(R.c1+dc)+(R.r1+dr);const v=sh.idx[ref]?val(sh,ref):null;return!(v instanceof FxErr)&&ok(v)}))continue;const ref=colA(P.S.c1+dc)+(P.S.r1+dr);const w=shS.idx[ref]?val(shS,ref):null;if(typeof w==='number')t+=w}return t}
       case'ROUND':{const d=A[1]?num(ev(A[1],s)):0,f=Math.pow(10,d),x=num(ev(A[0],s));return Math.sign(x)*Math.round(Math.abs(x)*f+1e-9)/f}
@@ -3067,8 +3068,8 @@ async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=s
      /* carga atendida: la semana anterior queda como número fijo; la de esta semana es una fórmula sobre Agua + Carga */
      if(cH){const ref=colA(cH)+nac.r;const M=fxMotor(B);let f=lbFormula(m1,ref)||String(lbVal(B,m1,ref)??0);const RXS=/\+?(?:ROUND\()?SUMIFS?\('Agua \+ Carga'![^)]*\)(?:\/35,2\))?$/i;const mt=RXS.exec(f);
        if(mt){const v=M.evalTxt(m1,mt[0].replace(/^\+/,''));f=f.slice(0,mt.index)+'+'+(Math.round((+v||0)*100)/100)}
-       lbSet(m1,ref,{f:f.replace(/^\+?/,'')+`+ROUND(SUMIFS('Agua + Carga'!$K$3:$K$80,'Agua + Carga'!$D$3:$D$80,"*Carga General*",'Agua + Carga'!$A$3:$A$80,">=${xD(a)}",'Agua + Carga'!$A$3:$A$80,"<=${xD(b)}")/35,2)`});
-       av.push('Carga atendida (Metas1): suma el ingreso C$ de las filas «Carga General» de la hoja Agua + Carga y lo divide entre 35 para obtener las toneladas. Solo cuenta facturas con fecha de esta semana; al completar esa hoja en Excel, el total se actualiza solo.')}
+       lbSet(m1,ref,{f:f.replace(/^\+?/,'')+`+ROUND(SUMIFS('Agua + Carga'!$K$3:$K$80,'Agua + Carga'!$D$3:$D$80,"<>*vehic*",'Agua + Carga'!$A$3:$A$80,">=${xD(a)}",'Agua + Carga'!$A$3:$A$80,"<=${xD(b)}")/35,2)`});
+       av.push('Carga atendida (Metas1): suma el ingreso C$ de carga de la hoja Agua + Carga (sin vehículos) y lo divide entre 35 para obtener las toneladas. Solo cuenta facturas con fecha de esta semana; al completar esa hoja en Excel, el total se actualiza solo.')}
      av.push(`Puertos nacionales esta semana: ${nE} embarcaciones.`)}
    else av.push('Metas1: no se encontró el cumplimiento de metas de puertos nacionales.')}
   /* Metas2: viajes de la motonave por sentido y fecha de corte (el resto se alimenta de Muellaje e Ingreso RE y HS) */
@@ -3164,12 +3165,12 @@ const mLugK=s=>{let k=mNorm(s).replace(/[^a-z]/g,'');if(/^banco(de)?pesca/.test(
 const mLugN=s=>({bancopesca:'Banco Pesca',pescanica:'Pescanica',puertocabezas:'Puerto Cabezas',cornisland:'Corn Island',bluefields:'Bluefields',rama:'Rama',bluff:'Bluff'}[mLugK(s)]||String(s||'').trim());
 const n2=x=>String(x).padStart(2,'0');
 function muelLista(B,s){let hr=0,C={};for(let r=1;r<=8&&!hr;r++){const H={};for(let c=1;c<=40;c++){const t=mNorm(lbVal(B,s,colA(c)+r));if(t)H[t]=c}
-    if(H['tipo']&&H['origen']&&H['destino']){hr=r;const f=rx=>{for(const k in H)if(rx.test(k))return H[k];return 0};C={tipo:H['tipo'],ori:H['origen'],des:H['destino'],pas:f(/^p?s?a?s?ajeros?$|^psajeros$/),emb:f(/^nombre/),monto:f(/^monto/),desc:f(/^descripcion/),uni:f(/^unidad/),cant:f(/^cantidad$/)}}}
+    if(H['tipo']&&(H['origen']||H['procedencia'])&&H['destino']){hr=r;const f=rx=>{for(const k in H)if(rx.test(k))return H[k];return 0};C={tipo:H['tipo'],ori:H['origen']||H['procedencia'],des:H['destino'],pas:f(/^p?s?a?s?ajeros?$|^psajeros$/),emb:f(/^nombre/),monto:f(/^monto/),desc:f(/^descripcion/),uni:f(/^unidad/),cant:f(/^cantidad$/)}}}
   if(!hr)return null;const L=[];const M=fxMotor(B);
   for(let r=hr+1;r<hr+400;r++){const a=mNorm(lbVal(B,s,'A'+r));if(/^total/.test(a))break;const tipo=mNorm(lbVal(B,s,colA(C.tipo)+r));if(!tipo)continue;
     const v=k=>C[k]?M.val(s,colA(C[k])+r):null;const uni=mNorm(v('uni')).replace(/[^a-z]/g,'');const cant=typeof v('cant')==='number'?v('cant'):0;
-    L.push({r,tipo,ori:v('ori'),des:v('des'),pas:+v('pas')||0,monto:+v('monto')||0,desc:mNorm(v('desc')),ton:/^(tm|tn|ton|tons|toneladas?)$/.test(uni)?cant:0,emb:String(v('emb')||'').trim()})}
-  return L}
+    L.push({r,tipo,ori:v('ori'),des:v('des'),pas:+v('pas')||0,monto:+v('monto')||0,desc:mNorm(v('desc')),ton:/^(tm|tn|ton|tons|toneladas?)$/.test(uni)?cant:0,emb:String(v('emb')||'').trim(),f:typeof lbVal(B,s,'B'+r)==='number'?lbVal(B,s,'B'+r):null})}
+  L.hr=hr;L.C=C;return L}
 const mProd=d=>/langost/.test(d)?'Langosta':/escama|pescado/.test(d)?'Escama':/camar/.test(d)?'Camaron':/nasa/.test(d)?'Nasa':'Carnada';
 async function libroCompletar(B){const av=[],hechas=new Set();for(const s of B.sheets)await lbHoja(B,s.name);const s=await lbHoja(B,'Muellaje');if(!s)throw new Error('El libro no tiene la hoja Muellaje');
   const L=muelLista(B,s);if(!L)throw new Error('No se encontró la lista de atraques en Muellaje (encabezados Tipo, Origen, Destino)');
@@ -3213,9 +3214,66 @@ async function libroCompletar(B){const av=[],hechas=new Set();for(const s of B.s
   t+=`\nFLOTA PESQUERA:\n✓ ${n2(xp.length)} barcos\n✓ ${fmt(mar)} Ton producto de mar\n✓ ${fmt(ins)} Ton insumos de pesca\n\n${n2(xp.length+xc.length)} BARCOS ATENDIDOS (FLOTA PESQUERA, CABOTAJE Y PASAJEROS).`;
   av.unshift(`Muellaje: ${L.length} atraques en la lista → ${xc.length} de carga y pasajeros (${fmt(tc)} TM) y ${xp.length} pesqueros (${fmt(mar)} TM producto de mar, ${fmt(ins)} TM insumos).`);
   await libroRecalcular(B);const blob=await libroGuardar(B);return{B,blob,av,hechas,txt:t}}
-async function infCompletar(file){try{toast('Leyendo el informe…');const buf=await file.arrayBuffer();const B=await libroAbrir(buf);const w=await libroSemanaDe(B,file.name);const R=await libroCompletar(B);R.completo=true;R.origen='importado';
-    libroPrevia(R,file.name.replace(/\.xlsx$/i,'')+'.xlsx','Informe semanal '+(w?w.n:'')+' · completado',w||semDeFecha(today()))}catch(e){console.error(e);toast(e.message||'No se pudo completar el informe')}}
-document.addEventListener('change',e=>{if(e.target.id==='infCompFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';infCompletar(f)}});
+/* --- insertar filas en una hoja del libro, corriendo fórmulas, combinaciones y referencias de las demás hojas --- */
+const RXR=/((?:'(?:[^']|'')+'|[A-Za-z_][\w\.]*)!)?(\$?)([A-Z]{1,3})(\$?)(\d+)(?::(\$?)([A-Z]{1,3})(\$?)(\d+))?(?![\w(!])/g;
+function lbCorrerTxt(t,propia,hoja,at,cnt){return t.split(/("(?:[^"]|"")*")/).map((p,i)=>i%2?p:p.replace(RXR,(m,sh,d1,c1,d2,r1,d3,c2,d4,r2,off,str)=>{const pv=str[off-1];if(pv&&/[\w.]/.test(pv))return m;
+    let nm=sh?sh.slice(0,-1):null;if(nm&&nm[0]==="'")nm=nm.slice(1,-1).replace(/''/g,"'");const dest=nm==null?propia:nm;if(!dest||dest.toLowerCase()!==hoja.toLowerCase())return m;
+    const f=r=>+r>=at?String(+r+cnt):r;return(sh||'')+d1+c1+d2+f(r1)+(c2?':'+d3+c2+d4+f(r2):'')})).join('')}
+function lbCorrerRango(t,at,cnt){return String(t).split(/\s+/).map(x=>x.replace(/([A-Z]+)(\d+)/g,(m,c,r)=>c+(+r>=at?+r+cnt:r))).join(' ')}
+async function lbInsFilas(B,s,at,cnt){if(cnt<=0)return;for(const x of B.sheets)await lbHoja(B,x.name);
+  const doc=s.doc,NS=doc.documentElement.namespaceURI;const sd=doc.getElementsByTagName('sheetData')[0];const rows=[...sd.getElementsByTagName('row')];
+  const modelo=rows.find(r=>+r.getAttribute('r')===at);
+  rows.filter(r=>+r.getAttribute('r')>=at).reverse().forEach(r=>{const n=+r.getAttribute('r')+cnt;r.setAttribute('r',n);for(const c of r.getElementsByTagName('c')){const [,cc]=refRC(c.getAttribute('r'));c.setAttribute('r',colA(cc)+n)}});
+  const sig=rows.find(r=>+r.getAttribute('r')>=at+cnt)||null;
+  for(let i=0;i<cnt;i++){const nr=modelo?modelo.cloneNode(true):doc.createElementNS(NS,'row');nr.setAttribute('r',at+i);nr.removeAttribute('hidden');if(modelo&&modelo.getAttribute('hidden'))nr.setAttribute('hidden',modelo.getAttribute('hidden'));
+    for(const c of [...nr.getElementsByTagName('c')]){const [,cc]=refRC(c.getAttribute('r'));c.setAttribute('r',colA(cc)+(at+i));while(c.firstChild)c.removeChild(c.firstChild);c.removeAttribute('t')}sd.insertBefore(nr,sig)}
+  for(const m of doc.getElementsByTagName('mergeCell'))m.setAttribute('ref',lbCorrerRango(m.getAttribute('ref'),at,cnt));
+  for(const tag of ['conditionalFormatting','dataValidation','selection'])for(const e of doc.getElementsByTagName(tag))if(e.getAttribute('sqref'))e.setAttribute('sqref',lbCorrerRango(e.getAttribute('sqref'),at,cnt));
+  for(const e of doc.getElementsByTagName('hyperlink'))if(e.getAttribute('ref'))e.setAttribute('ref',lbCorrerRango(e.getAttribute('ref'),at,cnt));
+  const dim=doc.getElementsByTagName('dimension')[0];if(dim)dim.setAttribute('ref',lbCorrerRango(dim.getAttribute('ref'),at,cnt));
+  for(const x of B.sheets){let ch=false;for(const f of x.doc.getElementsByTagName('f')){if(!f.textContent&&!f.getAttribute('ref'))continue;const t2=f.textContent?lbCorrerTxt(f.textContent,x.name,s.name,at,cnt):f.textContent;if(t2!==f.textContent){f.textContent=t2;ch=true}
+      if(x===s&&f.getAttribute('ref')){f.setAttribute('ref',lbCorrerRango(f.getAttribute('ref'),at,cnt));ch=true}}
+    if(x!==s)for(const cf of x.doc.getElementsByTagName('formula')){const t2=lbCorrerTxt(cf.textContent,x.name,s.name,at,cnt);if(t2!==cf.textContent){cf.textContent=t2;ch=true}}
+    if(ch||x===s){x.dirty=true;lbIndex(x)}}
+  for(const dn of B.wb.getElementsByTagName('definedName')){const t2=lbCorrerTxt(dn.textContent,null,s.name,at,cnt);if(t2!==dn.textContent)dn.textContent=t2}
+  s.dirty=true;lbIndex(s)}
+/* --- archivo de la semana (lista de atraques + Agua + Carga) volcado al libro del informe --- */
+async function lbFilasDatos(B,s,r0,rx){const R=[];const M=fxMotor(B);for(let r=r0;r<r0+600;r++){const a=lbVal(B,s,'A'+r),b=lbVal(B,s,'B'+r);if(typeof a==='string'&&/total/i.test(a)||typeof b==='string'&&/^\s*total/i.test(b))break;if(rx(r,M))R.push(r)}return R}
+async function copiarLista(src,ss,dst,ds,av){const Ls=muelLista(src,ss),Ld=muelLista(dst,ds);if(!Ls||!Ld)throw new Error('No se encontró la lista de atraques');
+  const hs=Ls.hr,hd=Ld.hr;const Ms=fxMotor(src);
+  const filas=await lbFilasDatos(src,ss,hs+2,(r,M)=>{for(const k of ['tipo','emb'])if(Ls.C[k]&&String(lbVal(src,ss,colA(Ls.C[k])+r)??'').trim())return true;return false});
+  let tot=0;for(let r=hd+2;r<hd+800;r++){const a=lbVal(dst,ds,'A'+r),b=lbVal(dst,ds,'B'+r);if(typeof a==='string'&&/total/i.test(a)||typeof b==='string'&&/^\s*total/i.test(b)){tot=r;break}}if(!tot)throw new Error('No se encontró la fila TOTAL de la lista de Muellaje');
+  let slots=tot-(hd+2);if(filas.length>slots){await lbInsFilas(dst,ds,tot-1,filas.length-slots);tot+=filas.length-slots;slots=filas.length}
+  const map={};for(const k in Ls.C)if(Ls.C[k]&&Ld.C[k])map[Ls.C[k]]=Ld.C[k];[1,2,3,4,13,14,15,16].forEach(c=>{if(!(c in map))map[c]=c});
+  for(let c=1;c<=26;c++)if(!(c in map)){const t=mNorm(lbVal(src,ss,colA(c)+hs));if(t){for(let d=1;d<=30;d++)if(mNorm(lbVal(dst,ds,colA(d)+hd))===t){map[c]=d;break}}}
+  for(let i=0;i<slots;i++){const rd=hd+2+i,rs=filas[i];const row=lbFila(ds,rd,true);
+    if(rs==null){for(let c=1;c<=26;c++)if(ds.idx[colA(c)+rd])lbSet(ds,colA(c)+rd,null);continue}
+    for(let c=1;c<=26;c++){if(!(c in map))continue;const d=map[c];let v=Ms.val(ss,colA(c)+rs);if(v instanceof FxErr)v=null;if(d===4&&typeof Ms.val(ss,'B'+rs)==='number'){lbSet(ds,'D'+rd,{f:`C${rd}-B${rd}`});continue}
+      lbSet(ds,colA(d)+rd,v==null||v===''?null:v)}}
+  return filas.length}
+async function copiarAgua(src,ss,dst,ds){const Ms=fxMotor(src);const filas=await lbFilasDatos(src,ss,3,(r)=>['C','D','F','I','L'].some(c=>{const v=lbVal(src,ss,c+r);return v!=null&&String(v).trim()!==''&&!(typeof v==='number'&&v===0&&c!=='C')}));
+  let tot=0;for(let r=3;r<200;r++){const a=lbVal(dst,ds,'A'+r);if(typeof a==='string'&&/^\s*total/i.test(a)){tot=r;break}}if(!tot)throw new Error('No se encontró la fila Total de Agua + Carga');
+  let slots=tot-3;if(filas.length>slots){await lbInsFilas(dst,ds,tot-1,filas.length-slots);tot+=filas.length-slots;slots=filas.length}
+  for(let i=0;i<slots;i++){const rd=3+i,rs=filas[i];lbFila(ds,rd,true);
+    if(rs==null){'ABCDEFGIJLM'.split('').forEach(c=>{if(ds.idx[c+rd])lbSet(ds,c+rd,null)});['H','K','N'].forEach(c=>{if(ds.idx[c+rd])lbSet(ds,c+rd,null)});continue}
+    'ABCDEFGIJLM'.split('').forEach(c=>{let v=Ms.val(ss,c+rs);if(v instanceof FxErr||v==='')v=null;if(typeof v==='string'&&/^\s*$/.test(v))v=null;lbSet(ds,c+rd,v)});
+    lbSet(ds,'H'+rd,{f:`F${rd}*G${rd}`});lbSet(ds,'K'+rd,{f:`+I${rd}*J${rd}`});lbSet(ds,'N'+rd,{f:`+L${rd}*M${rd}`})}
+  /* Total Ton: ingreso de carga (sin vehículos) entre 35 */
+  if(/total ton/i.test(lbTxt(dst,ds,'A'+(tot+1))))lbSet(ds,'K'+(tot+1),{f:`ROUND(SUMIFS(K3:K${tot-1},D3:D${tot-1},"<>*vehic*")/35,2)`});
+  return filas.length}
+async function infCompletar(file){try{toast('Leyendo el archivo…');const buf=await file.arrayBuffer();const B=await libroAbrir(buf);for(const s of B.sheets)await lbHoja(B,s.name);
+    if(B.sheets.some(s=>s.name==='Metas1')){const w=await libroSemanaDe(B,file.name);const R=await libroCompletar(B);R.completo=true;R.origen='importado';libroPrevia(R,file.name.replace(/\.xlsx$/i,'')+'.xlsx','Informe semanal '+(w?w.n:'')+' · completado',w||semDeFecha(today()));return}
+    /* archivo de la semana: lista de atraques + Agua + Carga → se vuelca al informe generado desde el libro base */
+    let ls=null,Ls=null;for(const s of B.sheets){const L=muelLista(B,s);if(L&&L.length){ls=s;Ls=L;break}}if(!ls)throw new Error('El archivo no tiene la lista de atraques (encabezados Tipo, Procedencia u Origen, Destino)');
+    const fs=Ls.map(x=>x.f).filter(Boolean).sort((a,b)=>a-b);if(!fs.length)throw new Error('La lista de atraques no tiene fechas de atraque');const fm=fs[Math.floor(fs.length/2)];const w=semDeFecha(new Date(Date.UTC(1899,11,30)+Math.floor(fm)*864e5).toISOString().slice(0,10));
+    const p=semAnt(w.y,w.n);const base=await lbGet(lbK(p.y,p.n));if(!base)throw new Error(`Falta el libro base del informe ${p.n}: cárguelo con «Cargar libro base» y vuelva a intentar`);
+    const R0=await libroGenerar(base.b,w.y,w.n);const D=R0.B;const dm=await lbHoja(D,'Muellaje');if(!dm)throw new Error('El libro base no tiene la hoja Muellaje');
+    const n1=await copiarLista(B,ls,D,dm);const sa=B.sheets.find(s=>/agua/i.test(s.name)&&/carga/i.test(s.name)),da=await lbHoja(D,'Agua + Carga');let n2=0;if(sa&&da)n2=await copiarAgua(B,sa,D,da);else R0.av.push('El archivo no trae la hoja Agua + Carga; queda la del informe anterior.');
+    const [a,b]=semRango(w.y,w.n);const MES=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];const t1=lbTxt(D,dm,'A1');
+    if(t1)lbSet(dm,'A1',t1.replace(/DEL\s+\d+.*?\d{4}/i,`DEL ${a.slice(8)}${a.slice(5,7)!==b.slice(5,7)?' '+MES[+a.slice(5,7)-1]:''} AL ${b.slice(8)} ${MES[+b.slice(5,7)-1]} ${b.slice(0,4)}`));
+    const R=await libroCompletar(D);R.av=[`Archivo de la semana ${w.n}: ${n1} atraques y ${n2} facturas de Agua + Carga pasados al informe.`,...R.av,...R0.av.filter(t=>!/^Carga atendida/.test(t))];R0.hechas.forEach(x=>R.hechas.add(x));if(n2)R.hechas.add('Agua + Carga');R.completo=true;R.origen='importado';
+    libroPrevia(R,`${w.n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,'Informe semanal '+w.n+' · completo',w)}catch(e){console.error(e);toast(e.message||'No se pudo completar el informe')}}
+document.addEventListener('change',e=>{if(e.target.id==='infCompFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';infCargar(f)}});
 async function infGenerar(y,n){const [a,b]=semRango(y,n);const {L}=reViajes(a,b);if(!L.length)toast('No hay viajes de la motonave en esa semana');
   const nombre=`${n}-_Informe Ingreso de Carga y Pasajeros de la semana ${semTitulo(a,b)}.xlsx`,tit='Informe semanal '+n;const p=semAnt(y,n);const base=await lbGet(lbK(p.y,p.n));
   if(base){try{const R=await libroGenerar(base.b,y,n);R.completo=true;libroPrevia(R,nombre,tit,{y,n});return}catch(e){console.error(e);toast('No se pudo usar el libro base: '+(e.message||e))}}
@@ -3225,7 +3283,7 @@ function infGenHTML(){const hoy=semDeFecha(today());const ops=[];let {y,n}=hoy;f
   return `<div class="card" style="margin:10px 0 0;padding:10px 12px"><b style="font-size:13.5px">Informe semanal para oficina central</b><p class="sm" style="margin:4px 0 6px">Lunes a domingo. Se parte del informe de la semana anterior (libro base) con todas sus hojas y formato; la app actualiza <b>Ingreso RE y HS</b> y los acumulados de la motonave en <b>Metas1</b>.</p>
    <p class="sm" id="infBase" style="margin:0 0 6px"></p>
    <div class="row" style="flex-wrap:nowrap"><select id="infSemSel" style="flex:1">${ops.map((o,i)=>i===1?o.replace('<option','<option selected'):o).join('')}</select><button class="btn" data-infgen style="padding:8px 14px">Ver informe</button></div>
-   <label class="btn" style="display:block;text-align:center;margin-top:8px;padding:10px">Completar informe (Excel con Muellaje y Agua + Carga llenos)<input type="file" id="infCompFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
+   <label class="btn" style="display:block;text-align:center;margin-top:8px;padding:10px">Subir archivo de la semana (Muellaje y Agua + Carga)<input type="file" id="infCompFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
    <label class="btn2" style="display:block;text-align:center;margin-top:8px;padding:9px">Cargar libro base (último informe enviado)<input type="file" id="infBaseFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label></div>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-infgen]');if(!b)return;const [y,n]=($('#infSemSel').value||'').split('-').map(Number);if(y&&n)infGenerar(y,n)});
 
