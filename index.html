@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.09-81';
+const APP_VER='2026.11.09-82';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -2789,12 +2789,19 @@ async function infCargar(file){let H;try{H=await xlsxLeer(file)}catch(e){toast(e
   document.body.appendChild(v);document.body.classList.add('pv-on');
   $('#infOk').onclick=()=>{if(!o.esSemana)file.arrayBuffer().then(ab=>libroGuardarBase(ab,file.name,'importado')).then(()=>infBaseEstado()).catch(()=>{});const id='i'+o.desde.replace(/-/g,'')+'-'+o.hasta.replace(/-/g,'');const prev=infLista().find(x=>x.id===id);if(prev&&prev._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(prev._n));
     const x={id,desde:o.desde,hasta:o.hasta,archivo:file.name,mue:o.mue,apbb:o.apbb,rehs:o.rehs,otros:o.otros,peaje:o.peaje,av:o.av,u:new Date().toISOString(),por:yoNombre(),_p:true};
-    ls.set('epn_est_inf',infLista().filter(y=>y.id!==id).concat([x]));cerrarSheet();ACC_OPEN.add('infsem');toast(prev?'Semana reemplazada':'Informe guardado');renderEst();estSync(true);if(o.esSemana)setTimeout(()=>infCompletar(file),300)}}
+    ls.set('epn_est_inf',infLista().filter(y=>y.id!==id).concat([x]));cerrarSheet();ACC_OPEN.add('infsem');toast(prev?'Semana reemplazada':'Informe guardado');renderEst();let nW=0;if(o.desde){const D=infDatos();[...new Set([o.mDesde||o.desde,o.mHasta||o.hasta].filter(Boolean).map(d=>d.slice(0,7)))].forEach(ym=>semanasMes(ym).forEach((w,i)=>{const lo=o.mDesde||o.desde,hi=o.mHasta||o.hasta;if(w[1]<lo||w[0]>hi)return;const s=semDe(ym,i);if(s.u&&s.fuente!=='Informes semanales')return;const z=infSemana(w[0],w[1],D);if(!z.dias)return;infLlenarSem(ym,i,z);nW++}))}
+    if(nW)toast(`Pesca y cabotaje: ${nW} semana(s) llenadas con el archivo`);renderEst();estSync(true);if(o.esSemana)setTimeout(()=>infCompletar(file),300)}}
 document.addEventListener('change',e=>{if(e.target.id==='infFile'&&e.target.files[0]){const f=e.target.files[0];e.target.value='';infCargar(f)}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-infdel],[data-inffill]');if(!b)return;
   if(b.dataset.infdel&&OWNER){const x=infLista().find(y=>y.id===b.dataset.infdel);if(!x||!confirm('¿Quitar el informe del '+fC(x.desde)+' al '+fC(x.hasta)+'?'))return;if(x._n)ls.set('epn_est_delq',(ls.get('epn_est_delq',[])||[]).concat(x._n));ls.set('epn_est_inf',infLista().filter(y=>y.id!==x.id));renderEst();estSync(true);return}
   if(b.hasAttribute('data-inffill'))infLlenar()});
 /* Llena "Pesca y cabotaje" del mes con los informes cargados */
+/* llena un tramo semanal de Pesca y cabotaje con los datos de los informes cargados */
+function infLlenarSem(ym,i,z){const s=JSON.parse(JSON.stringify(semDe(ym,i)));s.fp=z.fp;s.fc=z.fc;s.cp=z.cp;s.cc=z.cc;
+      const keep=(s.rows||[]).filter(r=>!['pes','mg','hs','iv'].includes(r.c));const R=[];
+      if(z.pes)R.push({c:'pes',tm:z.pes,emp:'Varias',dest:'Bluefields'});if(z.mg)R.push({c:'mg',tm:z.mg,emp:'Varios',dest:'Puerto Arlen Siú – Rama · Bluefields – Corn Island'});
+      if(z.hsI||z.hsV){R.push({c:'hs',tm:z.hsI,emp:'EPN',dest:'Bluefields – Corn Island'},{c:'hs',tm:z.hsV,emp:'EPN',dest:'Corn Island – Bluefields'})}if(z.iv)R.push({c:'iv',tm:z.iv,emp:'',dest:'Bluff'});
+      s.rows=R.concat(keep);s.fuente='Informes semanales';s.u=new Date().toISOString();s._p=true;ls.set('epn_est_sem',estSem().filter(y=>y.id!==s.id).concat([s]))}
 function infLlenar(){if(!estPuedeEditar())return;const ym=VIA_MES;const D=infDatos();const W=semanasMes(ym);const Z=W.map(w=>infSemana(w[0],w[1],D));
   if(!Z.some(z=>z.dias)){toast('No hay informes cargados con días de '+mesTxt(ym).toLowerCase());return}
   cerrarSheet();const v=document.createElement('div');v.id='sheet';v.className='sheet-bg';
@@ -2805,11 +2812,7 @@ function infLlenar(){if(!estPuedeEditar())return;const ym=VIA_MES;const D=infDat
    ${W.map((w,i)=>{const z=Z[i];const s=semDe(ym,i);const man=!!s.u&&s.fuente!=='Informes semanales';return `<tr><td><input type="checkbox" data-infwk="${i}" ${z.dias&&!man?'checked':''} ${z.dias?'':'disabled'}></td><td>${semTxt(w)}${man?'<small>tiene datos registrados</small>':''}${z.dias?'':'<small>sin datos</small>'}${z.sin.length&&z.dias?`<small>faltan ${z.sin.length} día(s)</small>`:''}${z.estN.length?`<small>${z.estN.length} día(s) con detalle de muelle incompleto (se cuentan en muelle principal)</small>`:''}${z.estT.length?`<small>${z.estT.length} día(s) TM estimadas (sin hoja APBB)</small>`:''}</td><td class="n">${z.dias?z.fp+z.fc+z.cp+z.cc:'—'}</td><td class="n">${z.dias?fq(z.pes):'—'}</td><td class="n">${z.dias?fq(z.mg):'—'}</td><td class="n">${z.dias?fq(z.hsI)+' / '+fq(z.hsV):'—'}</td></tr>`}).join('')}</table>
    <div class="row" style="flex-wrap:nowrap;margin-top:12px"><button class="btn2" data-sh="close" style="flex:1">Cancelar</button><button class="btn" id="infFillOk" style="flex:2">Llenar semanas con datos</button></div></div>`;
   document.body.appendChild(v);document.body.classList.add('pv-on');
-  $('#infFillOk').onclick=()=>{let n=0;const sel=new Set([...document.querySelectorAll('[data-infwk]:checked')].map(x=>+x.dataset.infwk));W.forEach((w,i)=>{const z=Z[i];if(!z.dias||!sel.has(i))return;const s=JSON.parse(JSON.stringify(semDe(ym,i)));s.fp=z.fp;s.fc=z.fc;s.cp=z.cp;s.cc=z.cc;
-      const keep=(s.rows||[]).filter(r=>!['pes','mg','hs','iv'].includes(r.c));const R=[];
-      if(z.pes)R.push({c:'pes',tm:z.pes,emp:'Varias',dest:'Bluefields'});if(z.mg)R.push({c:'mg',tm:z.mg,emp:'Varios',dest:'Puerto Arlen Siú – Rama · Bluefields – Corn Island'});
-      if(z.hsI||z.hsV){R.push({c:'hs',tm:z.hsI,emp:'EPN',dest:'Bluefields – Corn Island'},{c:'hs',tm:z.hsV,emp:'EPN',dest:'Corn Island – Bluefields'})}if(z.iv)R.push({c:'iv',tm:z.iv,emp:'',dest:'Bluff'});
-      s.rows=R.concat(keep);s.fuente='Informes semanales';s.u=new Date().toISOString();s._p=true;ls.set('epn_est_sem',estSem().filter(y=>y.id!==s.id).concat([s]));n++});
+  $('#infFillOk').onclick=()=>{let n=0;const sel=new Set([...document.querySelectorAll('[data-infwk]:checked')].map(x=>+x.dataset.infwk));W.forEach((w,i)=>{const z=Z[i];if(!z.dias||!sel.has(i))return;infLlenarSem(ym,i,z);n++});
     cerrarSheet();toast(n?n+' semana(s) llenadas':'No marcó ninguna semana');renderEst();estSync(true)}}
 
 /*INFGEN*/
