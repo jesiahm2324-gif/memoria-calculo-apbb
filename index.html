@@ -972,7 +972,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.08-78';
+const APP_VER='2026.11.09-79';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -3065,10 +3065,10 @@ async function libroGenerar(buf,y,n){const B=await libroAbrir(buf);const [a,b]=s
      if(falt.length)av.push(`Embarcaciones nacionales: falta registrar en Pesca y cabotaje ${falt.join(' y ')}; se sumaron ${nE}. Registre y vuelva a generar.`);
      if(cD)lbSumar(m1,colA(cD)+nac.r,nE);else av.push('Metas1: no se encontró la columna Embarcaciones Atendidas (puertos nacionales).');
      /* carga atendida: la semana anterior queda como número fijo; la de esta semana es una fórmula sobre Agua + Carga */
-     if(cH){const ref=colA(cH)+nac.r;const M=fxMotor(B);let f=lbFormula(m1,ref)||String(lbVal(B,m1,ref)??0);const RXS=/\+?SUMIFS?\('Agua \+ Carga'![^)]*\)$/i;const mt=RXS.exec(f);
+     if(cH){const ref=colA(cH)+nac.r;const M=fxMotor(B);let f=lbFormula(m1,ref)||String(lbVal(B,m1,ref)??0);const RXS=/\+?(?:ROUND\()?SUMIFS?\('Agua \+ Carga'![^)]*\)(?:\/35,2\))?$/i;const mt=RXS.exec(f);
        if(mt){const v=M.evalTxt(m1,mt[0].replace(/^\+/,''));f=f.slice(0,mt.index)+'+'+(Math.round((+v||0)*100)/100)}
-       lbSet(m1,ref,{f:f.replace(/^\+?/,'')+`+SUMIFS('Agua + Carga'!$I$3:$I$80,'Agua + Carga'!$D$3:$D$80,"*Carga General*",'Agua + Carga'!$A$3:$A$80,">=${xD(a)}",'Agua + Carga'!$A$3:$A$80,"<=${xD(b)}")`});
-       av.push('Carga atendida (Metas1): suma la cantidad de carga de las filas «Carga General» de la hoja Agua + Carga. Solo cuenta facturas con fecha de esta semana; al completar esa hoja en Excel, el total se actualiza solo.')}
+       lbSet(m1,ref,{f:f.replace(/^\+?/,'')+`+ROUND(SUMIFS('Agua + Carga'!$K$3:$K$80,'Agua + Carga'!$D$3:$D$80,"*Carga General*",'Agua + Carga'!$A$3:$A$80,">=${xD(a)}",'Agua + Carga'!$A$3:$A$80,"<=${xD(b)}")/35,2)`});
+       av.push('Carga atendida (Metas1): suma el ingreso C$ de las filas «Carga General» de la hoja Agua + Carga y lo divide entre 35 para obtener las toneladas. Solo cuenta facturas con fecha de esta semana; al completar esa hoja en Excel, el total se actualiza solo.')}
      av.push(`Puertos nacionales esta semana: ${nE} embarcaciones.`)}
    else av.push('Metas1: no se encontró el cumplimiento de metas de puertos nacionales.')}
   /* Metas2: viajes de la motonave por sentido y fecha de corte (el resto se alimenta de Muellaje e Ingreso RE y HS) */
