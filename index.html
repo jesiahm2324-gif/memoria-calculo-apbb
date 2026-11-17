@@ -307,6 +307,17 @@ body.pv-on{overflow:hidden}
  .doc{border:0;padding:0;max-width:none;box-shadow:none}
  nav,.actions,.toast{display:none}
 }
+
+/* menú lateral (prueba) */
+nav button[hidden]{display:none!important}
+#mlat{position:fixed;inset:0;z-index:40}#mlat .ml-bg{position:absolute;inset:0;background:rgba(5,12,24,.55);opacity:0;transition:opacity .2s}
+#mlat .ml-p{position:absolute;top:0;left:0;bottom:0;width:min(84vw,330px);background:#fff;color:#1d2a3a;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(18px + env(safe-area-inset-top,0px)) 10px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:6px 0 24px rgba(0,0,0,.35);transform:translateX(-102%);transition:transform .22s ease}
+#mlat.on .ml-bg{opacity:1}#mlat.on .ml-p{transform:none}
+.ml-sec{font-size:11.5px;letter-spacing:.12em;color:#6b7a8f;font-weight:700;margin:14px 10px 4px}
+.ml-it{display:flex;align-items:center;gap:14px;width:100%;padding:10px;border:0;background:none;border-radius:12px;font:inherit;font-size:15.5px;color:#22344c;text-align:left;cursor:pointer}
+.ml-it svg{width:22px;height:22px;stroke:#4a5d77;fill:none;stroke-width:1.7;flex:none}.ml-it.on{background:#e3f1f7;font-weight:700;color:#0f2b45}.ml-it .ml-ch{margin-left:auto;font-style:normal;color:#6b7a8f}
+.ml-sub{margin:0 0 4px 46px;border-left:2px solid #cfe2ee;padding-left:8px}.ml-sub button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;color:#3a4d66;padding:7px 4px;cursor:pointer}.ml-sub button.on{color:#0c5d96;font-weight:700}
+#mlat hr{border:0;border-top:1px solid #e3e8ef;margin:12px 6px}.ml-ft{font-size:12.5px;color:#6b7a8f;padding:0 10px;line-height:1.6}
 </style>
 </head>
 <body class="locked" data-view="pf">
@@ -431,6 +442,8 @@ body.pv-on{overflow:hidden}
 
 
 <!-- AJUSTES -->
+<section class="view" id="v-ini"><div id="iniBox"></div></section>
+<section class="view" id="v-con"><div id="conBox"></div></section>
 <section class="view" id="v-aju">
  <button class="card" data-go="acc" id="ajAcc" style="display:flex;width:100%;align-items:center;gap:12px;text-align:left;cursor:pointer"><svg viewBox="0 0 24 24" style="width:26px;height:26px;stroke:var(--pri);fill:none;stroke-width:1.8;flex:none"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.7c1.6.9 2.7 2.7 3 5.3"/></svg><span style="flex:1"><b id="navAcc" style="display:block;font-size:16px">Accesos y colegas</b><small class="sm" id="ajAccSub">Invitar, dar acceso, permisos y GitHub</small></span><span class="chev">›</span></button>
  <div class="card"><h2>Apariencia</h2>
@@ -919,7 +932,7 @@ function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(
 /* ===== Navegación ===== */
 function show(v){let hl=null;if(v==='est'){VIA_SEC='est';EST_EDIT=null;VIA_EDIT=null;ARQ_EDIT=null;v='via';hl='est'}else if(v==='via'&&VIA_SEC==='est'){VIA_SEC=svcSecs()[0]||'via'}
   if(v==='via'){const e=VIA_SEC==='est';const t=$('#viaTit'),s=$('#viaSub');if(t)t.textContent=e?'Estadísticas del puerto':'Servicios del puerto';if(s)s.textContent=e?'Resumen, pesca y cabotaje, informes semanales e informe mensual.':'Viajes regulares de motonaves, arqueos de caja y arribos de buques. Uso interno.'}
-  const nv=hl||(v==='prev'?'pf':v);$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his'){MAT_EDIT=null;renderMat();matSync(true)}if(v==='pf')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();window.scrollTo(0,0)}
+  const nv=hl||(v==='prev'?'pf':v);$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.body.dataset.view=v;if(v==='prev')buildDoc();if(v==='tar')renderTar();if(v==='his'){MAT_EDIT=null;renderMat();matSync(true)}if(v==='pf')renderHis();if(v==='acc')renderAcc();if(v==='aju')renderAju();if(v==='via')renderVia();if(v==='ini')renderIni();if(v==='con')renderCon();if(typeof MLAT==='function'&&MLAT()){if(!['ini','con'].includes(v)&&!['via'].includes(v))MLAT_V=null;mlMarcar()}window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
 $('#btnPrev').onclick=()=>{try{abrirVisor(memPdf(),'Memoria-'+(P.tipo||'buq')+'-APBB-'+slug(P.cliente||P.buque||P.ref||'calculo')+'-'+today()+'.pdf','Memoria de cálculo · '+TIPOS[P.tipo||'buq'])}catch(e){console.error(e);toast('No se pudo generar la vista')}};
 
@@ -972,7 +985,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.09-88';
+const APP_VER='2026.11.16-89';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -1018,7 +1031,7 @@ function copiar(t,ok,el){let done=false;const fb=()=>{if(done)return;done=true;i
   if(el){try{el.focus();el.select();el.setSelectionRange(0,t.length)}catch(e){}}toast('Mantenga presionado el texto marcado y elija Copiar')};
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>{done=true;toast(ok)},fb);return}}catch(e){}fb()}
 
-function applyGate(){
+function applyGate(){setTimeout(()=>{try{mlAplicar()}catch(e){}},0);
   const ok=OWNER||GATE==='ok';document.body.classList.toggle('locked',!ok);$('#gate').hidden=ok;
   $('#navAcc').textContent=OWNER?'Accesos y colegas':'Mi acceso';{const s=$('#ajAccSub');if(s)s.textContent=OWNER?'Invitar, dar acceso, permisos y GitHub':'Su permiso, vencimiento y código';const t=$('#accTit');if(t)t.textContent=OWNER?'Accesos y colegas':'Mi acceso'}const pm=PM();document.body.classList.toggle('con-viajes',!!(ok&&(OWNER||(LIC&&LIC.k&&(pm.v||pm.a||pm.s)))));document.body.classList.toggle('con-est',!!(ok&&(OWNER||(LIC&&LIC.k&&pm.s))));document.body.classList.toggle('con-mat',!!(ok&&pm.m>0));document.body.classList.toggle('sin-c',!pm.c);document.body.classList.toggle('sin-t',!pm.t);
   {const vis={pf:pm.c>0,tar:pm.t>0,his:pm.m>0,via:puedeVia()};const cur=(document.querySelector('.view.on')||{}).id||'';const cv=cur.replace('v-','').replace('prev','pf');if(ok&&cv&&vis[cv]===false){const f=['pf','tar','his','via'].find(x=>vis[x]);show(f||'aju')}}
@@ -1517,7 +1530,7 @@ function subAju(){const t=document.documentElement.dataset.theme||'claro',f=docu
 const THEME_COL={claro:'#07325a',oscuro:'#050d18',gris:'#4a5463'};
 function setTheme(t){document.documentElement.dataset.theme=t;ls.set('epn_theme',t);const m=document.querySelector('meta[name=theme-color]');if(m)m.content=THEME_COL[t]||'#07325a';renderAju()}
 function setFont(f){document.documentElement.dataset.font=f;ls.set('epn_font',f);renderAju()}
-function renderAju(){renderContList();renderHorFer();cargarCostos();renderCostAdm();setTimeout(subAju,0);const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
+function renderAju(){{let c=$('#ajMlat');if(OWNER&&!c){c=document.createElement('div');c.id='ajMlat';c.className='card';const a=$('#ajAcc');a.after(c)}if(c){c.hidden=!OWNER;c.innerHTML=`<h2>Menú lateral <span class="sm">(prueba)</span></h2><label class="chk"><input type="checkbox" id="mlatSw" ${MLAT()?'checked':''}> Usar el menú lateral en este teléfono</label><p class="sm" style="margin:4px 0 0">Solo cambia en este teléfono y solo para el administrador. Los demás usuarios siguen viendo la app como siempre.</p>`;$('#mlatSw').onchange=e=>{ls.set('epn_menu_lat',e.target.checked);mlAplicar();toast(e.target.checked?'Menú lateral activado: toque «Menú» abajo':'Menú lateral desactivado');if(e.target.checked){setTimeout(()=>show('ini'),300)}}}}renderContList();renderHorFer();cargarCostos();renderCostAdm();setTimeout(subAju,0);const t=document.documentElement.dataset.theme||'claro',f=document.documentElement.dataset.font||'n';
   $$('[data-theme-set]').forEach(b=>b.classList.toggle('on',b.dataset.themeSet===t));$$('[data-font-set]').forEach(b=>b.classList.toggle('on',b.dataset.fontSet===f));
   $('#ajTc').value=ls.get('epn_tc',36.6243);$('#ajElab').value=ls.get('epn_elab','');
   $('#verTxt').textContent='Versión '+APP_VER+(PROPIA?' · funciona sin internet':'');$('#btnUpd2').hidden=!(PROPIA&&'serviceWorker' in navigator)}
@@ -3506,6 +3519,64 @@ document.addEventListener('click',e=>{const b=e.target.closest('#cpImp,#cpPub,[d
   if(b.id==='cpImp'){const n=importarPersonal($('#cpPaste').value);toast(n?n+' persona(s) importada(s)':'No se reconocieron filas. Copie desde Excel las columnas Nombre, Cargo, Salario y Antigüedad.');renderCostAdm();renderRent();if(typeof subAju==='function')subAju()}
   else if(b.id==='cpPub')publicarCostos();
   else if(b.dataset.pdel){if(!b.dataset.armed){b.dataset.armed=1;b.textContent='¿Seguro?';return}COSTOS.personal=COSTOS.personal.filter(p=>p.id!==b.dataset.pdel);COSTOS.emb.forEach(x=>x.crew=(x.crew||[]).filter(c=>c.pid!==b.dataset.pdel));guardarCostos();renderCostAdm();renderRent()}});
+
+/* --- Menú lateral (prueba): solo se activa en el teléfono del administrador desde Ajustes --- */
+const MLAT=()=>OWNER&&ls.get('epn_menu_lat',false)===true;
+let MLAT_V=null;
+const mlIc={ini:'<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',via:'<path d="M3 17h18l-2 4H5z"/><path d="M5 17V11h11l3 6M8 11V7h5v4M12 3v4"/>',arr:'<circle cx="12" cy="5" r="2"/><path d="M12 7v14M5 13a7 7 0 0 0 14 0M8 11h8"/>',arq:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/>',
+  res:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',sem:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',mes:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 14h8M8 18h5"/>',
+  con:'<path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>',cos:'<path d="M3 20h18M6 16l4-5 3 3 5-7"/>',nor:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',acc:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7"/>',aju:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>'};
+function mlItems(){const S=typeof viaSecs==='function'?viaSecs():[];const p=PM();
+  return[['GENERAL',[['ini','Inicio · resumen del día',1]]],
+    ['SERVICIOS DEL PUERTO',[['via','Viajes y chárter',S.includes('via')],['arr','Arribos de buques',S.includes('arr')||S.includes('est')],['arq','Arqueo de caja',S.includes('arq')]]],
+    ['ESTADÍSTICAS',[['res','Resumen y pesca/cabotaje',S.includes('est')],['sem','Informe semanal',S.includes('est')],['mes','Informe mensual',S.includes('est')]]],
+    ['FINANZAS',[['con','Conciliación bancaria',OWNER,['Conciliar mes (BANPRO · LAFISE)','Cargar estado de cuenta','Cargar libro de banco','Anexos · partidas flotantes','Historial y firmas']],['cos','Costos y rentabilidad',OWNER||(+p.k>0&&S.includes('via'))]]],
+    ['ADMINISTRACIÓN',[['nor','Normativa',nOk()],['acc',OWNER?'Accesos y usuarios':'Mi acceso',1],['aju','Ajustes',1]]]]
+   .map(([t,xs])=>[t,xs.filter(x=>x[2])]).filter(([t,xs])=>xs.length)}
+function mlAbrir(){mlCerrar();const d=document.createElement('div');d.id='mlat';
+  d.innerHTML=`<div class="ml-bg" data-mlx></div><aside class="ml-p" role="dialog" aria-label="Menú">${mlItems().map(([t,xs])=>`<div class="ml-sec">${t}</div>${xs.map(([k,l,,sub])=>`<button class="ml-it${MLAT_V===k?' on':''}" data-mlg="${k}"><svg viewBox="0 0 24 24">${mlIc[k]||''}</svg><span>${esc(l)}</span>${sub?`<i class="ml-ch">${MLAT_V==='con'?'▾':'›'}</i>`:''}</button>${sub&&MLAT_V==='con'?`<div class="ml-sub">${sub.map((s,i)=>`<button data-mlg="con" data-mls="${i}" class="${CON_SEC===i?'on':''}">${esc(s)}</button>`).join('')}</div>`:''}`).join('')}`).join('')}
+   <hr><div class="ml-ft">Versión ${APP_VER}<br><span style="color:var(--pri)">Menú lateral en prueba (solo en este teléfono)</span></div></aside>`;
+  document.body.appendChild(d);requestAnimationFrame(()=>d.classList.add('on'));$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==='menu'))}
+function mlCerrar(){const d=$('#mlat');if(d)d.remove();if(MLAT())mlMarcar()}
+function mlMarcar(){const v=document.body.dataset.view;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v&&v!=='via'))}
+function mlIr(k,sub){MLAT_V=k;mlCerrar();VIA_EDIT=null;EST_EDIT=null;ARQ_EDIT=null;
+  const ir=(sec,v)=>{VIA_SEC=sec;show(v||'via')};
+  if(k==='ini')show('ini');else if(k==='via'||k==='cos')ir('via');else if(k==='arq')ir('arq');else if(k==='arr'){const S=viaSecs();if(S.includes('arr'))ir('arr');else{EST_SEC='arr';show('est')}}
+  else if(k==='res'){EST_SEC='res';show('est')}else if(k==='sem'||k==='mes'){EST_SEC='res';show('est');setTimeout(()=>{const t=k==='sem'?$('#infBase'):[...document.querySelectorAll('#viaBox h3, #viaBox b')].find(x=>/mensual/i.test(x.textContent));if(t)t.scrollIntoView({behavior:'smooth',block:'center'})},250)}
+  else if(k==='con'){CON_SEC=sub==null?CON_SEC:+sub;show('con')}else if(k==='nor'){show('tar');setTimeout(()=>{const b=document.querySelector('#tseg [data-tseg="nor"]');if(b)b.click()},50)}else show(k);
+  mlMarcar()}
+/* Inicio */
+function renderIni(){const box=$('#iniBox');if(!box)return;const hoy=today();const w=semDeFecha(hoy);const [a,b]=semRango(w.y,w.n);const S=viaSecs();
+  const V=S.includes('via')?viaLista().filter(v=>v.f>=a&&v.f<=b):[];const ym=hoy.slice(0,7);const A=(S.includes('arr')||S.includes('est'))?estArr().filter(x=>(x.f||'').slice(0,7)===ym):[];
+  const pend=[];const p=semAnt(w.y,w.n);
+  box.innerHTML=`<div class="card"><h2 style="margin-bottom:2px">Inicio</h2><p class="sm" style="margin:0 0 10px">Semana ${w.n} · ${fC(a)} – ${fC(b)}</p>
+   <div class="rent-k" style="grid-template-columns:1fr 1fr"><div><span>Viajes esta semana</span><b>${V.length}</b></div><div><span>Pasajeros esta semana</span><b>${fq(V.reduce((s,v)=>s+(+v.np||0),0))}</b></div><div><span>Arribos del mes</span><b>${A.length}</b></div><div><span>Informe semanal ${p.n}</span><b id="iniInf" style="font-size:15px">…</b></div></div>
+   <h3 class="sub">Pendientes</h3><div id="iniPend"><p class="sm">Revisando…</p></div>
+   <h3 class="sub">Accesos rápidos</h3>
+   ${viaPuedeReg()?'<button class="btn2" data-mlq="via" style="width:100%;margin-bottom:6px;text-align:left">+ Registrar viaje</button>':''}
+   ${typeof estPuedeEditar==='function'&&estPuedeEditar()?'<button class="btn2" data-mlq="arr" style="width:100%;margin-bottom:6px;text-align:left">+ Registrar arribo</button>':''}
+   ${S.includes('arq')&&+PM().a>=2||OWNER?'<button class="btn2" data-mlq="arq" style="width:100%;margin-bottom:6px;text-align:left">+ Nuevo arqueo</button>':''}</div>`;
+  (async()=>{let inf='—';try{const ks=await lbKeys();const hay=ks.includes(lbK(p.y,p.n));inf=hay?'<span style="color:var(--ok)">Listo</span>':'<span style="color:var(--warnfg)">Pendiente</span>';if(!hay&&S.includes('est'))pend.push(['Informe semanal '+p.n+': subir archivo de la semana','Falta','sem'])}catch(e){}
+    const el=$('#iniInf');if(el)el.innerHTML=inf;
+    if(S.includes('est')){semanasMes(ym).forEach(([x,y],i)=>{if(y<hoy&&!semDe(ym,i).u)pend.push([`Pesca y cabotaje ${fC(x)} – ${fC(y)}`,'Sin registrar','res'])})}
+    if(OWNER)pend.push(['Conciliación bancaria de octubre','En construcción','con']);
+    const pe=$('#iniPend');if(pe)pe.innerHTML=pend.length?pend.map(([t,e,k])=>`<button class="via-it" data-mlg="${k}" style="display:flex;gap:10px;align-items:center;text-align:left"><span style="flex:1;min-width:0;white-space:normal;font-weight:600">${esc(t)}</span><span style="flex:none;background:var(--warnbg);color:var(--warnfg);border-radius:20px;padding:2px 9px;font-size:12px;white-space:nowrap">${esc(e)}</span></button>`).join(''):'<p class="sm">Nada pendiente.</p>'})()}
+/* Conciliación bancaria: vista previa del menú (todavía sin cálculos) */
+let CON_SEC=0,CON_CTA='bp';
+function renderCon(){const box=$('#conBox');if(!box)return;const T=['Conciliar mes','Cargar estado de cuenta','Cargar libro de banco','Anexos · partidas flotantes','Historial y firmas'];
+  const D=['Saldo final según banco, partidas flotantes (Anexo I «Más» y Anexo II «Menos») y saldo según libros, en el formato de la EPN.','BANPRO en Excel y LAFISE Bancentro en PDF, tal como salen de la banca en línea.','Reporte «Estado de cuenta bancario» del sistema, exportado en Excel.','Cheques flotantes, depósitos y notas de crédito o débito que no cruzan; pasan solas al mes siguiente.','Elaborado por el contador · Revisado por el financiero, con fecha y estado de cada mes.'];
+  box.innerHTML=`<div class="card"><h2 style="margin-bottom:2px">Conciliación bancaria</h2><p class="sm" style="margin:0 0 10px">Vista previa del menú · los cálculos se agregan cuando se definan los puntos.</p>
+   <div class="seg" style="margin-bottom:10px"><button data-conc="bp" class="${CON_CTA==='bp'?'on':''}">BANPRO C$</button><button data-conc="lf" class="${CON_CTA==='lf'?'on':''}">LAFISE Bancentro C$</button></div>
+   ${T.map((t,i)=>`<details class="rg"${CON_SEC===i?' open':''}><summary><span>${i+1}. ${t}</span><span class="chev">›</span></summary><p class="sm" style="padding:0 10px 10px;margin:0">${D[i]}</p><p class="sm" style="padding:0 10px 10px;margin:0;color:var(--warnfg)">En construcción.</p></details>`).join('')}</div>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mlg],[data-mlx],[data-mlq],[data-conc]');if(!b)return;
+  if(b.dataset.mlx!=null)return mlCerrar();if(b.dataset.conc){CON_CTA=b.dataset.conc;return renderCon()}
+  if(b.dataset.mlq){const k=b.dataset.mlq;if(k==='via'){VIA_SEC='via';show('via');VIA_EDIT=viaNuevo();renderVia()}else if(k==='arr'){mlIr('arr');setTimeout(()=>{EST_EDIT=arrNuevo();renderEst()},60)}else if(k==='arq'){VIA_SEC='arq';show('via');ARQ_EDIT=arqNuevo();renderVia()}return}
+  if(b.dataset.mlg==='con'&&b.dataset.mls==null&&$('#mlat')&&MLAT_V!=='con'){MLAT_V='con';mlAbrir();return}
+  mlIr(b.dataset.mlg,b.dataset.mls)});
+function mlAplicar(){const on=MLAT();const nv=$('nav');if(!nv)return;let mb=nv.querySelector('[data-v="menu"]');
+  nv.querySelectorAll('[data-v="via"],[data-v="est"]').forEach(b=>b.hidden=on);
+  if(on&&!mb){mb=document.createElement('button');mb.dataset.v='menu';mb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menú';mb.onclick=e=>{e.stopImmediatePropagation();$('#mlat')?mlCerrar():mlAbrir()};nv.appendChild(mb)}
+  if(!on&&mb)mb.remove()}
 
 /* ===== Sin internet: service worker y actualizaciones ===== */
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
