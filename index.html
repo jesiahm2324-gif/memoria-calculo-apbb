@@ -988,7 +988,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ')+(disenoClasico(m)&&!m.d?' · Diseño clásico':'');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.18-92';
+const APP_VER='2026.11.18-93';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -3597,7 +3597,7 @@ function numLetras(v){const U=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIE
   const t=Math.round(Math.abs(v)*100),e=Math.floor(t/100),c=t%100;const m=Math.floor(e/1e6),r=e%1e6;
   let w=(m?(m===1?'UN MILLON':f6(m)+' MILLONES')+(r?' ':''):'')+(r?f6(r):'');if(!w)w='CERO';if(m&&!r)w+=' DE';
   return`${w} ${e===1?'CORDOBA':'CORDOBAS'} CON ${n2(c)}/100`}
-function liqNuevo(){const h=today();return{id:'lq'+Date.now().toString(36),nom:'',cargo:'',area:'',fi:'',fl:h,sb:'',ant:'',mot:'inc',mt1:'',mt2:'',dsal:0,heh:0,via:0,tra:0,bon:0,vc:'',v1:'',v2:0,v3:0,d13:'',prop:true,l476:true,tc:'',conf:0,ded:[['',''],['',''],['','']],lug:'Bluefields',ff:h}}
+function liqNuevo(){const h=today();return{id:'lq'+Date.now().toString(36),nom:'',cargo:'',area:'',fi:'',fl:h,sb:'',ant:'',mot:'inc',mt1:'',mt2:'',dsal:0,heh:0,via:0,tra:0,bon:0,vc:'',v1:'',v2:0,v3:0,d13:'',prop:false,l476:false,tc:'',conf:0,ded:[['',''],['',''],['','']],lug:'Bluefields',ff:h}}
 function liqMotTxt(L){const f=lqF4(L.fl),b='LIQUIDACIÓN FINAL DE PRESTACIONES  SOCIALES AL '+f+', POR ';
   return{jub:[b+'RENUNCIA A SU CONTRATO DE  TRABAJO','POR TIEMPO INDETERMINADO, PARA INICIAR TRAMITES DE JUBILACION.'],inc:[b+'RENUNCIA A SU CONTRATO DE  TRABAJO','POR TIEMPO INDETERMINADO, PARA INICIAR TRAMITES DE JUBILACION POR INCAPACIDAD TOTAL.'],
     mue:[b+'FALLECIMIENTO DEL TRABAJADOR, ENTREGADA A','SUS BENEFICIARIOS REGISTRADOS EN EL EXPEDIENTE LABORAL (CLÁUSULAS No. 48 Y 51 C.C.).'],ren:[b+'RENUNCIA A SU CONTRATO DE  TRABAJO','POR TIEMPO INDETERMINADO.'],
@@ -3616,15 +3616,18 @@ function liqCalc(L){const sb=lqN(L.sb),ant=lqN(L.ant),so=sb+sb*ant/100,sd=so/30;
       if(tot>base){c.l3=`Adicional: 15 días por año desde el 7.º (${Y-6} año${Y-6===1?'':'s'}), máx. ${cap} meses = ${lqDias((tot-base)*30)} días`;c.a3=(tot-base)*so}
       c.regla=so>40000?`Renuncia con salario mayor a C$ 40,000: ${Y} años cumplidos = ${base} mes${base===1?'':'es'}.`:`Renuncia con salario hasta C$ 40,000: ${base} mes${base===1?'':'es'} por tabla${tot>base?` + ${lqDias((tot-base)*30)} días adicionales (tope ${cap} meses)`:''}.`;
       if(Y<3)av.push('Renuncia con menos de 3 años cumplidos: la cláusula 51 no da indemnización.')}
+  else if(L.mot==='des'||L.mot==='mut'){const y1=Math.min(Y,3);const dd=Y<3?t.R/360*30:(Y-3)*20+t.R/360*20;let a1=y1*so,a2=dd*sd;const tope=5*so,min=so;
+    if(a1+a2>tope){a2=Math.max(0,tope-a1)}if(a1+a2<min&&Y+t.R>0){a2=min-a1}c.art45=true;c.meses=(a1+a2)/so;
+    c.l1=`Del ${lqF2(L.fi)} al ${lqF3(y1?lqAnt(lqMas(L.fi,y1)):L.fl)}  (${n2(y1)} años) = ${n2(y1)} meses`;c.a1=a1;
+    if(a2>0){c.l2=`Del ${lqF2(lqMas(L.fi,y1))} al ${lqF3(L.fl)}  (${lqDur({Y:Math.max(0,Y-3),M:t.M,D:t.D})}) = ${lqDias(a2/sd)} días`;c.a2=a2}
+    c.regla=`${LIQ_MOT[L.mot]}: la cláusula 51 no fija monto y remite al Código del Trabajo; se aplica el art. 45 (1 mes por cada uno de los 3 primeros años, 20 días por año desde el 4.º, mínimo 1 y máximo 5 meses).`}
   else{const m1=Math.min(Y,20);c.meses=m1;c.l1=`Del ${lqF2(L.fi)} al ${lqF3(fY||L.fl)}  (${n2(Y)} años) = ${n2(m1)} meses`;c.a1=m1*so;
-    if(L.prop&&Y<20&&t.R>0){const dd=t.R/360*30;c.l2=`Del ${lqF2(lqMas(L.fi,Y))} al ${lqF3(L.fl)}  (${lqDur({Y:0,M:t.M,D:t.D})}) = ${lqDias(dd)} días`;c.a2=dd*sd;c.meses+=t.R/360}
-    c.regla=`${LIQ_MOT[L.mot]}: un mes de salario ordinario por cada año laborado${L.prop?' (con la fracción del último año proporcional)':' completo'}, máximo 20 meses.`;
-    if(L.mot==='des'||L.mot==='mut')av.push('La cláusula 51 menciona despido sin causa justa y mutuo acuerdo, pero solo fija montos para jubilación, incapacidad, muerte y renuncia. Se aplicó la regla de jubilación: revísela.')}
+    c.regla=`${LIQ_MOT[L.mot]}: un mes de salario ordinario por cada año laborado completo, máximo 20 meses (cláusula 51).`;
+    if(t.R>0&&Y<20)av.push(`La fracción de ${lqDur({Y:0,M:t.M,D:t.D})} no se paga: la cláusula 51 reconoce solo años laborados completos.`)}
+  av.push('Indemnización única: se aplica solo el convenio (norma más favorable); no se acumula con la Ley 476 ni la Ley 1173.');
   const conv=lqR2(c.a1)+lqR2(c.a2)+lqR2(c.a3)+lqR2(c.a4);
   /* Ley 476: 1 mes por cada uno de los 3 primeros años y 20 días por año a partir del 4.º, proporcional */
-  const l={l1:'',a1:0,l2:'',a2:0};if(L.l476&&L.fi){const y1=Math.min(Y,3);l.l1=`Del ${lqF2(L.fi)} al ${lqF3(y1?lqAnt(lqMas(L.fi,y1)):L.fl)}  (${n2(y1)} años) = ${n2(y1)} meses`;l.a1=y1*so;
-    const dd=Y<3?t.R/360*30:(Y-3)*20+t.R/360*20;if(dd>0){l.l2=`Del ${lqF2(lqMas(L.fi,y1))} al ${lqF3(L.fl)}  (${lqDur({Y:Math.max(0,Y-3),M:t.M,D:t.D})}) = ${lqDias(dd)} días`;l.a2=dd*sd}}
-  const l476=lqR2(l.a1)+lqR2(l.a2);
+  const l={l1:'',a1:0,l2:'',a2:0};const l476=0;
   /* Cláusula 49: ayuda de US$ 1,000 */
   const tc=lqN(L.tc);const ayElig=(L.mot==='jub'||L.mot==='inc')&&so<=40000&&Y>=10;const ay=ayElig?1000*tc:0;
   if(ayElig&&!tc)av.push('Le corresponde la ayuda de US$ 1,000 (cláusula 49): escriba el tipo de cambio oficial del día.');
@@ -3657,7 +3660,7 @@ async function liqLibro(L){const R=liqCalc(L);const B=await libroAbrir(lbB64(LIQ
   S('A20',` VACACIONES ACUMULADAS (${lqDias(R.vd)}D)`);S('A21',` DECIMO TERCER MES (${n2(R.t13.M+R.t13.Y*12)}M.${n2(R.t13.D)}D)`);
   S('A22',` INDEMNIZACION POR AÑOS DE SERVICIO - CLAUS. No. 51 C.C. (${n2(R.t.Y)}A${R.t.M||R.t.D?'.'+n2(R.t.M)+'M.'+n2(R.t.D)+'D':''})`);
   S('A24',`AYUDA ECONÓMICA U$ 1,000.00 CLAUSULA NO. 49 C.C (${R.tc?R.tc:'—'} T/C ) `);S('D24',lqR2(R.ay));
-  F('D20','ROUND(I109,2)');F('D21','ROUND(I101,2)');F('D22','ROUND(I93,2)');F('D26','ROUND(I84+I85,2)');F('D27','SUM(D15:D26)');F('G15','ROUND(D30*0.07,2)');F('G16','ROUND(D105+MAX(0,G130),2)');
+  F('D20','ROUND(I109,2)');F('D21','ROUND(I101,2)');F('D22','ROUND(I93,2)');F('D27','SUM(D15:D26)');F('G15','ROUND(D30*0.07,2)');F('G16','ROUND(D105+MAX(0,G130),2)');
   for(let i=0;i<9;i++){const d=R.ded[i];S('E'+(17+i),d?d[0]:null);S('G'+(17+i),d?d[1]:null)}
   F('G27','SUM(G15:I25)');F('G30','ROUND(D30*0.225,2)');F('G31','ROUND(D30*0.02,2)');
   /* recibo */
@@ -3669,7 +3672,7 @@ async function liqLibro(L){const R=liqCalc(L);const B=await libroAbrir(lbB64(LIQ
   S('A42',`${L.lug||'Managua'}, ${(()=>{const x=lqD(L.ff||L.fl);return x.y?`${x.d} de ${MESES_L[x.m-1]} ${x.y}`:''})()}`);F('F73','+B7');
   /* detalle */
   F('D89','D88*0.07');
-  S('F84',R.l.l1||'');S('I84',lqR2(R.l.a1));S('F85',R.l.l2||'');S('I85',lqR2(R.l.a2));
+  S('E84',null);S('F84',null);S('I84',null);S('F85',null);S('I85',null);S('A26',null);S('D26',null);for(const [x,y] of [['C26','C24'],['D26','D24']]){const e=s.idx[x],f=s.idx[y];if(e&&f){e.setAttribute('s',f.getAttribute('s'));s.dirty=true}}S('E86',R.c.art45?'Conforme Art. 45 Código del Trabajo':'Conforme Convenio Colectivo Vigente');
   S('F86',R.c.l1);S('I86',lqR2(R.c.a1));S('F87',R.c.l2||'');S('I87',lqR2(R.c.a2));S('H88',R.c.l3||'');S('I88',lqR2(R.c.a3));S('H89',R.c.l4||'');S('I89',lqR2(R.c.a4));
   S('D96',R.tr[0]);S('D98','X '+Math.round(R.tr[1]*100)+'%');F('D99',`D97*${R.tr[1]}`);S('D100',R.tr[2]);S('D102',lqR2(R.irSal));F('D103','+MAX(0,D101-D102)');F('D104',`+D102/12/30*${R.dsal}`);
   S('H96',`Del ${lqF2(R.i13)} al ${lqF3(L.fl)} (${n2(R.t13.M+R.t13.Y*12)}M.${n2(R.t13.D)}D) =${lqDias(R.d13)} Días`);F('I96',`D81*${R.d13}`);
@@ -3726,8 +3729,7 @@ function renderLiq(){const box=$('#liqBox');if(!box)return;if(!OWNER){box.innerH
     <label>Motivo</label><select data-lq="mot">${Object.entries(LIQ_MOT).map(([k,v])=>`<option value="${k}"${L.mot===k?' selected':''}>${v}</option>`).join('')}</select>
     <label style="margin-top:8px">Texto del motivo (renglón 1)</label><input data-lq="mt1" placeholder="${esc(mt[0])}" value="${esc(L.mt1)}">
     <label style="margin-top:8px">Texto del motivo (renglón 2)</label><input data-lq="mt2" placeholder="${esc(mt[1])}" value="${esc(L.mt2)}"><p class="sm" style="margin:4px 0 0">Si los deja vacíos se usa el texto sugerido.</p>
-    <label class="chk" style="margin-top:8px"><input type="checkbox" data-lq="prop"${L.prop?' checked':''}> Cláusula 51: pagar proporcional la fracción del último año</label>
-    <label class="chk" style="margin-top:6px"><input type="checkbox" data-lq="l476"${L.l476?' checked':''}> Incluir indemnización conforme Ley 476</label></div></details>
+    <p class="sm" style="margin:8px 0 0">La indemnización se calcula una sola vez, conforme a la cláusula 51 del convenio (años laborados completos). No se acumula con la Ley 476 ni la Ley 1173.</p></div></details>
    <details class="rg" data-lqs="3"${LIQ_OPEN.has(3)?' open':''}><summary><span>3. Débitese (lo que se paga)</span><span class="chev">›</span></summary><div style="padding:0 10px 10px"><div class="grid">
     ${inp('dsal','Días de salario pendiente',{n:1})}${inp('heh','Horas extras (horas)',{n:1})}${inp('via','Viáticos (C$)',{n:1})}${inp('tra','Transporte (C$)',{n:1})}${inp('bon','Bonificación cl. 53 (C$)',{n:1})}</div>
     <h3 class="sub">Vacaciones (días)</h3><div class="grid">${inp('vc','Corte anterior (fecha)',{t:'date'})}${inp('v1','Acumuladas al corte',{n:1})}${inp('v2','Acumuladas desde el corte',{n:1})}${inp('v3','Descansadas',{n:1})}</div>
@@ -3744,7 +3746,7 @@ function liqResumen(){const el=$('#liqRes');if(!el||!LIQ_EDIT)return;const R=liq
   el.innerHTML=`<h3 class="sub">Resumen</h3><p class="sm" style="margin:0 0 6px">Salario ordinario ${f(R.so)} · diario ${f(R.sd)} · tiempo laborado ${lqDur(R.t)}</p>
    ${R.av.length?`<div class="notice" style="font-size:12.5px">${R.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
    <table class="tot">${tr('Salario',R.sal)}${tr('Horas extras',R.he)}${tr('Viáticos',R.via)}${tr('Transporte',R.tra)}${tr('Bonificación',R.bon)}${tr(`Vacaciones (${lqDias(R.vd)} días)`,R.vac)}${tr(`Décimo tercer mes (${lqDias(R.d13)} días)`,R.dec)}
-    ${tr('Indemnización cláusula 51',R.conv,esc(R.c.regla))}${tr('Ayuda económica cl. 49',R.ay)}${tr('Indemnización Ley 476',R.l476)}
+    ${tr('Indemnización cláusula 51',R.conv,esc(R.c.regla))}${tr('Ayuda económica cl. 49',R.ay)}
     <tr><td><b>Total débito</b></td><td><b>${f(R.deb)}</b></td></tr>${tr('INSS laboral 7 %',R.inss)}${tr('IR',R.ir+R.ret,R.ret?'Incluye retención 15 % sobre indemnización (Ley 822)':'')}${R.ded.map(d=>tr(esc(d[0]||'Deducción'),d[1])).join('')}
     <tr><td><b>Total crédito</b></td><td><b>${f(R.cred)}</b></td></tr><tr class="big"><td>Neto a recibir</td><td>${f(R.net)}</td></tr></table>
    <p class="sm" style="margin:6px 0 0">${esc(numLetras(R.net))} · INSS patronal ${f(R.pat)} · INATEC ${f(R.inat)}</p>`}
