@@ -988,7 +988,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ')+(disenoClasico(m)&&!m.d?' · Diseño clásico':'');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.18-93';
+const APP_VER='2026.11.18-94';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -3570,7 +3570,7 @@ function renderIni(){const box=$('#iniBox');if(!box)return;const hoy=today();con
 const LIQ_K='epn_liq';let LIQ_EDIT=null;const LIQ_OPEN=new Set([1,2]);
 const liqLista=()=>ls.get(LIQ_K,[])||[];
 const liqGuardarLista=L=>ls.set(LIQ_K,L);
-const LIQ_MOT={jub:'Jubilación',inc:'Jubilación por incapacidad total permanente',mue:'Muerte del trabajador',ren:'Renuncia',des:'Despido sin causa justa',mut:'Mutuo acuerdo'};
+const LIQ_MOT={jub:'Jubilación',inc:'Jubilación por incapacidad total permanente',mue:'Muerte del trabajador',ren:'Renuncia',des:'Despido sin causa justa (art. 45 C.T.)',cau:'Despido con causa justa (art. 48 C.T.)',mut:'Mutuo acuerdo'};
 const MESES_L=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const lqD=s=>{const [y,m,d]=String(s||'').split('-').map(Number);return{y,m,d}};
 const lqSig=s=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+1);return kd(d)};
@@ -3601,8 +3601,8 @@ function liqNuevo(){const h=today();return{id:'lq'+Date.now().toString(36),nom:'
 function liqMotTxt(L){const f=lqF4(L.fl),b='LIQUIDACIÓN FINAL DE PRESTACIONES  SOCIALES AL '+f+', POR ';
   return{jub:[b+'RENUNCIA A SU CONTRATO DE  TRABAJO','POR TIEMPO INDETERMINADO, PARA INICIAR TRAMITES DE JUBILACION.'],inc:[b+'RENUNCIA A SU CONTRATO DE  TRABAJO','POR TIEMPO INDETERMINADO, PARA INICIAR TRAMITES DE JUBILACION POR INCAPACIDAD TOTAL.'],
     mue:[b+'FALLECIMIENTO DEL TRABAJADOR, ENTREGADA A','SUS BENEFICIARIOS REGISTRADOS EN EL EXPEDIENTE LABORAL (CLÁUSULAS No. 48 Y 51 C.C.).'],ren:[b+'RENUNCIA A SU CONTRATO DE  TRABAJO','POR TIEMPO INDETERMINADO.'],
-    des:[b+'DESPIDO SIN CAUSA JUSTA DE SU CONTRATO','DE TRABAJO POR TIEMPO INDETERMINADO.'],mut:[b+'TERMINACIÓN DE SU CONTRATO DE TRABAJO','POR TIEMPO INDETERMINADO, DE MUTUO ACUERDO.']}[L.mot]}
-const liqRecMot=m=>({jub:'RENUNCIA A SU PUESTO DE TRABAJO POR CONTRATO INDETERMINADO PARA TRAMITES DE JUBILACION',inc:'RENUNCIA A SU PUESTO DE TRABAJO POR CONTRATO INDETERMINADO PARA TRAMITES DE JUBILACION POR INCAPACIDAD TOTAL',mue:'FALLECIMIENTO DEL TRABAJADOR, ENTREGADA A SUS BENEFICIARIOS',ren:'RENUNCIA A SU PUESTO DE TRABAJO POR CONTRATO INDETERMINADO',des:'DESPIDO SIN CAUSA JUSTA DE SU CONTRATO DE TRABAJO POR TIEMPO INDETERMINADO',mut:'TERMINACIÓN DE SU CONTRATO DE TRABAJO POR TIEMPO INDETERMINADO, DE MUTUO ACUERDO'}[m]);
+    des:[b+'DESPIDO SIN CAUSA JUSTA DE SU CONTRATO','DE TRABAJO POR TIEMPO INDETERMINADO.'],mut:[b+'TERMINACIÓN DE SU CONTRATO DE TRABAJO','POR TIEMPO INDETERMINADO, DE MUTUO ACUERDO.'],cau:[b+'RESCISIÓN DE SU CONTRATO DE TRABAJO','POR TIEMPO INDETERMINADO, ARTÍCULO 48 CÓDIGO DEL TRABAJO.']}[L.mot]}
+const liqRecMot=m=>({jub:'RENUNCIA A SU PUESTO DE TRABAJO POR CONTRATO INDETERMINADO PARA TRAMITES DE JUBILACION',inc:'RENUNCIA A SU PUESTO DE TRABAJO POR CONTRATO INDETERMINADO PARA TRAMITES DE JUBILACION POR INCAPACIDAD TOTAL',mue:'FALLECIMIENTO DEL TRABAJADOR, ENTREGADA A SUS BENEFICIARIOS',ren:'RENUNCIA A SU PUESTO DE TRABAJO POR CONTRATO INDETERMINADO',des:'DESPIDO SIN CAUSA JUSTA DE SU CONTRATO DE TRABAJO POR TIEMPO INDETERMINADO',mut:'TERMINACIÓN DE SU CONTRATO DE TRABAJO POR TIEMPO INDETERMINADO, DE MUTUO ACUERDO',cau:'RESCISIÓN DE SU CONTRATO DE TRABAJO POR TIEMPO INDETERMINADO (ART. 48 C.T.)'}[m]);
 /* --- cálculo --- */
 function liqCalc(L){const sb=lqN(L.sb),ant=lqN(L.ant),so=sb+sb*ant/100,sd=so/30;const t=lqDif(L.fi,L.fl);const av=[];
   const dsal=lqN(L.dsal),sal=sd*dsal,heh=lqN(L.heh),he=lqR2(heh*sd/8*2),via=lqN(L.via),tra=lqN(L.tra),bon=lqN(L.bon);
@@ -3616,6 +3616,7 @@ function liqCalc(L){const sb=lqN(L.sb),ant=lqN(L.ant),so=sb+sb*ant/100,sd=so/30;
       if(tot>base){c.l3=`Adicional: 15 días por año desde el 7.º (${Y-6} año${Y-6===1?'':'s'}), máx. ${cap} meses = ${lqDias((tot-base)*30)} días`;c.a3=(tot-base)*so}
       c.regla=so>40000?`Renuncia con salario mayor a C$ 40,000: ${Y} años cumplidos = ${base} mes${base===1?'':'es'}.`:`Renuncia con salario hasta C$ 40,000: ${base} mes${base===1?'':'es'} por tabla${tot>base?` + ${lqDias((tot-base)*30)} días adicionales (tope ${cap} meses)`:''}.`;
       if(Y<3)av.push('Renuncia con menos de 3 años cumplidos: la cláusula 51 no da indemnización.')}
+  else if(L.mot==='cau'){c.art48=true;c.regla='Despido con causa justa: el art. 48 del Código del Trabajo no da indemnización; solo se pagan salario y prestaciones acumuladas (art. 42).'}
   else if(L.mot==='des'||L.mot==='mut'){const y1=Math.min(Y,3);const dd=Y<3?t.R/360*30:(Y-3)*20+t.R/360*20;let a1=y1*so,a2=dd*sd;const tope=5*so,min=so;
     if(a1+a2>tope){a2=Math.max(0,tope-a1)}if(a1+a2<min&&Y+t.R>0){a2=min-a1}c.art45=true;c.meses=(a1+a2)/so;
     c.l1=`Del ${lqF2(L.fi)} al ${lqF3(y1?lqAnt(lqMas(L.fi,y1)):L.fl)}  (${n2(y1)} años) = ${n2(y1)} meses`;c.a1=a1;
@@ -3624,7 +3625,7 @@ function liqCalc(L){const sb=lqN(L.sb),ant=lqN(L.ant),so=sb+sb*ant/100,sd=so/30;
   else{const m1=Math.min(Y,20);c.meses=m1;c.l1=`Del ${lqF2(L.fi)} al ${lqF3(fY||L.fl)}  (${n2(Y)} años) = ${n2(m1)} meses`;c.a1=m1*so;
     c.regla=`${LIQ_MOT[L.mot]}: un mes de salario ordinario por cada año laborado completo, máximo 20 meses (cláusula 51).`;
     if(t.R>0&&Y<20)av.push(`La fracción de ${lqDur({Y:0,M:t.M,D:t.D})} no se paga: la cláusula 51 reconoce solo años laborados completos.`)}
-  av.push('Indemnización única: se aplica solo el convenio (norma más favorable); no se acumula con la Ley 476 ni la Ley 1173.');
+  if(L.mot!=='cau')av.push('Indemnización única: no se acumulan el convenio, la Ley 476 y la Ley 1173 por el mismo concepto.');
   const conv=lqR2(c.a1)+lqR2(c.a2)+lqR2(c.a3)+lqR2(c.a4);
   /* Ley 476: 1 mes por cada uno de los 3 primeros años y 20 días por año a partir del 4.º, proporcional */
   const l={l1:'',a1:0,l2:'',a2:0};const l476=0;
@@ -3641,6 +3642,27 @@ function liqCalc(L){const sb=lqN(L.sb),ant=lqN(L.ant),so=sb+sb*ant/100,sd=so/30;
   if(ded.length>9)av.push('Solo caben 9 deducciones en el formato; se usan las primeras 9.');
   if(!L.fi||!L.fl||!sb)av.push('Faltan datos: fecha de ingreso, fecha de liquidación o salario básico.');
   return{so,sd,t,dsal,sal,heh,he,via,tra,bon,vd,vac,i13,t13,d13,dec,c,conv,l,l476,ay,ayElig,tc,deb,bInss,inss,neto,an,exp,tr,irExp,irSal,irProp,ir,ret,ind,exe,ded:ded.slice(0,9),cred,net:deb-cred,pat:bInss*.225,inat:bInss*.02,av}}
+/* Fundamento del cálculo: razonamiento según el tipo de liquidación */
+function liqFundamento(L,R){const f=v=>'C$ '+fmt(v),P=[],p=(...r)=>P.push(r.map(x=>typeof x==='string'?[x,0]:x));const m=L.mot,Y=R.t.Y,frac=R.t.M||R.t.D?lqDur({Y:0,M:R.t.M,D:R.t.D}):'';
+  p(['Tipo de liquidación: ',1],[LIQ_MOT[m]+'.',1],` Trabajador: ${String(L.nom||'').toUpperCase()}. Tiempo laborado del ${lqF3(L.fi)} al ${lqF3(L.fl)}: ${lqDur(R.t)}. Salario ordinario mensual ${f(R.so)} (básico ${f(lqN(L.sb))} más antigüedad ${lqN(L.ant)} %); salario diario ${f(R.sd)} (salario ordinario entre 30). La cláusula 51 toma como base el salario ordinario.`);
+  if(m==='jub'||m==='inc'||m==='mue'){
+    p(['1. Indemnización por años de servicio (cláusula 51 del Convenio Colectivo Nacional 2025-2027). ',1],`En caso de terminación por jubilación, incapacidad total o muerte, "se indemnizará al trabajador o al beneficiario con un equivalente a un mes de salario ordinario por cada año laborado completo hasta un máximo de 20 meses".${m!=='mue'?' La cláusula 49 ratifica que a quien obtiene pensión por jubilación o por incapacidad total permanente se le indemniza "con una cantidad de meses equivalente a la que establece la Cláusula 51".':''} Cálculo: ${Y} año${Y===1?'':'s'} completo${Y===1?'':'s'}${Y>20?' (tope de 20)':''} = ${Math.min(Y,20)} mes${Math.min(Y,20)===1?'':'es'} × ${f(R.so)} = ${f(R.conv)}.${frac&&Y<20?` La fracción de ${frac} no se reconoce porque la cláusula exige años laborados completos.`:''}`);
+    p(['2. Sin duplicidad. ',1],'No se suma la indemnización del art. 113 de la Ley 476, porque esa norma la reconoce "sin perjuicio de lo que determine el convenio colectivo", y la cláusula 51 regula expresamente este caso con un beneficio mayor (hasta 20 meses frente a un máximo de 5). Tampoco se suma la Ley No. 1173, que dispone que prevalece la convención colectiva cuando ofrece mayores beneficios. Se reconoce una sola indemnización por el mismo concepto.');
+    if(m==='mue')p(['3. Beneficiarios. ',1],'Las prestaciones se entregan a los beneficiarios registrados en el expediente laboral, en un plazo no mayor de treinta días calendario (cláusula 51).');
+    else p(['3. Ayuda económica (cláusula 49). ',1],R.ayElig?`El trabajador que se retira por jubilación o incapacidad total recibe US$ 1,000.00 al cambio oficial (${R.tc||'—'}) = ${f(R.ay)}. Es un beneficio distinto de la indemnización, por lo que no constituye doble pago.`:`No corresponde: la cláusula exceptúa a quienes devengan un salario mayor a C$ 40,000.00 y a quienes tienen menos de 10 años de laborar en la empresa (${R.so>40000?'salario ordinario '+f(R.so):Y+' años laborados'}).`)}
+  else if(m==='ren'){const base=Y<3?0:Y<10?1:Y<15?2:Y<20?3:5;
+    p(['1. Indemnización por renuncia (cláusula 51). ',1],`Para salarios ${R.so>40000?'mayores a C$ 40,000':'hasta C$ 40,000'}, la tabla por años de servicio continuo da 1 mes (de 3 a 10 años), 2 meses (de 10 a 15), 3 meses (de 15 a 20) y 5 meses (20 años o más). Con ${Y} año${Y===1?'':'s'} cumplido${Y===1?'':'s'} corresponde${base?` ${base} mes${base===1?'':'es'} × ${f(R.so)} = ${f(lqR2(R.c.a1))}`:'n 0 meses: con menos de 3 años cumplidos no hay indemnización'}.`+(R.so<=40000?(R.c.a3?` Además, por salario hasta C$ 40,000 se suman "quince días de salario adicional a la tabla anterior por cada año trabajado a partir del séptimo año", con el tope que fija la cláusula según el rango salarial: ${lqDias(R.c.a3/R.sd)} días = ${f(lqR2(R.c.a3))}.`:Y>=7?' El adicional de quince días por año desde el séptimo no aumenta el monto porque ya se alcanzó el tope del rango salarial.':' No aplica el adicional de quince días por año, que comienza a partir del séptimo año.'):'')+` Total: ${f(R.conv)}.`);
+    p(['2. Sin duplicidad con la Ley No. 1173. ',1],'La escala de esa ley (1, 2, 3 y 5 meses) es la misma que recoge la cláusula 51, y la propia ley dispone que prevalece la convención colectiva cuando ofrece mayores beneficios. Para salarios hasta C$ 40,000 el convenio la mejora con quince días "adicional a la tabla anterior". Pagar ambas sería reconocer dos veces el mismo concepto; por eso se aplica solo el convenio, como norma más favorable.')}
+  else if(m==='des'||m==='mut'){
+    p(['1. Indemnización (art. 45 del Código del Trabajo). ',1],`${m==='des'?'El despido sin causa justa':'La terminación por mutuo acuerdo'} figura en la cláusula 51 como forma de terminación, pero la cláusula no le fija monto y establece que la empresa liquidará "de acuerdo con el Código del Trabajo y Convenio Colectivo Vigente". Se aplica${m==='mut'?' como referencia':''} el art. 45 del Código del Trabajo: un mes de salario por cada uno de los tres primeros años y veinte días por cada año a partir del cuarto; las fracciones se pagan proporcionalmente, con un mínimo de un mes y un máximo de cinco. Cálculo: ${lqDias(R.c.meses)} meses de salario = ${f(R.conv)}.`);
+    p(['2. Sin duplicidad. ',1],'No se suma la tabla de renuncia de la cláusula 51 ni la Ley No. 1173, que regulan la renuncia, ni la Ley 476. Se reconoce una sola indemnización por la terminación del contrato.')}
+  else if(m==='cau'){
+    p(['1. Sin indemnización (art. 48 del Código del Trabajo). ',1],'Cuando el empleador da por terminado el contrato por causa justa, lo hace sin más responsabilidad que pagar lo que establece el art. 42: el salario y las prestaciones acumuladas, como vacaciones y décimo tercer mes. No corresponde indemnización por años de servicio, ni por el convenio ni por ley.')}
+  const o=[];if(R.sal)o.push(`salario pendiente de ${lqDias(R.dsal)} días = ${f(lqR2(R.sal))}`);if(R.he)o.push(`horas extras (${lqDias(R.heh)} h al doble del valor de la hora) = ${f(R.he)}`);if(R.via)o.push(`viáticos ${f(R.via)}`);if(R.tra)o.push(`transporte ${f(R.tra)}`);if(R.bon)o.push(`bonificación de la cláusula 53 ${f(R.bon)}`);
+  p(['Prestaciones acumuladas (art. 42 del Código del Trabajo). ',1],`Se pagan cualquiera que sea la causa de terminación. Vacaciones: ${lqDias(lqN(L.v1))} días al corte${lqN(L.v2)?' + '+lqDias(lqN(L.v2))+' del período':''}${lqN(L.v3)?' − '+lqDias(lqN(L.v3))+' descansadas':''} = ${lqDias(R.vd)} días × ${f(R.sd)} = ${f(lqR2(R.vac))} (art. 76: quince días por cada seis meses de trabajo). Décimo tercer mes proporcional (art. 93): del ${lqF3(R.i13)} al ${lqF3(L.fl)} = ${lqDias(R.d13)} días × ${f(R.sd)} = ${f(lqR2(R.dec))}.${o.length?' Otros conceptos: '+o.join('; ')+'.':''}`);
+  p(['Deducciones. ',1],`INSS laboral 7 % sobre salario, horas extras y vacaciones (base ${f(R.bInss)}) = ${f(R.inss)}; la indemnización y el décimo tercer mes no cotizan. IR (Ley 822): se calcula sobre la expectativa anual de salario, vacaciones y horas extras, menos el IR proyectado del salario = ${f(lqR2(R.ir))}. El décimo tercer mes y la indemnización hasta cinco meses de salario están exentos (art. 19 de la Ley 822).${R.ret?` La indemnización que excede cinco meses supera C$ 500,000, por lo que se retiene el 15 % del excedente: ${f(lqR2(R.ret))}.`:''}${R.ded.length?' Otras deducciones: '+R.ded.map(d=>`${d[0]||'deducción'} ${f(d[1])}`).join('; ')+'.':''}`);
+  p(['Resultado. ',1],`Total débito ${f(R.deb)}, total crédito ${f(R.cred)}, neto a recibir ${f(R.net)} (${numLetras(R.net)}). Fundamento: Convenio Colectivo Nacional 2025-2027 (cláusulas 49 y 51), Código del Trabajo (arts. 42, 45, 48, 76 y 93), Ley No. 1173, Ley 476 (art. 113) y Ley 822. No se acumulan beneficios por el mismo concepto.`);
+  return P}
 /* --- Excel con la plantilla de RR.HH. --- */
 const lbB64=s=>{const b=atob(s);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
 function lbSetRich(s,ref,runs){lbSet(s,ref,'x');const c=s.idx[ref],NS=s.doc.documentElement.namespaceURI;while(c.firstChild)c.removeChild(c.firstChild);c.setAttribute('t','inlineStr');const el=n=>s.doc.createElementNS(NS,n);const is=el('is');
@@ -3651,34 +3673,38 @@ function liqRenglones(runs,max,n){const W=[];runs.forEach(([t,b,sz])=>String(t).
   for(const w of W){const k=w[0].length*(w[1]?1.08:1);if(len+k>max&&len>0&&L.length<n&&!/^\s+$/.test(w[0])){L.push([]);len=0}if(!L[L.length-1].length&&/^\s+$/.test(w[0]))continue;L[L.length-1].push(w);len+=k}
   return L.map(l=>{const o=[];l.forEach(w=>{const p=o[o.length-1];if(p&&p[1]===w[1]&&p[2]===w[2])p[0]+=w[0];else o.push([...w])});return o})}
 async function liqLibro(L){const R=liqCalc(L);const B=await libroAbrir(lbB64(LIQ_XLSX));const s=await lbHoja(B,B.sheets[0].name);const S=(r,v)=>lbSet(s,r,v),F=(r,f)=>lbSet(s,r,{f});
-  const hoja={jub:'JUBILACION',inc:'JUBILACION',mue:'FALLECIMIENTO',ren:'RENUNCIA',des:'DESPIDO',mut:'MUTUO ACUERDO'}[L.mot];
+  const hoja={jub:'JUBILACION',inc:'JUBILACION',mue:'FALLECIMIENTO',ren:'RENUNCIA',des:'DESPIDO',cau:'DESPIDO',mut:'MUTUO ACUERDO'}[L.mot];
   const sh=B.wb.getElementsByTagName('sheet')[0];const viejo=sh.getAttribute('name');sh.setAttribute('name',hoja);B.sheets[0].name=hoja;for(const dn of B.wb.getElementsByTagName('definedName'))dn.textContent=dn.textContent.split("'"+viejo+"'").join("'"+hoja+"'").split(viejo+'!').join("'"+hoja+"'!");
   const up=x=>String(x||'').toUpperCase();
   S('B7',up(L.nom));S('F7',up(L.cargo));S('B8',up(L.area));S('F8',lqF1(L.fi));S('C9',lqF1(L.fl));S('C10',lqN(L.sb));S('F10',lqN(L.ant));F('G10','+C10*F10/100');
   const mt=liqMotTxt(L);S('C11',L.mt1||mt[0]);S('A12',L.mt2||mt[1]);
   S('A15',`SALARIO:  ( ${lqDias(R.dsal)} DIAS)`);F('D15',`ROUND(I10/30*${R.dsal},2)`);S('A16',`HORAS EXTRAS (${lqDias(R.heh)}H)`);S('D16',R.he);S('D17',R.via);S('D18',R.tra);S('D19',R.bon);
   S('A20',` VACACIONES ACUMULADAS (${lqDias(R.vd)}D)`);S('A21',` DECIMO TERCER MES (${n2(R.t13.M+R.t13.Y*12)}M.${n2(R.t13.D)}D)`);
-  S('A22',` INDEMNIZACION POR AÑOS DE SERVICIO - CLAUS. No. 51 C.C. (${n2(R.t.Y)}A${R.t.M||R.t.D?'.'+n2(R.t.M)+'M.'+n2(R.t.D)+'D':''})`);
+  S('A22',` INDEMNIZACION POR AÑOS DE SERVICIO - ${R.c.art48?'NO APLICA (ART. 48 C.T.)':R.c.art45?'ART. 45 C.T.':'CLAUS. No. 51 C.C.'} (${n2(R.t.Y)}A${R.t.M||R.t.D?'.'+n2(R.t.M)+'M.'+n2(R.t.D)+'D':''})`);
   S('A24',`AYUDA ECONÓMICA U$ 1,000.00 CLAUSULA NO. 49 C.C (${R.tc?R.tc:'—'} T/C ) `);S('D24',lqR2(R.ay));
   F('D20','ROUND(I109,2)');F('D21','ROUND(I101,2)');F('D22','ROUND(I93,2)');F('D27','SUM(D15:D26)');F('G15','ROUND(D30*0.07,2)');F('G16','ROUND(D105+MAX(0,G130),2)');
   for(let i=0;i<9;i++){const d=R.ded[i];S('E'+(17+i),d?d[0]:null);S('G'+(17+i),d?d[1]:null)}
   F('G27','SUM(G15:I25)');F('G30','ROUND(D30*0.225,2)');F('G31','ROUND(D30*0.02,2)');
   /* recibo */
   const con=[];const cc=(t,b)=>con.push([t,b]);if(R.sal)cc('Salario ('+lqDias(R.dsal)+' días), ');if(R.he)cc('Horas extras, ');if(R.via)cc('Viáticos, ');if(R.tra)cc('Transporte, ');if(R.bon)cc('Bonificación (cláusula # 53 CCV.), ');if(R.vac)cc('Vacaciones acumuladas, ');if(R.dec)cc('Decimo tercer mes proporcional, ');
-  if(R.conv){cc('Indemnización acumulada por años de servicio ');cc('(CLáUSULA # 51 CCV.) ',1)}if(R.ay){cc('Ayuda económica ');cc('(CLÁUSULA # 49 CCV.) ',1)}if(R.l476)cc('Indemnización conforme ley 476');
+  if(R.conv){cc('Indemnización acumulada por años de servicio ');cc(R.c.art45?'(ART. 45 C.T.) ':'(CLáUSULA # 51 CCV.) ',1)}if(R.ay){cc('Ayuda económica ');cc('(CLÁUSULA # 49 CCV.) ',1)}if(R.l476)cc('Indemnización conforme ley 476');
   if(con.length){const u=con[con.length-1];u[0]=u[0].replace(/,?\s*$/,'')}
   const runs=[[' Recibí de ',0],['EMPRESA PORTUARIA NACIONAL',1],[' (',0],['EPN',1],['), la cantidad de ',0],['C$ '+fmt(R.net)+' ',1],['('+numLetras(R.net)+'), ',1,14],['en concepto de ',0],['LIQUIDACION FINAL, ',1],['correspondiente a: ',0],...con.map(([t,b])=>[t,b]),[', por ',0],[liqRecMot(L.mot)+' AL DIA '+lqF1(L.fl)+'.',1]];
   const RG=liqRenglones(runs,134,4);['A35','A36','A37','A38'].forEach((r,i)=>{if(RG[i]&&RG[i].length)lbSetRich(s,r,RG[i]);else S(r,null)});
   S('A42',`${L.lug||'Managua'}, ${(()=>{const x=lqD(L.ff||L.fl);return x.y?`${x.d} de ${MESES_L[x.m-1]} ${x.y}`:''})()}`);F('F73','+B7');
   /* detalle */
   F('D89','D88*0.07');
-  S('E84',null);S('F84',null);S('I84',null);S('F85',null);S('I85',null);S('A26',null);S('D26',null);for(const [x,y] of [['C26','C24'],['D26','D24']]){const e=s.idx[x],f=s.idx[y];if(e&&f){e.setAttribute('s',f.getAttribute('s'));s.dirty=true}}S('E86',R.c.art45?'Conforme Art. 45 Código del Trabajo':'Conforme Convenio Colectivo Vigente');
-  S('F86',R.c.l1);S('I86',lqR2(R.c.a1));S('F87',R.c.l2||'');S('I87',lqR2(R.c.a2));S('H88',R.c.l3||'');S('I88',lqR2(R.c.a3));S('H89',R.c.l4||'');S('I89',lqR2(R.c.a4));
+  S('E84',null);S('F84',null);S('I84',null);S('F85',null);S('I85',null);S('A26',null);S('D26',null);for(const [x,y] of [['C26','C24'],['D26','D24']]){const e=s.idx[x],f=s.idx[y];if(e&&f){e.setAttribute('s',f.getAttribute('s'));s.dirty=true}}S('E86',R.c.art48?'Art. 48 C.T.':R.c.art45?'Conforme Art. 45 C.T.':'Conforme Convenio Colectivo Vigente');
+  S('F86',R.c.art48?'No corresponde indemnización por años de servicio':R.c.l1);S('I86',lqR2(R.c.a1));S('F87',R.c.l2||'');S('I87',lqR2(R.c.a2));S('H88',R.c.l3||'');S('I88',lqR2(R.c.a3));S('H89',R.c.l4||'');S('I89',lqR2(R.c.a4));
   S('D96',R.tr[0]);S('D98','X '+Math.round(R.tr[1]*100)+'%');F('D99',`D97*${R.tr[1]}`);S('D100',R.tr[2]);S('D102',lqR2(R.irSal));F('D103','+MAX(0,D101-D102)');F('D104',`+D102/12/30*${R.dsal}`);
   S('H96',`Del ${lqF2(R.i13)} al ${lqF3(L.fl)} (${n2(R.t13.M+R.t13.Y*12)}M.${n2(R.t13.D)}D) =${lqDias(R.d13)} Días`);F('I96',`D81*${R.d13}`);
   {const c0=lqD(L.vc||L.fl),z=lqD(L.fl),M0=MESES_L[c0.m-1].toUpperCase(),M1=MESES_L[z.m-1].toUpperCase();
    S('H105',`TOTAL ACUMULADAS AL ${c0.d} ${M0} ${c0.y}`);S('I105',lqN(L.v1));S('H106',`ACUMULADAS AL ${z.d} DE ${M1} ${z.y}`);S('I106',lqN(L.v2));
    S('H107',`DESCANSADAS AL ${z.d} DE ${M1} ${z.y}`);S('I107',lqN(L.v3));S('H108',`TOTAL ACUMULADAS AL ${z.d} DE ${M1} DEL ${z.y}`)}
+  {const FP=liqFundamento(L,R);let r=132;const fila=(n,ht)=>{const e=lbFila(s,n,true);e.setAttribute('ht',String(ht));e.setAttribute('customHeight','1')};
+   fila(r,28);lbSetRich(s,'A'+r,[['FUNDAMENTO DEL CÁLCULO DE LA LIQUIDACIÓN FINAL',1,20]]);r+=2;
+   for(const par of FP){for(const ln of liqRenglones(par.map(([t,b])=>[t,b,16]),126,99)){fila(r,22);lbSetRich(s,'A'+r,ln);r++}r++}
+   s.liqFin=r-1;for(const dn of B.wb.getElementsByTagName('definedName'))if(/Print_Area/i.test(dn.getAttribute('name')||''))dn.textContent=`'${hoja}'!$A$1:$J$111,'${hoja}'!$A$132:$J$${r-1}`}
   S('E125',lqN(L.conf));F('G130','+G128*0.15');F('E116','D116*0.0625');F('E117','D117*0.0625');F('G116','D116*0.19');F('G117','D117*0.19');
   await libroRecalcular(B);const M=fxMotor(B);const net=M.val(s,'G28');if(typeof net==='number'&&Math.abs(net-R.net)>0.05)console.warn('liq: Excel y app difieren',net,R.net);
   const blob=new Blob([await libroGuardar(B)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -3689,6 +3715,7 @@ async function liqPdf(B,s){const st=await lbEstilos(B),M=fxMotor(B);if(!B.ssx){c
   const cols=[1,2,3,4,5,6,7,8,9,10],cw={};cols.forEach(c=>cw[c]=(wC[c]||9.14)*5.6);const tw=cols.reduce((a,c)=>a+cw[c],0);
   const hR={},hid=new Set();for(const r in s.rows){const e=s.rows[r];if(e.getAttribute('ht'))hR[r]=+e.getAttribute('ht');if(e.getAttribute('hidden')==='1')hid.add(+r)}const rh0=r=>hid.has(r)?0:(hR[r]||12.75);
   const PG=[[1,75],[76,111]];const alto=PG.map(([a,b])=>{let h=0;for(let r=a;r<=b;r++)h+=rh0(r);return h});const sc=Math.min((PW-2*MG)/tw,(PH-2*MG)/Math.max(...alto));
+  if(s.liqFin){let a=132,h=0;for(let r=132;r<=s.liqFin;r++){if(h+rh0(r)*sc>PH-2*MG){PG.push([a,r-1]);a=r;h=0}h+=rh0(r)*sc}PG.push([a,s.liqFin])}
   const X={};let xx=(PW-tw*sc)/2;cols.forEach(c=>{X[c]=xx;xx+=cw[c]*sc});const rh=r=>rh0(r)*sc;
   const span={},skip=new Set();for(const m of s.doc.getElementsByTagName('mergeCell')){const [a,b2]=m.getAttribute('ref').split(':');if(!b2)continue;const [r1,c1]=refRC(a),[r2,c2]=refRC(b2);span[r1+','+c1]=[r1,c1,r2,c2];for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(r!==r1||c!==c1)skip.add(r+','+c)}
   const lleno=(r,c)=>{const ce=s.idx[colA(c)+r];if(!ce||skip.has(r+','+c))return skip.has(r+','+c);const v=M.val(s,colA(c)+r);return v!=null&&v!==''};
@@ -3746,10 +3773,11 @@ function liqResumen(){const el=$('#liqRes');if(!el||!LIQ_EDIT)return;const R=liq
   el.innerHTML=`<h3 class="sub">Resumen</h3><p class="sm" style="margin:0 0 6px">Salario ordinario ${f(R.so)} · diario ${f(R.sd)} · tiempo laborado ${lqDur(R.t)}</p>
    ${R.av.length?`<div class="notice" style="font-size:12.5px">${R.av.map(t=>'• '+esc(t)).join('<br>')}</div>`:''}
    <table class="tot">${tr('Salario',R.sal)}${tr('Horas extras',R.he)}${tr('Viáticos',R.via)}${tr('Transporte',R.tra)}${tr('Bonificación',R.bon)}${tr(`Vacaciones (${lqDias(R.vd)} días)`,R.vac)}${tr(`Décimo tercer mes (${lqDias(R.d13)} días)`,R.dec)}
-    ${tr('Indemnización cláusula 51',R.conv,esc(R.c.regla))}${tr('Ayuda económica cl. 49',R.ay)}
+    ${tr(R.c.art45?'Indemnización art. 45 C.T.':'Indemnización cláusula 51',R.conv,esc(R.c.regla))}${tr('Ayuda económica cl. 49',R.ay)}
     <tr><td><b>Total débito</b></td><td><b>${f(R.deb)}</b></td></tr>${tr('INSS laboral 7 %',R.inss)}${tr('IR',R.ir+R.ret,R.ret?'Incluye retención 15 % sobre indemnización (Ley 822)':'')}${R.ded.map(d=>tr(esc(d[0]||'Deducción'),d[1])).join('')}
     <tr><td><b>Total crédito</b></td><td><b>${f(R.cred)}</b></td></tr><tr class="big"><td>Neto a recibir</td><td>${f(R.net)}</td></tr></table>
-   <p class="sm" style="margin:6px 0 0">${esc(numLetras(R.net))} · INSS patronal ${f(R.pat)} · INATEC ${f(R.inat)}</p>`}
+   <p class="sm" style="margin:6px 0 0">${esc(numLetras(R.net))} · INSS patronal ${f(R.pat)} · INATEC ${f(R.inat)}</p>
+   <h3 class="sub">Fundamento del cálculo</h3>${liqFundamento(LIQ_EDIT,R).map(par=>`<p class="sm" style="margin:0 0 8px;line-height:1.45">${par.map(([t,b])=>b?`<b>${esc(t)}</b>`:esc(t)).join('')}</p>`).join('')}`}
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.lqs){if(d.open)LIQ_OPEN.add(+d.dataset.lqs);else LIQ_OPEN.delete(+d.dataset.lqs)}},true);
 document.addEventListener('input',e=>{const t=e.target;if(!LIQ_EDIT||!t.closest('#liqBox'))return;
   if(t.dataset.lq){const k=t.dataset.lq;LIQ_EDIT[k]=t.type==='checkbox'?t.checked:t.value;if(k==='mot'){renderLiq();return}liqResumen()}
