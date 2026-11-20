@@ -926,7 +926,7 @@ document.addEventListener('click',e=>{const d=e.target.closest('[data-hd]');if(d
   if(e.target.id==='btnFer'){const fd=$('#fFecha').value,n=$('#fNom').value.trim();if(!fd||!n){toast('Indique fecha y nombre del feriado');return}FER.push({f:fd,n,anual:$('#fAnual').checked});ls.set('epn_fer',FER);for(const k in _ferCache)delete _ferCache[k];$('#fFecha').value='';$('#fNom').value='';renderHorFer();if(P.tipo==='chr')chrRecalc();toast('Feriado agregado')}});
 
 /* ===== Abrir un cálculo ===== */
-function cargarP(o){P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(!Array.isArray(P.itin)||!P.itin.length)P.itin=[{de:'El Bluff',a:'',sal:'',lle:''}];
+function cargarP(o){if(typeof RENT_SEL!=='undefined')RENT_SEL=undefined;P={...newPF(o.tipo||'buq'),...o};if(!P.tipo)P.tipo='buq';if(!Array.isArray(P.itin)||!P.itin.length)P.itin=[{de:'El Bluff',a:'',sal:'',lle:''}];
   if(+P.desc&&!P.itin[P.itin.length-1].cd){P.itin[P.itin.length-1].cd=P.desc;P.desc=''}
   applyTipo();bindMeta();renderItin();if(P.tipo==='chr')chrRecalc();else{syncCoc();renderLines()}}
 
@@ -988,7 +988,7 @@ const permNom=x=>{const m=permDe(x);const f=PERF.find(([,,q])=>Object.keys(q).ev
 const permLista=m=>MODS.filter(([k])=>m[k]).map(([k,n,L])=>n+': '+L[m[k]]).join(' · ')+(disenoClasico(m)&&!m.d?' · Diseño clásico':'');
 function PM(){if(OWNER)return{...PALL};if(!LIC)return{c:0,t:0,m:0,v:0,a:0,s:0,k:0,n:0};const m=permDe(LIC);if(!LIC.k){m.m=m.v=m.a=m.s=m.k=0}return m}
 const soloTar=()=>!OWNER&&!!LIC&&PM().t===1;
-const APP_VER='2026.11.18-94';
+const APP_VER='2026.11.20-95';
 const PROPIA=(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.host);
 const APP_URL=PROPIA?location.origin+location.pathname.replace(/index\.html$/,''):'https://claude.ai/artifact/7AcPU1vphwEge28NBnf9bf';
 const PUB={"kty":"EC","crv":"P-256","x":"u1Q346uQFifVDnPxkBkOf50Q36r3YoBfzI4nWUkLoOA","y":"c8OmpTkciQ8QgwaQKs3duPTT8n8tO4_cZqVq17yCV1o"};
@@ -3388,6 +3388,10 @@ function rentCalc(){if(!COSTOS)return null;const a=rentAuto(),r=P.rent||{},e=emb
   const t=totals();const ing=t.u*t.tc+t.n;const gas=R.reduce((s,x)=>s+x.m,0);const ut=ing-gas;const mg=ing?ut/ing*100:0;
   return{R,ing,gas,ut,mg,tc:t.tc,dias,dh,hn,hg,hx,auto:a,emb:e,crew,n}}
 
+/* --- Rentabilidad de una proforma guardada, sin cargarla en el formulario --- */
+var RENT_SEL;
+function rentDeGuardada(o){if(!o)return null;const pP=P,pC=CHRINFO;try{P={...newPF('chr'),...JSON.parse(JSON.stringify(o))};let nav=0;(P.itin||[]).forEach(g=>{if(!g.sal||!g.lle)return;const a=new Date(g.sal),b=new Date(g.lle);if(b>a)nav+=(b-a)/6e4});CHRINFO={...(pC||{}),nav};return rentCalc()}catch(e){console.error(e);return null}finally{P=pP;CHRINFO=pC}}
+function rentPdfDeGuardada(o){const pP=P,pC=CHRINFO;try{P={...newPF('chr'),...JSON.parse(JSON.stringify(o))};let nav=0;(P.itin||[]).forEach(g=>{if(!g.sal||!g.lle)return;const a=new Date(g.sal),b=new Date(g.lle);if(b>a)nav+=(b-a)/6e4});CHRINFO={...(pC||{}),nav};return rentPdf()}finally{P=pP;CHRINFO=pC}}
 /* --- Interfaz en Cálculo --- */
 function renderRent(){setTimeout(pfSum,0);renderEmbCrew();const box=$('#rentBox'),card=$('#cRent');if(!box||!card)return;
   if(P.tipo!=='chr'||!puedeCostos()){card.hidden=true;return}card.hidden=false;cargarCostos();
@@ -3398,11 +3402,16 @@ function renderRent(){setTimeout(pfSum,0);renderEmbCrew();const box=$('#rentBox'
      :'El administrador aún no ha publicado la estructura de costos'+cu+'. Cuando la publique, toque <b>Buscar ahora</b>.';
     box.innerHTML=`<div class="notice" style="margin:0">${msg}</div>${LIC&&LIC.k?'<button class="btn2" data-refcost style="width:100%;margin-top:8px">Buscar ahora</button>':''}`;return}
   if(!COSTOS.personal.length){box.innerHTML=`<div class="notice" style="margin:0">${OWNER?'Cargue el personal en <b>Ajustes → Estructura de costos</b> (pegando desde Excel).':'El administrador aún no ha cargado el personal.'}</div>`;return}
+  const G=(ls.get('epn_pf',[])||[]).filter(x=>x.tipo==='chr'&&x.id);let sel=RENT_SEL===undefined?(P.lines.length||!G.length?'':G[0].id):RENT_SEL;if(sel&&!G.some(x=>x.id===sel))sel='';
+  const selHtml=G.length?`<div style="margin-bottom:10px"><label>Proforma a analizar</label><select data-rsel><option value="">Proforma en edición${P.cliente?' · '+esc(P.cliente):''}${P.lines.length?'':' (vacía)'}</option>${G.map(o=>`<option value="${esc(o.id)}"${o.id===sel?' selected':''}>${esc(o.cliente||o.buque||'Sin nombre')}${o.fecha?' · '+new Date(o.fecha+'T12:00').toLocaleDateString('es-NI',{day:'numeric',month:'short',year:'numeric'}):''}${o.ref?' · '+esc(o.ref):''}${o._tot?' · '+esc(o._tot):''}</option>`).join('')}</select></div>`:'';
+  if(sel){const o=G.find(x=>x.id===sel);const c=rentDeGuardada(o);if(!c){box.innerHTML=selHtml+'<div class="notice" style="margin:0">No se pudo calcular la rentabilidad de esta proforma.</div>';return}
+    box.innerHTML=selHtml+`<p class="sm" style="margin:0 0 8px">${c.emb?'<b>'+esc(c.emb.n)+'</b>':'Sin embarcación'} · ${c.n} tripulante(s) · ${c.dias} día(s) · ${fq(c.hn)} h de navegación. Es la rentabilidad con los datos con que se guardó; para cambiar días, horas o gastos, abra la proforma.</p>${rentResHtml(c)}<button class="btn" data-rpdf="${esc(o.id)}" style="width:100%;margin-top:10px">Ver análisis de rentabilidad (PDF interno)</button><button class="btn2" data-ropen="${esc(o.id)}" style="width:100%;margin-top:8px">Abrir esta proforma para editarla</button></div>`;return}
+  if(!P.lines.length){box.innerHTML=selHtml+`<div class="notice" style="margin:0">La proforma en edición todavía no tiene itinerario${G.length?'. Elija arriba una proforma guardada para ver su rentabilidad, o complete el itinerario':'. Complete el itinerario'} para calcularla.</div>`;return}
   const r=P.rent||(P.rent={emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]});const c=rentCalc(),a=c.auto,e=c.emb;const tipo=P.medio==='mot'?'mot':'rem';
   const crewIds=new Set(c.crew.map(x=>x.pid));const ph=(k,v)=>a?'auto: '+v:'auto';
   const sem=c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];
   const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
-  box.innerHTML=`<div class="grid">
+  box.innerHTML=selHtml+`<div class="grid">
     <div style="grid-column:1/-1"><p class="sm" style="margin:0">${e?'<b>'+esc(e.n)+'</b>':'Sin embarcación'} · ${c.n} tripulante(s): ${c.crew.map(x=>esc(x.p.n.split(' ')[0]+' '+(x.p.n.split(' ')[2]||x.p.n.split(' ')[1]||''))).join(', ')||'—'}. <a href="#" data-goemb>Cambiar en Datos</a></p></div>
     <div><label>Días del viaje</label><input type="number" min="0" step="1" data-r="dias" value="${r.dias}" placeholder="${ph('dias',a&&a.dias)}"></div>
     <div><label>Días hábiles (viáticos)</label><input type="number" min="0" step="1" data-r="dh" value="${r.dh}" placeholder="${ph('dh',a&&a.dh)}"></div>
@@ -3410,19 +3419,25 @@ function renderRent(){setTimeout(pfSum,0);renderEmbCrew();const box=$('#rentBox'
     <div><label>Horas extra por tripulante</label><input type="number" min="0" step="any" data-r="hx" value="${r.hx}" placeholder="${ph('hx',a&&a.hx)}"></div>${e&&+e.gen>0?`<div><label>Horas de generador</label><input type="number" min="0" step="any" data-r="hg" value="${r.hg||''}" placeholder="${ph('hg',a&&fq(a.hg))}"></div>`:''}</div>
 
    <div style="margin-top:10px"><label>Otros gastos del viaje (C$)</label>${(r.otros||[]).map((o,i)=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-ro="${i}" data-f="d" value="${esc(o.d)}" placeholder="Ej.: Muellaje Corn Island" style="flex:2"><input data-ro="${i}" data-f="m" type="number" step="any" inputmode="decimal" value="${o.m}" placeholder="0.00" style="flex:1"><button class="x btnd" data-rodel="${i}" style="width:40px;padding:0">✕</button></div>`).join('')}<button class="btn2" data-roadd style="width:100%">+ Agregar gasto</button></div>
-   <div class="rent-res">
+   ${rentResHtml(c)}<button class="btn" id="btnRentPdf" style="width:100%;margin-top:10px">Ver análisis de rentabilidad (PDF interno)</button></div>`}
+function rentResHtml(c){const sem=c.mg>=30?['ok','Rentable']:c.mg>=10?['warnc','Margen bajo']:['bad',c.ut<0?'Pérdida':'Margen insuficiente'];const grupos={};c.R.forEach(x=>{(grupos[x.g]=grupos[x.g]||[]).push(x)});
+  return `<div class="rent-res">
     <div class="rent-k"><div><span>Ingresos</span><b>${money(c.ing,'NIO')}</b></div><div><span>Gastos</span><b>${money(c.gas,'NIO')}</b></div><div class="${sem[0]}"><span>Utilidad</span><b>${money(c.ut,'NIO')}</b><small>${fq(c.mg)} % · ${sem[1]}</small></div></div>
     <div class="bar2"><i style="width:${Math.max(0,Math.min(100,c.ing?c.gas/c.ing*100:100))}%"></i></div>
     <p class="sm" style="margin:4px 0 10px">Gastos = ${c.ing?fq(c.gas/c.ing*100):'—'} % del ingreso · Utilidad US$ ${fmt(c.tc?c.ut/c.tc:0)} · <b>Punto de equilibrio: ${money(c.gas,'NIO')}</b> (US$ ${fmt(c.tc?c.gas/c.tc:0)})</p>
     ${Object.entries(grupos).map(([g,xs])=>`<details class="rg"><summary><span>${esc(g)}</span><b>${money(xs.reduce((s,x)=>s+x.m,0),'NIO')}</b></summary>${xs.map(x=>`<div class="rl"><div>${esc(x.c)}${x.d?`<small>${esc(x.d)}</small>`:''}</div><b>${money(x.m,'NIO')}</b></div>`).join('')}</details>`).join('')}
-    <button class="btn" id="btnRentPdf" style="width:100%;margin-top:10px">Ver análisis de rentabilidad (PDF interno)</button></div>`}
+    `}
 function rentSet(k,v){P.rent=P.rent||{emb:'',crew:null,dias:'',dh:'',hn:'',hx:'',otros:[]};P.rent[k]=v}
 document.addEventListener('change',e=>{const el=e.target;if(!el.closest('#rentBox'))return;
+  if(el.hasAttribute('data-rsel')){RENT_SEL=el.value;renderRent();return}
   if(el.dataset.r){rentSet(el.dataset.r,el.value);if(el.dataset.r==='emb')rentSet('crew',null);renderRent()}
   else if(el.dataset.crew!=null){const cur=crewDe().map(c=>({pid:c.pid,rol:c.rol}));const id=el.dataset.crew;const p=COSTOS.personal.find(x=>x.id===id);
     rentSet('crew',el.checked?[...cur.filter(c=>c.pid!==id),{pid:id,rol:rolDe(p&&p.cargo)}]:cur.filter(c=>c.pid!==id));renderRent();const d=$('#rentBox details.crew');if(d)d.open=true}
   else if(el.dataset.rol){const cur=crewDe().map(c=>({pid:c.pid,rol:c.pid===el.dataset.rol?el.value:c.rol}));rentSet('crew',cur);renderRent();const d=$('#rentBox details.crew');if(d)d.open=true}
   else if(el.dataset.ro!=null){P.rent.otros[+el.dataset.ro][el.dataset.f]=el.value;renderRent()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rpdf],[data-ropen]');if(!b||!b.closest('#rentBox'))return;const o=(ls.get('epn_pf',[])||[]).find(x=>x.id===(b.dataset.rpdf||b.dataset.ropen));if(!o){toast('No se encontró la proforma');return}
+  if(b.dataset.rpdf){try{abrirVisor(rentPdfDeGuardada(o),'Rentabilidad-chárter-'+slug(o.cliente||o.ref||'viaje')+'-'+(o.fecha||today())+'.pdf','Análisis de rentabilidad · uso interno')}catch(err){console.error(err);toast('No se pudo generar el PDF')}return}
+  if(P.lines.length&&!confirm('¿Abrir esta proforma? Lo que no haya guardado en el formulario se perderá.'))return;cargarP(JSON.parse(JSON.stringify(o)));show('pf');pfOpen('rent');toast('Proforma abierta')});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-roadd],[data-rodel],#btnRentPdf');if(!b||!b.closest('#rentBox'))return;
   if(b.hasAttribute('data-roadd')){rentSet('otros',[...((P.rent&&P.rent.otros)||[]),{d:'',m:''}]);renderRent()}
   else if(b.dataset.rodel!=null){P.rent.otros.splice(+b.dataset.rodel,1);renderRent()}
